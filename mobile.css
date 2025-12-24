@@ -1,0 +1,187 @@
+/* =========================================================
+   NEXUS MOBILE APP THEME
+   (Only applies on screens narrower than 1000px)
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    /* --- GLOBAL APP RESET --- */
+    body {
+        overflow: hidden;
+        background: #000; /* Match stream background */
+    }
+
+    .wrapper {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Hide Desktop Elements */
+    .headerRow, .site-footer, #userMenu {
+        display: none !important;
+    }
+
+    /* --- MOBILE HEADER --- */
+    #mobileHeader {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        height: 50px;
+        padding: 0 15px;
+        background: rgba(20, 5, 30, 0.98);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        flex-shrink: 0;
+        z-index: 100;
+    }
+
+    /* --- FLATTEN LAYOUT --- */
+    .grid {
+        display: flex !important;
+        flex-direction: column;
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    /* Unwrap the columns so children sit directly in the flex stack */
+    .col-left, .col-center, .col-right {
+        display: contents !important; 
+    }
+
+    /* --- 1. THE STREAM PLAYER (ALWAYS ON TOP) --- */
+    #streamPanel {
+        display: block !important;
+        flex: 0 0 auto; /* Fixed height, don't grow */
+        width: 100%;
+        background: #000;
+        z-index: 50;
+        order: -999; /* Force to very top */
+        border: none !important;
+        border-radius: 0 !important;
+        min-height: 200px; /* Fallback height just in case */
+    }
+    
+    #streamPanel .panel-body { padding: 0 !important; }
+    
+    /* Force 16:9 Aspect Ratio using Padding Hack (Max Compatibility) */
+    .streamOuter { 
+        width: 100%; 
+        height: 0;
+        padding-bottom: 56.25%; /* 16:9 Ratio */
+        position: relative;
+    }
+    .streamOuter iframe, .streamOuter video {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+    }
+    
+    /* Hide the desktop title bar */
+    .stream-header { display: none !important; }
+
+    /* --- 2. TABBED CONTENT AREA --- */
+    
+    /* Hide all panels by default */
+    .panel { display: none !important; }
+    
+    /* Exception: Stream is explicitly shown above */
+
+    /* VIEW: CHAT */
+    body.view-chat #chatPanelWrapper {
+        display: flex !important;
+        flex: 1;
+        min-height: 0;
+        background: rgba(15, 5, 25, 0.95);
+        padding-bottom: 60px; /* Space for nav */
+        order: 2;
+    }
+    #chatPanelWrapper .panel-header { display: none !important; }
+    
+    /* VIEW: GAMES (History) */
+    body.view-games #playedPanel {
+        display: flex !important;
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+        padding-bottom: 70px;
+        order: 2;
+    }
+
+    /* VIEW: RANK (Leaderboard) */
+    body.view-profile #leaderboardPanel {
+        display: flex !important;
+        flex: 1;
+        padding-bottom: 70px;
+        order: 2;
+    }
+
+    /* --- STORE OVERLAY --- */
+    /* Only shows when body has class 'show-mobile-store' */
+    body.show-mobile-store #marketplacePanel {
+        display: flex !important;
+        position: fixed;
+        inset: 50px 0 0 0; /* Below header */
+        z-index: 800;
+        background: #0f0519;
+        flex-direction: column;
+        padding-bottom: 0;
+        animation: slideUp 0.3s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    .store-grid-layout { 
+        grid-template-columns: repeat(3, 1fr) !important; 
+        gap: 8px !important; 
+    }
+
+    /* --- BOTTOM NAVIGATION BAR --- */
+    #mobileNav {
+        display: flex !important;
+        justify-content: space-around;
+        align-items: center;
+        height: 60px;
+        background: rgba(10, 0, 20, 0.98);
+        border-top: 1px solid rgba(255,255,255,0.1);
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 999;
+        padding-bottom: env(safe-area-inset-bottom);
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+    }
+
+    .nav-item {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: none; border: none; width: 100%; height: 100%; gap: 4px;
+        opacity: 0.5; transition: all 0.2s; cursor: pointer;
+    }
+    
+    .nav-icon svg { width: 24px; height: 24px; fill: #fff; }
+    .nav-label { font-family: "Marcellus", sans-serif; font-size: 10px; color: #fff; font-weight: 600; }
+
+    .nav-item.active { opacity: 1; }
+    .nav-item.active .nav-icon svg { fill: var(--accent); filter: drop-shadow(0 0 8px var(--accent)); }
+    .nav-item.active .nav-label { color: var(--accent); }
+
+    /* --- UTILITIES --- */
+    .view-toggle-group { display: none !important; }
+    
+    #chatBottomBar {
+        background: rgba(15, 5, 25, 0.98);
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+}
+
+/* Hide mobile elements on Desktop */
+@media (min-width: 1001px) {
+    #mobileNav, #mobileHeader { display: none !important; }
+}

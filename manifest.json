@@ -1,0 +1,21 @@
+{
+  "name": "Wolfethyst Nexus",
+  "short_name": "Nexus",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0519",
+  "theme_color": "#0f0519",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://data.wolfethyst.tv/assets/nexus_icon",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://data.wolfethyst.tv/assets/nexus_icon",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

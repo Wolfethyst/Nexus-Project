@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus Command</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #05020a;
+      --sidebar-bg: rgba(10, 5, 15, 0.9);
+      --card-bg: rgba(255, 255, 255, 0.03); 
+      --card-border: rgba(255, 255, 255, 0.1);
+      --accent: #b57bff;
+      --accent-dim: rgba(181, 123, 255, 0.1);
+      --text: #f5eaff;
+      --text-muted: #9ca3af;
+      --danger: #ff5566;
+      --success: #10b981;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0; padding: 0;
+      font-family: "Space Grotesk", sans-serif;
+      background: radial-gradient(circle at top left, #23094b 0%, #05020a 45%, #000 100%);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* --- SIDEBAR --- */
+    aside {
+      width: 240px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--card-border);
+      display: flex; flex-direction: column;
+      padding: 20px;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .brand { 
+      font-family: "Cinzel", serif; font-size: 22px; color: #fff; 
+      margin-bottom: 20px; text-shadow: 0 0 15px var(--accent); letter-spacing: 1px;
+    }
+
+    .nav-btn {
+      background: transparent; border: none; color: var(--text-muted);
+      padding: 12px 15px; border-radius: 8px;
+      text-align: left; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .nav-btn.active { background: var(--accent-dim); color: var(--accent); border-left: 3px solid var(--accent); }
+
+    /* --- MAIN CONTENT --- */
+    main { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+
+    .view-section { display: none; animation: fadeIn 0.3s ease; }
+    .view-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    h2 { font-family: "Cinzel", serif; color: var(--accent); border-bottom: 1px solid var(--card-border); padding-bottom: 10px; margin-top: 0; }
+
+    /* --- CARDS & GRIDS --- */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .card {
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: var(--radius); padding: 20px;
+    }
+
+    /* --- FORMS --- */
+    label { display: block; font-size: 11px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; margin-top: 10px; font-weight: 600; }
+    input, select, textarea {
+      width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border);
+      color: #fff; padding: 10px; border-radius: 6px; font-family: inherit; font-size: 13px; outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    .form-row { display: flex; gap: 10px; align-items: flex-end; }
+    
+    .btn {
+      background: var(--accent); color: #000; border: none; padding: 10px 20px;
+      border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 11px; transition: 0.2s;
+    }
+    .btn:hover { filter: brightness(1.2); }
+    .btn.secondary { background: rgba(255,255,255,0.1); color: #fff; }
+    .btn.danger { background: var(--danger); color: #fff; }
+    .btn.success { background: var(--success); color: #000; }
+
+    /* --- GAME LIST --- */
+    .game-item {
+      display: flex; gap: 15px; background: rgba(255,255,255,0.02);
+      padding: 10px; border-radius: 8px; margin-bottom: 10px; align-items: center;
+    }
+    .game-thumb { width: 60px; height: 80px; object-fit: cover; border-radius: 4px; background: #000; }
+    .game-info { flex: 1; }
+    .game-title { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
+    .game-actions { display: flex; gap: 10px; margin-top: 5px; }
+
+    /* --- TABLE LISTS --- */
+    .list-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px; background: rgba(255,255,255,0.03); border-radius: 6px; margin-bottom: 5px;
+        font-size: 13px;
+    }
+    .list-item strong { color: #fff; }
+    .list-item span { opacity: 0.7; }
+    .list-actions { display: flex; gap: 5px; }
+
+  </style>
+</head>
+<body>
+
+  <aside>
+    <div class="brand">NEXUS</div>
+    <button class="nav-btn active" onclick="switchTab('stream')">📡 Stream Control</button>
+    <button class="nav-btn" onclick="switchTab('games')">🎮 Games Manager</button>
+    <button class="nav-btn" onclick="switchTab('content')">🎬 Video Content</button>
+    <button class="nav-btn" onclick="switchTab('engagement')">💬 Engagement</button>
+    <button class="nav-btn" onclick="switchTab('economy')">💎 Economy & Store</button>
+    <button class="nav-btn" onclick="switchTab('intelligence')">🧠 Intelligence</button>
+  </aside>
+
+  <main>
+    
+    <div id="tab-stream" class="view-section active">
+        <h2>Live Control</h2>
+        <div class="grid-2">
+            <div class="card">
+                <label>Current Status</label>
+                <div class="form-row">
+                    <button id="wake-btn" class="btn success" style="flex:1;">⚡ Wake Bot</button>
+                    <button id="sleep-btn" class="btn danger" style="flex:1;">💤 Sleep Bot</button>
+                </div>
+                <p style="font-size:12px; color:#aaa; margin-top:10px;">
+                    "Wake" connects the bot to Twitch/YouTube chat relays.<br>
+                    "Sleep" disconnects it to save resources.
+                </p>
+            </div>
+            <div class="card">
+                <label>Stream Info</label>
+                <label>Title</label>
+                <input id="stream-title" placeholder="Stream Title">
+                <label>Game Category</label>
+                <div class="form-row">
+                    <input id="stream-game" placeholder="Just Chatting">
+                    <button id="update-stream-btn" class="btn">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-games" class="view-section">
+        <h2>Games Database</h2>
+        <div class="card" style="margin-bottom: 20px;">
+            <label>Add New Game Manually</label>
+            <div class="form-row">
+                <input id="new-game-name" placeholder="Game Name (e.g. Elden Ring)">
+                <button id="add-game-btn" class="btn">Add to Library</button>
+            </div>
+        </div>
+        
+        <div id="games-list">
+            </div>
+    </div>
+
+    <div id="tab-content" class="view-section">
+        <h2>Video Manager</h2>
+        <div class="card">
+            <label>Add Manual Video (YouTube)</label>
+            <div class="form-row">
+                <input id="vid-id" placeholder="YouTube ID (e.g. dQw4w9WgXcQ)" style="flex:1;">
+                <input id="vid-title" placeholder="Video Title" style="flex:2;">
+            </div>
+            <div class="form-row" style="margin-top:10px;">
+                <input id="vid-game" placeholder="Game Name" style="flex:2;">
+                <select id="vid-type" style="flex:1;">
+                    <option value="vod">Broadcast (VOD)</option>
+                    <option value="video">Edited Video</option>
+                </select>
+                <button id="add-video-btn" class="btn">Add Video</button>
+            </div>
+            <div id="vid-status" style="margin-top:10px; font-size:12px;"></div>
+        </div>
+    </div>
+
+    <div id="tab-engagement" class="view-section">
+        <div class="grid-2">
+            <div class="card">
+                <h2>Timed Messages</h2>
+                <div id="auto-msg-list" style="height:300px; overflow-y:auto; margin-bottom:15px; border:1px solid var(--card-border); border-radius:8px; padding:5px;"></div>
+                
+                <input type="hidden" id="auto-msg-id">
+                <label>Message</label>
+                <textarea id="auto-msg-text" rows="2"></textarea>
+                <div class="form-row">
+                    <div style="width:100px;">
+                        <label>Interval (m)</label>
+                        <input id="auto-msg-interval" type="number" value="30">
+                    </div>
+                    <div style="flex:1; display:flex; align-items:flex-end; gap:10px;">
+                        <label style="margin:0; cursor:pointer;"><input id="auto-msg-enabled" type="checkbox" checked> Active</label>
+                        <button id="save-auto-msg-btn" class="btn" style="margin-left:auto;">Save</button>
+                        <button id="delete-auto-msg-btn" class="btn danger" style="display:none;">Del</button>
+                        <button id="clear-auto-msg-btn" class="btn secondary">New</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Channel Redeems</h2>
+                <div id="redeem-list" style="height:300px; overflow-y:auto; margin-bottom:15px; border:1px solid var(--card-border); border-radius:8px; padding:5px;"></div>
+                
+                <input type="hidden" id="redeem-id">
+                <div class="form-row">
+                    <div style="flex:2;"><label>Name</label><input id="redeem-name"></div>
+                    <div style="flex:1;"><label>Cost</label><input id="redeem-cost" type="number"></div>
+                </div>
+                <label>Sound File Key</label>
+                <div class="form-row">
+                    <input id="redeem-soundKey" placeholder="sounds/file.mp3">
+                    <button id="save-redeem-btn" class="btn">Save</button>
+                    <button id="delete-redeem-btn" class="btn danger">Del</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-economy" class="view-section">
+        <h2>Store & Subscriptions</h2>
+        <div class="grid-2">
+            <div class="card">
+                <label>Add Store Item</label>
+                <div class="form-row">
+                    <input id="store-name" placeholder="Item Name">
+                    <input id="store-cost" type="number" placeholder="Cost" style="width:80px;">
+                </div>
+                <div class="form-row" style="margin-top:10px;">
+                    <select id="store-type">
+                        <option value="avatar_decoration">Avatar Decoration</option>
+                        <option value="message_decoration">Message Decoration</option>
+                    </select>
+                    <button id="store-save-btn" class="btn">Add Item</button>
+                </div>
+                <p style="font-size:11px; color:#aaa; margin-top:10px;">
+                    Advanced styling (CSS/Images) requires manual editing in the old panel for now.
+                </p>
+            </div>
+            <div class="card">
+                <label>Subscription Config</label>
+                <button id="push-tiers-btn" class="btn secondary" style="width:100%;">Sync Default Tiers</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-intelligence" class="view-section">
+        <h2>AI Persona</h2>
+        <div class="card">
+            <div class="form-row">
+                <div style="flex:1;">
+                    <label>Model</label>
+                    <select id="tala-model">
+                        <option value="gpt-4o-mini">GPT-4o Mini (Fast)</option>
+                        <option value="gpt-4o">GPT-4o (Smart)</option>
+                    </select>
+                </div>
+                <div style="width:100px;">
+                    <label>Temp</label>
+                    <input id="tala-temperature" type="number" step="0.1" value="0.8">
+                </div>
+                <div style="width:100px;">
+                    <label>Color</label>
+                    <input id="tala-nameColor" placeholder="#hex">
+                </div>
+            </div>
+            <label>System Prompt (Behavior)</label>
+            <textarea id="tala-behavior" rows="10"></textarea>
+            <button id="tala-save-btn" class="btn" style="margin-top:15px; width:100%;">Save Intelligence</button>
+        </div>
+    </div>
+
+  </main>
+
+<script>
+    const API_BASE = "https://data.wolfethyst.tv";
+    const OWNER_UUID = "7fea3331-7c36-49ac-975b-58de25ecf6ba";
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        if(tabId === 'games') loadGames();
+        if(tabId === 'engagement') { loadRecurringMessages(); loadRedeems(); }
+    }
+
+    async function apiFetch(path, options = {}) {
+      const init = {
+        method: options.method || "GET",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...(options.headers || {}) }
+      };
+      if (options.body) init.body = JSON.stringify(options.body);
+      const res = await fetch(API_BASE + path, init);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      return data;
+    }
+
+    // --- INIT ---
+    (async function init() {
+        try {
+            const data = await apiFetch("/auth/session");
+            if (!data.loggedIn || data.user.id !== OWNER_UUID) {
+                document.body.innerHTML = "<h1 style='color:white;margin:50px;'>Unauthorized</h1>";
+                return;
+            }
+            // Load initial data
+            loadStreamInfo();
+            loadTalathystConfig();
+        } catch(e) { console.error(e); }
+    })();
+
+    // --- STREAM ---
+    async function loadStreamInfo() {
+        try {
+            const data = await apiFetch("/stream/title");
+            document.getElementById("stream-title").value = data.title || "";
+            document.getElementById("stream-game").value = data.game || "";
+        } catch(e){}
+    }
+    document.getElementById("update-stream-btn").onclick = async () => {
+        const title = document.getElementById("stream-title").value;
+        const game = document.getElementById("stream-game").value;
+        try {
+            await apiFetch("/stream/title", { method:"POST", body: { title, game } });
+            alert("Stream Updated");
+        } catch(e) { alert(e.message); }
+    };
+    document.getElementById("wake-btn").onclick = async () => {
+        try { await apiFetch("/admin/bot/wake", {method:"POST"}); alert("Wake Signal Sent"); } catch(e) { alert(e.message); }
+    };
+    document.getElementById("sleep-btn").onclick = async () => {
+        try { await apiFetch("/admin/bot/sleep", {method:"POST"}); alert("Sleep Signal Sent"); } catch(e) { alert(e.message); }
+    };
+
+    // --- GAMES ---
+    async function loadGames() {
+        const container = document.getElementById("games-list");
+        container.innerHTML = "Loading...";
+        try {
+            const data = await apiFetch("/played");
+            container.innerHTML = "";
+            const games = data.games || [];
+            
+            games.forEach(g => {
+                const el = document.createElement("div");
+                el.className = "game-item";
+                el.innerHTML = `
+                    <img src="${g.cover}" class="game-thumb" onerror="this.src='https://data.wolfethyst.tv/assets/nexus_icon'">
+                    <div class="game-info">
+                        <div class="game-title">${g.name}</div>
+                        <input class="cover-input" placeholder="Custom URL (itch.io) or 'auto'" value="${g.cover}" style="font-size:11px; padding:6px; width:100%;">
+                    </div>
+                    <div class="game-actions">
+                        <button class="btn small" onclick="updateGameCover('${g.name.replace(/'/g, "\\'")}', this)">Save Art</button>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+        } catch(e) { container.innerHTML = "Error loading games."; }
+    }
+
+    document.getElementById("add-game-btn").onclick = async () => {
+        const name = document.getElementById("new-game-name").value;
+        if(!name) return;
+        try {
+            await apiFetch("/played/add", { method:"POST", body: { name } });
+            document.getElementById("new-game-name").value = "";
+            loadGames();
+        } catch(e) { alert(e.message); }
+    };
+
+    window.updateGameCover = async (name, btn) => {
+        const input = btn.parentElement.previousElementSibling.querySelector(".cover-input");
+        const newCover = input.value;
+        btn.innerText = "...";
+        try {
+            const res = await apiFetch("/played/set-cover", { method:"POST", body: { name, cover: newCover } });
+            btn.innerText = "Saved";
+            setTimeout(() => btn.innerText = "Save Art", 2000);
+            // Refresh image
+            const img = btn.closest(".game-item").querySelector(".game-thumb");
+            if(res.cover) img.src = res.cover;
+        } catch(e) { 
+            alert(e.message); 
+            btn.innerText = "Error";
+        }
+    };
+
+    // --- VIDEO ---
+    document.getElementById("add-video-btn").onclick = async () => {
+        const id = document.getElementById("vid-id").value;
+        const title = document.getElementById("vid-title").value;
+        const game = document.getElementById("vid-game").value;
+        const type = document.getElementById("vid-type").value;
+        if(!id || !title) return alert("ID and Title required");
+        
+        try {
+            await apiFetch("/streams/manual-add", { method:"POST", body: { youtubeId:id, title, game, type } });
+            alert("Video Added");
+            document.getElementById("vid-id").value = "";
+            document.getElementById("vid-title").value = "";
+        } catch(e) { alert(e.message); }
+    };
+
+    // --- ENGAGEMENT (AUTO MESSAGES) ---
+    async function loadRecurringMessages() {
+        try {
+            const data = await apiFetch("/admin/recurring/list"); 
+            const list = document.getElementById("auto-msg-list");
+            list.innerHTML = "";
+            (data.messages || []).forEach(msg => {
+                const d = document.createElement("div");
+                d.className = "list-item";
+                d.innerHTML = `<span>${msg.text}</span> <strong>${msg.intervalMinutes}m</strong>`;
+                d.onclick = () => {
+                    document.getElementById("auto-msg-id").value = msg.id;
+                    document.getElementById("auto-msg-text").value = msg.text;
+                    document.getElementById("auto-msg-interval").value = msg.intervalMinutes;
+                    document.getElementById("auto-msg-enabled").checked = msg.enabled;
+                    document.getElementById("delete-auto-msg-btn").style.display = "block";
+                };
+                list.appendChild(d);
+            });
+        } catch(e) {}
+    }
+    document.getElementById("save-auto-msg-btn").onclick = async () => {
+        const msg = {
+            id: document.getElementById("auto-msg-id").value || undefined,
+            text: document.getElementById("auto-msg-text").value,
+            intervalMinutes: parseInt(document.getElementById("auto-msg-interval").value),
+            enabled: document.getElementById("auto-msg-enabled").checked
+        };
+        await apiFetch("/admin/recurring/save", { method:"POST", body: msg });
+        loadRecurringMessages();
+        document.getElementById("auto-msg-id").value = "";
+    };
+    document.getElementById("clear-auto-msg-btn").onclick = () => {
+        document.getElementById("auto-msg-id").value = "";
+        document.getElementById("auto-msg-text").value = "";
+        document.getElementById("delete-auto-msg-btn").style.display = "none";
+    };
+    document.getElementById("delete-auto-msg-btn").onclick = async () => {
+        if(!confirm("Delete?")) return;
+        await apiFetch("/admin/recurring/delete", { method:"POST", body: { id: document.getElementById("auto-msg-id").value } });
+        loadRecurringMessages();
+        document.getElementById("clear-auto-msg-btn").click();
+    };
+
+    // --- REDEEMS ---
+    async function loadRedeems() {
+        try {
+            const data = await apiFetch("/nexus/redeems/config");
+            const list = document.getElementById("redeem-list");
+            list.innerHTML = "";
+            (data.redeems || []).forEach(r => {
+                const d = document.createElement("div");
+                d.className = "list-item";
+                d.innerHTML = `<strong>${r.name}</strong> <span>${r.cost}</span>`;
+                d.onclick = () => {
+                    document.getElementById("redeem-id").value = r.id;
+                    document.getElementById("redeem-name").value = r.name;
+                    document.getElementById("redeem-cost").value = r.cost;
+                    document.getElementById("redeem-soundKey").value = r.soundKey || "";
+                };
+                list.appendChild(d);
+            });
+        } catch(e) {}
+    }
+    document.getElementById("save-redeem-btn").onclick = async () => {
+        const redeem = {
+            id: document.getElementById("redeem-id").value || undefined,
+            name: document.getElementById("redeem-name").value,
+            cost: document.getElementById("redeem-cost").value,
+            soundKey: document.getElementById("redeem-soundKey").value,
+            category: "Featured", enabled: true
+        };
+        await apiFetch("/nexus/redeems/save", { method:"POST", body: { redeem } });
+        loadRedeems();
+    };
+    document.getElementById("delete-redeem-btn").onclick = async () => {
+        if(!confirm("Delete?")) return;
+        await apiFetch("/nexus/redeems/delete", { method:"POST", body: { id: document.getElementById("redeem-id").value } });
+        loadRedeems();
+    };
+
+    // --- INTELLIGENCE ---
+    async function loadTalathystConfig() {
+        try {
+            const cfg = await apiFetch("/talathyst/config");
+            document.getElementById("tala-behavior").value = cfg.behavior || "";
+            document.getElementById("tala-model").value = cfg.model || "gpt-4o-mini";
+            document.getElementById("tala-temperature").value = cfg.temperature || 0.8;
+            document.getElementById("tala-nameColor").value = cfg.nameColor || "";
+        } catch(e) {}
+    }
+    document.getElementById("tala-save-btn").onclick = async () => {
+        await apiFetch("/talathyst/config", {
+            method: "POST",
+            body: {
+                behavior: document.getElementById("tala-behavior").value,
+                model: document.getElementById("tala-model").value,
+                temperature: document.getElementById("tala-temperature").value,
+                nameColor: document.getElementById("tala-nameColor").value
+            }
+        });
+        alert("Persona Saved");
+    };
+
+    // --- ECONOMY ---
+    document.getElementById("store-save-btn").onclick = async () => {
+        const item = {
+            name: document.getElementById("store-name").value,
+            cost: parseInt(document.getElementById("store-cost").value),
+            type: document.getElementById("store-type").value,
+            id: undefined // New item
+        };
+        try {
+            await apiFetch("/store/save", { method:"POST", body: { item } });
+            alert("Item Added");
+        } catch(e) { alert(e.message); }
+    };
+    document.getElementById("push-tiers-btn").onclick = async () => {
+        // Just a dummy sync for now unless complex logic is needed
+        alert("This requires the advanced editor to change descriptions. Default logic synced.");
+    };
+
+</script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Tala Overlay – Nexus Alerts</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --accent:#9f6cff;
+    --text:#fff;
+    --box1:rgba(40,20,80,.35);
+    --box2:rgba(20,10,40,.35);
+  }
+  html,body{
+    margin:0;padding:0;background:transparent;width:100%;height:100%;overflow:hidden;
+    color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+  }
+
+  #initScreen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.8);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.5s ease;
+  }
+  #initScreen.hidden { opacity: 0; pointer-events: none; }
+  .init-btn {
+    padding: 20px 40px; border: 2px solid var(--accent); border-radius: 8px;
+    background: rgba(0,0,0,0.5); color: #fff; font-family: Cinzel, serif; font-size: 24px;
+    box-shadow: 0 0 20px var(--accent);
+    animation: pulseBtn 2s infinite;
+  }
+  @keyframes pulseBtn { 0%{box-shadow:0 0 20px var(--accent)} 50%{box-shadow:0 0 40px var(--accent)} 100%{box-shadow:0 0 20px var(--accent)} }
+
+  .cornerGlow{
+    position:absolute;bottom:0;right:0;width:70vw;height:70vh;
+    background:radial-gradient(circle at bottom right,rgba(120,60,255,.4) 0%,rgba(60,20,120,.15) 40%,transparent 80%);
+    filter:blur(120px);animation:cg 10s ease-in-out infinite;z-index:0;pointer-events:none;
+  }
+  @keyframes cg{0%,100%{opacity:.2}50%{opacity:.6}}
+
+  .overlay-root{
+    position:absolute;inset:0;
+    opacity:0;
+    transition:opacity 300ms ease-in-out;
+    pointer-events:none;
+  }
+  .overlay-root.visible{
+    opacity:1;
+  }
+
+  .crystal-wrap{
+    position:absolute;bottom:3%;right:3%;width:280px;height:280px;
+    display:grid;place-items:center;z-index:1;
+  }
+  .aura{
+    position:absolute;width:350px;height:350px;border-radius:50%;
+    background:radial-gradient(circle,rgba(180,100,255,.5) 0%,rgba(130,70,255,.25) 30%,rgba(90,50,180,.12) 60%,transparent 100%);
+    filter:blur(80px);animation:auraPulse 8s ease-in-out infinite;z-index:0;pointer-events:none;
+  }
+  @keyframes auraPulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.85;transform:scale(1.08)}}
+  .crystal{
+    position:relative;width:250px;animation:float 6s ease-in-out infinite;z-index:2;
+    filter:drop-shadow(0 0 20px rgba(180,80,255,.4));
+  }
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+
+  .caption-wrap{
+    position:absolute;right:calc(3% + 270px);bottom:11%;max-width:40vw;z-index:3;
+  }
+  .caption-box{
+    padding:14px 18px;border-radius:14px;
+    background:linear-gradient(180deg,var(--box1),var(--box2));
+    border:1px solid rgba(180,120,255,.35);
+    box-shadow:0 0 24px rgba(140,80,255,.25),inset 0 0 24px rgba(180,120,255,.15);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    opacity: 0.95;
+  }
+  .caption-title{
+    font-family:Cinzel,serif;font-weight:700;letter-spacing:.04em;font-size:14px;
+    color:#e9d9ff;text-shadow:0 0 10px rgba(160,80,255,.5);
+    margin:0 0 6px;display:flex;align-items:center;gap:8px;
+  }
+  .title-dot{
+    width:8px;height:8px;border-radius:999px;background:var(--accent);
+    box-shadow:0 0 16px var(--accent);
+  }
+  .caption-text{
+    font-size:20px;line-height:1.35;white-space:pre-wrap;word-wrap:break-word;
+    text-shadow:0 0 10px rgba(80,40,160,.55);min-height:1.2em;
+  }
+
+  @media (max-width:1200px){
+    .caption-wrap{right:5%;bottom:calc(5% + 360px);max-width:90vw}
+  }
+</style>
+</head>
+
+<body>
+
+<div id="initScreen" onclick="enableAudio()">
+  <div class="init-btn">Click to Initialize Nexus Audio</div>
+</div>
+
+<div class="overlay-root" id="overlayRoot">
+  <div class="cornerGlow"></div>
+  <div class="crystal-wrap">
+    <div class="aura"></div>
+    <img class="crystal" src="https://data.wolfethyst.tv/assets/tala_crystal" alt="Talathyst Crystal">
+  </div>
+  <div class="caption-wrap">
+    <div class="caption-box">
+      <div class="caption-title">
+        <span class="title-dot"></span> Talathyst
+      </div>
+      <div id="captionText" class="caption-text">Awaiting connection…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/** ================= CONFIG ================== **/
+const WS_URL          = "wss://data.wolfethyst.tv/nexus/chat/stream";
+const UPLOAD_BASE_URL = "https://data.wolfethyst.tv";
+const SFX_BASE_URL    = "https://data.wolfethyst.tv/assets/sfx";
+
+const USE_TYPEWRITER        = true;
+const TYPE_SPEED_MS         = 18;
+// Base hide delay, but we will add reading time to this
+const OVERLAY_HIDE_DELAY_MS = 1000; 
+const FORCED_VOICE_ID       = null; 
+
+/** ============== ELEMENTS =================== **/
+const overlayRoot = document.getElementById("overlayRoot");
+const captionEl   = document.getElementById("captionText");
+const initScreen  = document.getElementById("initScreen");
+
+/** ============ STATE / QUEUE ================ **/
+let chatWs = null;
+let typing = false;
+let processingQueue = false;
+let audioEnabled = false; 
+const talaQueue = [];
+
+// New: Global resolver to pause queue until audio is done
+let resolveCurrentAudio = null; 
+
+/** ============== HELPERS ==================== **/
+const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+function enableAudio() {
+  if (audioEnabled) return;
+  audioEnabled = true;
+  initScreen.classList.add("hidden");
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  ctx.resume().then(() => console.log("[TalaOverlay] Audio unlocked."));
+}
+
+function showOverlay() { overlayRoot.classList.add("visible"); }
+function hideOverlay() { overlayRoot.classList.remove("visible"); }
+
+function clamp01(v) {
+  v = Number(v); return Number.isNaN(v) ? 1 : (v < 0 ? 0 : (v > 1 ? 1 : v));
+}
+
+async function typeOut(text) {
+  typing = true;
+  captionEl.textContent = "";
+  if (!USE_TYPEWRITER) {
+    captionEl.textContent = text;
+    typing = false;
+    return;
+  }
+  for (let i = 0; i < text.length; i++) {
+    captionEl.textContent += text[i];
+    await delay(TYPE_SPEED_MS);
+  }
+  typing = false;
+}
+
+// --- AUDIO PLAYERS ---
+
+// 1. Play Base64 (TTS Response)
+function playBase64Audio(base64Data) {
+    if (!audioEnabled) {
+        console.warn("[TTS] Audio not enabled.");
+        return Promise.resolve();
+    }
+    
+    return new Promise((resolve) => {
+        try {
+            const binaryString = atob(base64Data);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) { bytes[i] = binaryString.charCodeAt(i); }
+            const blob = new Blob([bytes], { type: 'audio/mpeg' });
+            const url = URL.createObjectURL(blob);
+            
+            const audio = new Audio(url);
+            audio.onended = () => { URL.revokeObjectURL(url); resolve(); };
+            audio.onerror = (e) => { console.error("[TTS] Play Error:", e); URL.revokeObjectURL(url); resolve(); };
+            audio.play().catch(e => { console.error("[TTS] Autoplay blocked:", e); resolve(); });
+        } catch(e) {
+            console.error("[TTS] Decode failed:", e);
+            resolve();
+        }
+    });
+}
+
+// 2. Play File (Redeems)
+async function playAlertSound(sound) {
+  if (!audioEnabled) return;
+  if (!sound) return;
+
+  let url = sound.url || null;
+  const key = sound.key || "";
+
+  if (!url && key) {
+    if (key.startsWith("sounds/")) {
+      url = `${UPLOAD_BASE_URL}/redeems/sound/${key}`;
+    } else if (key.includes("http")) {
+      url = key;
+    } else {
+      url = `${SFX_BASE_URL}/${encodeURIComponent(key)}.mp3`;
+    }
+  }
+
+  if (!url) return;
+  console.log("Playing Sound:", url);
+
+  try {
+    const audio = new Audio(url);
+    if (sound.volume != null) audio.volume = clamp01(sound.volume);
+    await audio.play().catch(e => console.error("Sound play failed:", e));
+  } catch (err) { }
+}
+
+// --- QUEUE & COMMANDS ---
+
+function sendTtsCommand(text, voiceId) {
+    if (!chatWs || chatWs.readyState !== WebSocket.OPEN) return;
+    chatWs.send(JSON.stringify({ type: "tts_command", text, voiceId: FORCED_VOICE_ID || voiceId || null }));
+}
+
+function enqueueTala(text, voiceId) {
+  const clean = String(text || "").trim();
+  if (!clean) return;
+  talaQueue.push({ text: clean, voiceId: FORCED_VOICE_ID || voiceId || null, type: "tts" });
+  if (!processingQueue) processQueue();
+}
+
+async function processQueue() {
+  if (processingQueue) return;
+  processingQueue = true;
+  
+  while (talaQueue.length > 0) {
+    const item = talaQueue.shift();
+    
+    if (item.type === "tts") {
+        showOverlay();
+        captionEl.textContent = "…";
+        
+        // 1. Send Command to Backend
+        sendTtsCommand(item.text, item.voiceId);
+        
+        // 2. Visuals: Type out the text immediately
+        await typeOut(item.text); 
+        
+        // 3. WAIT FOR AUDIO: Create a promise that pauses this loop
+        // We will wait up to 10 seconds for audio to arrive and finish playing.
+        // If it doesn't arrive (backend error), we timeout and hide.
+        await new Promise(resolve => {
+            resolveCurrentAudio = resolve; // Expose resolve function to WS handler
+            
+            // Calculate a fallback "reading time" based on text length
+            // Approx 200ms per character + base delay
+            const readingTime = (item.text.length * 100) + 2000;
+            
+            // Set a timeout to auto-advance if audio fails or takes too long
+            setTimeout(() => {
+                if (resolveCurrentAudio) {
+                    console.warn("[Queue] Audio timed out. Advancing.");
+                    resolveCurrentAudio();
+                    resolveCurrentAudio = null;
+                }
+            }, Math.min(readingTime, 10000)); // Cap at 10s wait
+        });
+        
+        // 4. Hide after audio finishes (or timeout)
+        await delay(OVERLAY_HIDE_DELAY_MS);
+    }
+  }
+  
+  hideOverlay();
+  processingQueue = false;
+}
+
+// --- WEBSOCKET ---
+function connectWebSocket() {
+  try { chatWs = new WebSocket(WS_URL); } catch (e) { return; }
+
+  chatWs.onopen = () => {
+    console.log("[TalaOverlay] Connected.");
+    captionEl.textContent = "Connected";
+    showOverlay();
+    setTimeout(() => { if (!processingQueue) hideOverlay(); }, 1500);
+  };
+
+  chatWs.onmessage = (ev) => {
+    let data;
+    try { data = JSON.parse(ev.data); } catch { return; }
+    
+    // -- TTS AUDIO DATA RECEIVED --
+    if (data.type === "tts_play_data" && data.audioData) {
+        console.log("[TTS WS] Received audio. Playing...");
+        
+        // Play audio, THEN release the queue
+        playBase64Audio(data.audioData).then(() => {
+            if (resolveCurrentAudio) {
+                resolveCurrentAudio(); // Resumes processQueue loop
+                resolveCurrentAudio = null;
+            }
+        });
+        return;
+    }
+
+    // -- REDEEMS --
+    if (data.type === "redeem" && data.redeem) {
+      // Sound Playback
+      let sound = null;
+      if (data.redeem.soundKey) sound = { key: data.redeem.soundKey };
+      else if (data.sound) sound = data.sound;
+      if (sound) playAlertSound(sound);
+
+      // TTS Trigger
+      // We check for BOTH IDs to be safe
+      const key = data.redeem.key || data.redeem.id;
+if (key === "nexus_tts" || key === "tala_tts") {
+        const rawText = (data.input || "").toString().trim();
+        // const user = data.user?.display || "Someone"; // You don't need this anymore
+        if (rawText) {
+          enqueueTala(rawText);
+        } 
+      }
+    }
+  };
+
+  chatWs.onclose = () => setTimeout(connectWebSocket, 5000);
+}
+
+connectWebSocket();
+</script>
+</body>
+</html>

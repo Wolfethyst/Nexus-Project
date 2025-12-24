@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Nexus Moderator Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Marcellus&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="mods.css">
+</head>
+<body>
+
+  <div id="loginScreen">
+    <h1>Moderator Login</h1>
+    <p>Sign in with your Nexus account to access moderation tools.</p>
+    <button id="modLoginBtn">Sign In</button>
+  </div>
+
+  <div id="modContainer">
+    <div class="modsHeaderBar">
+      <div class="modsTitle">NEXUS MODERATOR TOOLS</div>
+      <div class="modsStats">
+        <div class="statPill">
+          <span class="statLabel">Active Bans</span>
+          <span class="statValue" id="statActiveBans">0</span>
+        </div>
+        <div class="statPill">
+          <span class="statLabel">Active Timeouts</span>
+          <span class="statValue" id="statActiveTimeouts">0</span>
+        </div>
+        <div class="statPill">
+          <span class="statLabel">Warnings</span>
+          <span class="statValue" id="statWarnings">0</span>
+        </div>
+        <div class="statPill">
+          <span class="statLabel">Unban Requests</span>
+          <span class="statValue" id="statUnbanRequests">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="modUserInfo" class="modsUserInfo"></div>
+
+    <div id="modLayout">
+      
+      <div class="modCol left">
+        
+        <div class="panel" id="panelStream">
+            <div class="panelHeaderRow">
+            <h2>Live Stream</h2>
+            <div class="usersHeaderRight">
+                Nexus / Cloudflare Stream
+            </div>
+            </div>
+            <div class="videoShell">
+            <div class="videoAspect">
+                <iframe
+                src="https://iframe.videodelivery.net/YOUR_STREAM_ID"
+                allow="accelerometer; autoplay; encrypted-media; picture-in-picture"
+                allowfullscreen
+                title="Nexus Live Stream">
+                </iframe>
+            </div>
+            <div class="videoMeta">
+                <span>Mirrored from your public Nexus stream.</span>
+            </div>
+            </div>
+        </div>
+
+        <div class="modStack">
+            <div class="modStackHeader">
+            <div class="modStackTitle">Moderation Queue</div>
+            <div class="modTabs">
+                <button class="modTab active" data-mod-tab="panelBans">Bans</button>
+                <button class="modTab" data-mod-tab="panelTimeouts">Timeouts</button>
+                <button class="modTab" data-mod-tab="panelWarnings">Warnings</button>
+                <button class="modTab" data-mod-tab="panelUnban">Unban Req</button>
+            </div>
+            </div>
+
+            <div class="modStackBody">
+            <div class="modPanel activeModPanel" id="panelBans">
+                <div class="empty">No data loaded yet…</div>
+            </div>
+            <div class="modPanel" id="panelTimeouts">
+                <div class="empty">No data loaded yet…</div>
+            </div>
+            <div class="modPanel" id="panelWarnings">
+                <div class="empty">No warnings logged.</div>
+            </div>
+            <div class="modPanel" id="panelUnban">
+                <div class="empty">No unban requests.</div>
+            </div>
+            </div>
+        </div>
+
+      </div>
+
+      <div class="modCol center">
+        
+        <div class="panel" id="panelUsers">
+            <div class="panelHeaderRow">
+            <h2>Nexus Users</h2>
+            <div class="usersHeaderRight">
+                Total: <span id="usersCount">0</span>
+            </div>
+            </div>
+            <div class="usersSearchRow">
+            <input
+                id="usersSearchInput"
+                type="text"
+                placeholder="Search users..."
+            />
+            </div>
+            <div class="usersList">
+            <div class="empty">No users loaded yet…</div>
+            </div>
+        </div>
+
+        <div class="panel" id="panelBannedUsers">
+            <div class="panelHeaderRow">
+            <h2>Banned Users</h2>
+            <div class="usersHeaderRight">
+                Active: <span id="bannedUsersCount">0</span>
+            </div>
+            </div>
+            <div id="bannedUsersList" class="banList">
+            <div class="empty">No active bans.</div>
+            </div>
+        </div>
+
+        <div class="panel" id="panelHistory">
+            <div class="panelHeaderRow">
+            <h2>Chat History (24h)</h2>
+            <div class="panelHistoryActions">
+                <button id="btnTimeoutUser" class="historyActionBtn timeout" type="button" disabled>Timeout</button>
+                <button id="btnBanUser" class="historyActionBtn ban" type="button" disabled>Ban</button>
+            </div>
+            </div>
+            <div id="historySelectedUser" class="historySelectedUser">
+            No user selected.
+            </div>
+            <div class="historyList">
+                <div class="empty">Select a user to view history.</div>
+            </div>
+        </div>
+
+      </div>
+
+      <div class="modCol right">
+        
+        <div class="panel" id="panelLiveChat">
+            <div class="panelHeaderRow">
+            <h2>Live Chat</h2>
+            <div class="usersHeaderRight">
+                Live Nexus / Twitch / YouTube
+            </div>
+            </div>
+            <div class="liveChatContainer">
+            <div id="liveChatMessages" class="liveChatMessages">
+                <div class="empty">Connecting to chat…</div>
+            </div>
+            <div class="liveChatFooter">
+                Click a message to select that user for actions.
+            </div>
+            </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div id="gameModal" class="gameModal">
+    <div class="gameModalWindow">
+      <h3 id="gameModalTitle">Add Game</h3>
+      <div class="gameModalLabel">Game name</div>
+      <input id="gameNameInput" type="text" placeholder="Game name…" />
+      <div class="gameModalLabel">Cover image URL</div>
+      <input id="gameCoverInput" type="text" placeholder="Cover image URL…" />
+      <div class="gameModalButtons">
+        <button id="gameSaveBtn" type="button">Save</button>
+        <button id="gameCancelBtn" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modActionModal" class="gameModal">
+    <div class="gameModalWindow">
+      <h3 id="modActionModalTitle">Moderation Action</h3>
+      <div class="gameModalLabel">Target user</div>
+      <div id="modActionUserLine" class="modActionUserLine"></div>
+
+      <div id="modActionDurationRow" class="modActionDurationRow">
+        <div class="gameModalLabel">Timeout length</div>
+        <div class="modActionDurationButtons" id="modActionDurationButtons">
+          <button type="button" data-seconds="300">5m</button>
+          <button type="button" data-seconds="900">15m</button>
+          <button type="button" data-seconds="1800">30m</button>
+          <button type="button" data-seconds="3600">1h</button>
+          <button type="button" data-seconds="86400">24h</button>
+          <button type="button" data-custom="true">Custom</button>
+        </div>
+        <input id="modActionCustomMinutes" type="number" min="1" placeholder="Minutes…" style="display:none;" />
+      </div>
+
+      <div class="gameModalLabel">Reason</div>
+      <textarea id="modActionReason" placeholder="Enter a reason..."></textarea>
+
+      <div class="modActionButtons">
+        <button id="modActionConfirmBtn" type="button">Apply</button>
+        <button id="modActionCancelBtn" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pointsModal" class="gameModal">
+    <div class="gameModalWindow">
+      <h3 id="pointsModalTitle">Adjust Points</h3>
+      <div class="gameModalLabel">Target user</div>
+      <div id="pointsModalUserLine" class="modActionUserLine"></div>
+      <div class="gameModalLabel">Action</div>
+      <div id="pointsModeButtons" class="modActionDurationButtons">
+        <button type="button" data-mode="add">Add</button>
+        <button type="button" data-mode="remove">Remove</button>
+        <button type="button" data-mode="set">Set</button>
+      </div>
+      <div class="gameModalLabel">Amount</div>
+      <input id="pointsAmountInput" type="number" min="1" placeholder="Points..." />
+      <div class="gameModalButtons">
+        <button id="pointsConfirmBtn" type="button">Apply</button>
+        <button id="pointsCancelBtn" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="mods.js"></script>
+</body>
+</html>
