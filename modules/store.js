@@ -397,3 +397,19 @@ export async function setupDigitalWallets() {
         if(container) prButton.mount('#payment-request-button');
     }
 }
+
+// Connect the "Tip" button
+const openTipBtn = document.getElementById("openTipModalBtn");
+if (openTipBtn) {
+    openTipBtn.addEventListener("click", () => {
+        toggleTipModal(true);
+    });
+}
+
+// Connect the "Subscribe" button (if you ever un-hide it)
+const openSubBtn = document.getElementById("openSubModalBtn");
+if (openSubBtn) {
+    openSubBtn.addEventListener("click", () => {
+        toggleSubModal(true);
+    });
+}
