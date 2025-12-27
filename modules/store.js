@@ -13,6 +13,7 @@ let storeSortAsc = true;
 let subTiersData = [];
 let currentSubIndex = 0;
 let selectedTipAmount = null;
+let currentTipMethod = "card";
 
 // --- LEADERBOARD ---
 export async function loadLeaderboard() {
@@ -211,7 +212,23 @@ if (ttsRedeemFormEl) { ttsRedeemFormEl.addEventListener("submit", async (ev) => 
 const redeemChip = document.getElementById("redeemChip"); const redeemDrawer = document.getElementById("redeemDrawer");
 if (redeemChip && redeemDrawer) { redeemChip.addEventListener("click", (e) => { e.stopPropagation(); redeemDrawer.classList.toggle("open"); }); document.addEventListener("click", (e) => { if (redeemDrawer.classList.contains("open")) { if (!redeemDrawer.contains(e.target) && !redeemChip.contains(e.target)) { redeemDrawer.classList.remove("open"); } } }); }
 
-// --- TIPS ---
+// --- TIPS & CRYPTO ---
+window.toggleTipMethod = function(method) {
+    currentTipMethod = method;
+    document.getElementById("btnMethodCard").classList.toggle("active", method === "card");
+    document.getElementById("btnMethodCrypto").classList.toggle("active", method === "crypto");
+    
+    if (method === "card") {
+        document.getElementById("tipCardSection").style.display = "block";
+        document.getElementById("tipCryptoSection").style.display = "none";
+        // Ensure Stripe is loaded if an amount is selected
+        if (selectedTipAmount > 0) loadStripePaymentElement(selectedTipAmount);
+    } else {
+        document.getElementById("tipCardSection").style.display = "none";
+        document.getElementById("tipCryptoSection").style.display = "block";
+    }
+};
+
 export function toggleTipModal(show) {
     const el = document.getElementById('tipOverlay');
     if (!el) return;
@@ -233,8 +250,12 @@ function updateTipState(amount) {
     selectedTipAmount = amount;
     const label = document.getElementById("tipSelectedAmountValue");
     if(label) label.innerText = `$${amount}`;
-    const checkoutBtn = document.getElementById('tipCheckoutBtn');
-    if(amount > 0) { loadStripePaymentElement(amount); } else { const el = document.getElementById("tipCardElement"); if(el) el.innerHTML = ""; if(checkoutBtn) checkoutBtn.style.display = "none"; }
+    
+    // Refresh the active method's view
+    if (currentTipMethod === "card") {
+        const checkoutBtn = document.getElementById('tipCheckoutBtn');
+        if(amount > 0) { loadStripePaymentElement(amount); } else { const el = document.getElementById("tipCardElement"); if(el) el.innerHTML = ""; if(checkoutBtn) checkoutBtn.style.display = "none"; }
+    }
 }
 
 const tipCustomInput = document.getElementById('tipCustomInput');
@@ -248,6 +269,7 @@ if(tipCustomInput) {
     });
 }
 
+// --- STRIPE HANDLER ---
 const tipCheckoutBtn = document.getElementById('tipCheckoutBtn');
 async function loadStripePaymentElement(amount) {
     if (!amount || amount <= 0) return;
@@ -278,6 +300,35 @@ if (tipCheckoutBtn) {
                 toggleTipModal(false);
             }
         } catch (e) { alert("Payment failed: " + e.message); } finally { tipCheckoutBtn.innerText = "Send Tip"; tipCheckoutBtn.disabled = false; }
+    });
+}
+
+// --- CRYPTO HANDLER ---
+const tipCryptoBtn = document.getElementById('tipCryptoBtn');
+if (tipCryptoBtn) {
+    tipCryptoBtn.addEventListener("click", async () => {
+        if (!selectedTipAmount || selectedTipAmount <= 0) { alert("Please select an amount first."); return; }
+        
+        const msg = document.getElementById('tipCryptoMessage').value.trim();
+        tipCryptoBtn.innerText = "Creating Charge..."; tipCryptoBtn.disabled = true;
+        
+        try {
+            const { res, data } = await apiPost("/support/crypto/create", { 
+                amount: selectedTipAmount, 
+                message: msg 
+            });
+            
+            if (res.ok && data.url) {
+                window.open(data.url, "_blank");
+                toggleTipModal(false);
+            } else {
+                alert("Error: " + (data.error || "Could not create crypto charge."));
+            }
+        } catch (e) {
+            alert("Network Error: " + e.message);
+        } finally {
+            tipCryptoBtn.innerText = "Pay with Crypto"; tipCryptoBtn.disabled = false;
+        }
     });
 }
 

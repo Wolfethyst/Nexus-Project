@@ -317,11 +317,29 @@
               <div style="text-align:center; font-size:12px; color:#aaa; margin-bottom:10px;">
                   Selected: <span id="tipSelectedAmountValue" style="color:var(--accent); font-weight:bold;">$0</span>
               </div>
-              <div id="tipCardElement"></div>
-              <button id="tipCheckoutBtn" class="cta-button" style="display:none; margin-top:5px;">Send Tip</button>
-              <div style="text-align:center; margin-top:10px; font-size:9px; opacity:0.5;">
-                  Secured by Stripe
+              
+              <div id="tipMethodToggle" style="display:flex; gap:10px; margin-bottom:15px; justify-content:center;">
+                  <button id="btnMethodCard" class="panelSmallBtn active" style="min-width: 80px;" onclick="window.toggleTipMethod('card')">💳 Card</button>
+                  <button id="btnMethodCrypto" class="panelSmallBtn" style="min-width: 80px;" onclick="window.toggleTipMethod('crypto')">🪙 Crypto</button>
               </div>
+
+              <div id="tipCardSection">
+                  <div id="tipCardElement"></div>
+                  <button id="tipCheckoutBtn" class="cta-button" style="display:none; margin-top:5px;">Send Tip (Card)</button>
+                  <div style="text-align:center; margin-top:10px; font-size:9px; opacity:0.5;">
+                      Secured by Stripe
+                  </div>
+              </div>
+
+              <div id="tipCryptoSection" style="display:none; text-align:center;">
+                  <p style="font-size:12px; color:#ccc; margin-bottom:10px;">Pay with USDC, ETH, BTC, etc.</p>
+                  <input id="tipCryptoMessage" type="text" placeholder="Leave a message..." class="panelInput" style="width:100%; margin-bottom:10px; box-sizing:border-box;">
+                  <button id="tipCryptoBtn" class="cta-button">Pay with Crypto</button>
+                  <div style="text-align:center; margin-top:10px; font-size:9px; opacity:0.5;">
+                      Powered by Coinbase Commerce
+                  </div>
+              </div>
+
             </div>
           </div>
           
@@ -340,7 +358,7 @@
                <button id="openTipModalBtn" class="big-action-btn ghost-tip-btn">
                    <span class="btn-icon">💎</span> Tip
                </button>
-               <button id="openSubModalBtn" class="big-action-btn ghost-sub-btn">
+               <button id="openSubModalBtn" class="big-action-btn ghost-sub-btn" style="display:none;">
                    <span class="btn-icon">⭐</span> Subscribe
                </button>
             </div>
