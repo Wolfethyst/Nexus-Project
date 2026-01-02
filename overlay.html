@@ -269,26 +269,20 @@ async function processQueue() {
         await typeOut(item.text); 
         
         // 3. WAIT FOR AUDIO: Create a promise that pauses this loop
-        // We will wait up to 10 seconds for audio to arrive and finish playing.
-        // If it doesn't arrive (backend error), we timeout and hide.
         await new Promise(resolve => {
-            resolveCurrentAudio = resolve; // Expose resolve function to WS handler
+            resolveCurrentAudio = resolve; 
             
-            // Calculate a fallback "reading time" based on text length
-            // Approx 200ms per character + base delay
+            // Fallback: If audio never arrives, advance anyway after ~10s
             const readingTime = (item.text.length * 100) + 2000;
-            
-            // Set a timeout to auto-advance if audio fails or takes too long
             setTimeout(() => {
                 if (resolveCurrentAudio) {
                     console.warn("[Queue] Audio timed out. Advancing.");
                     resolveCurrentAudio();
                     resolveCurrentAudio = null;
                 }
-            }, Math.min(readingTime, 10000)); // Cap at 10s wait
+            }, Math.min(readingTime, 10000));
         });
         
-        // 4. Hide after audio finishes (or timeout)
         await delay(OVERLAY_HIDE_DELAY_MS);
     }
   }
@@ -315,8 +309,6 @@ function connectWebSocket() {
     // -- TTS AUDIO DATA RECEIVED --
     if (data.type === "tts_play_data" && data.audioData) {
         console.log("[TTS WS] Received audio. Playing...");
-        
-        // Play audio, THEN release the queue
         playBase64Audio(data.audioData).then(() => {
             if (resolveCurrentAudio) {
                 resolveCurrentAudio(); // Resumes processQueue loop
@@ -328,21 +320,28 @@ function connectWebSocket() {
 
     // -- REDEEMS --
     if (data.type === "redeem" && data.redeem) {
-      // Sound Playback
+      // Sound Playback (FIXED)
       let sound = null;
-      if (data.redeem.soundKey) sound = { key: data.redeem.soundKey };
-      else if (data.sound) sound = data.sound;
+      // 1. Priority: Explicit soundKey (New uploads)
+      if (data.redeem.soundKey) {
+          sound = { key: data.redeem.soundKey };
+      }
+      // 2. Fallback: 'sound' property inside redeem (Legacy/Standard)
+      else if (data.redeem.sound) {
+          sound = { key: data.redeem.sound }; 
+      }
+      // 3. Fallback: 'sound' property on root data (Edge case)
+      else if (data.sound) {
+          sound = data.sound;
+      }
+
       if (sound) playAlertSound(sound);
 
       // TTS Trigger
-      // We check for BOTH IDs to be safe
       const key = data.redeem.key || data.redeem.id;
-if (key === "nexus_tts" || key === "tala_tts") {
+      if (key === "nexus_tts" || key === "tala_tts") {
         const rawText = (data.input || "").toString().trim();
-        // const user = data.user?.display || "Someone"; // You don't need this anymore
-        if (rawText) {
-          enqueueTala(rawText);
-        } 
+        if (rawText) enqueueTala(rawText);
       }
     }
   };
