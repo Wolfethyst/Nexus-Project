@@ -170,6 +170,39 @@ export function addSupportEventMessage(data) {
     scrollChatToBottom();
 }
 
+// --- NEW FUNCTION: Handes visual alert and audio playback for redeems ---
+export function addRedeemMessage(data) {
+    if (!chatPanelEl) return;
+    const el = document.createElement("div");
+    el.className = "chatMsg redeem-event";
+    
+    // Custom styling for redeem cards
+    el.style.borderLeft = "3px solid #d57bff";
+    el.style.background = "rgba(181, 123, 255, 0.1)";
+
+    const soundIcon = (data.redeem.soundKey || data.redeem.soundUrl) ? "🔊" : "🎁";
+
+    el.innerHTML = `
+        <div style="font-size:20px; margin-bottom:4px; text-shadow:0 0 10px #d57bff;">${soundIcon}</div>
+        <div style="font-weight:bold; color:#e0c2ff; font-family: 'Cinzel', serif; letter-spacing:1px;">
+            ${escapeHtml(data.user.display)} redeemed <br>
+            <span style="color:#fff; text-transform:uppercase;">${escapeHtml(data.redeem.name)}</span>
+        </div>
+        ${data.input ? `<div style="font-style:italic; font-size:13px; margin-top:4px; color:#eee; border-left:2px solid rgba(255,255,255,0.3); padding-left:8px;">"${escapeHtml(data.input)}"</div>` : ""}
+    `;
+
+    chatPanelEl.appendChild(el);
+    scrollChatToBottom();
+
+    // Audio Playback Logic
+    if (data.redeem.soundKey) {
+        const key = data.redeem.soundKey;
+        const audio = new Audio(`${API}/redeems/sound/${encodeURIComponent(key)}`);
+        audio.volume = 0.6; // Adjust volume as needed
+        audio.play().catch(e => console.warn("Redeem audio blocked (interaction needed?):", e));
+    }
+}
+
 export function addDashboardChatMessage(msg) {
   if (!chatPanelEl) return;
   const rawUser = msg.user || "User"; const text = msg.text || ""; const source = (msg.platform || msg.source || "nexus").toLowerCase();
@@ -285,6 +318,10 @@ export function connectDashboardChatWS() {
 
       if (data.type === "chat") addDashboardChatMessage(data.message);
       
+      // --- REDEEM HANDLER (New) ---
+      if (data.type === "redeem") addRedeemMessage(data);
+      // ----------------------------
+
       if (data.type === "user_update") { 
           const msgs = document.querySelectorAll(`.chatMsg[data-userid="${data.userId}"]`); 
           msgs.forEach(el => { 
