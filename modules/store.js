@@ -26,7 +26,16 @@ export async function loadLeaderboard() {
       document.getElementById("headerPoints").textContent = `${displayPoints} Crystals`; 
       document.getElementById("chatPointsText").textContent = formatCompact(State.points); 
   }
-  let rows = Object.values(map).sort((a, b) => b.points - a.points).filter(u => u.name && !["wolfethyst","talathyst"].includes(u.name.toLowerCase()));
+  
+  // [UPDATED] Filter out Adventurer, Anonymous, Unknown, etc.
+  let rows = Object.values(map)
+    .sort((a, b) => b.points - a.points)
+    .filter(u => {
+        const name = (u.name || "").toLowerCase();
+        const hiddenNames = ["wolfethyst", "talathyst", "adventurer", "anonymous", "unknown"];
+        return name && !hiddenNames.includes(name);
+    });
+
   const lbEl = document.getElementById("leaderboard");
   if (!lbEl) return;
   lbEl.innerHTML = rows.map((u, i) => { let rankClass = ""; if (i === 0) rankClass = "gold"; else if (i === 1) rankClass = "silver"; else if (i === 2) rankClass = "bronze"; return `<div class="lbRow ${rankClass}"><div class="lbPos">${i+1}</div><div class="lbName">${escapeHtml(u.name)}</div><div class="lbRight"><span>${formatCompact(u.points)}</span><img class="lbCrystal" src="https://data.wolfethyst.tv/assets/wolfe_crystal"></div></div>`; }).join("");

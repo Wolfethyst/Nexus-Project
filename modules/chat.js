@@ -170,8 +170,10 @@ export function addSupportEventMessage(data) {
     scrollChatToBottom();
 }
 
-// --- NEW FUNCTION: Handes visual alert and audio playback for redeems ---
+// --- NEW FUNCTION: Handes visual alert and audio playback for redeems (with Debug) ---
 export function addRedeemMessage(data) {
+    console.log(" [Redeem Debug] Event Received:", data);
+
     if (!chatPanelEl) return;
     const el = document.createElement("div");
     el.className = "chatMsg redeem-event";
@@ -194,12 +196,25 @@ export function addRedeemMessage(data) {
     chatPanelEl.appendChild(el);
     scrollChatToBottom();
 
-    // Audio Playback Logic
+    // Audio Playback Logic with logging
     if (data.redeem.soundKey) {
         const key = data.redeem.soundKey;
-        const audio = new Audio(`${API}/redeems/sound/${encodeURIComponent(key)}`);
+        const audioUrl = `${API}/redeems/sound/${encodeURIComponent(key)}`;
+        console.log(" [Redeem Debug] Attempting to play:", audioUrl);
+
+        const audio = new Audio(audioUrl);
         audio.volume = 0.6; // Adjust volume as needed
-        audio.play().catch(e => console.warn("Redeem audio blocked (interaction needed?):", e));
+        const playPromise = audio.play();
+
+        if (playPromise !== undefined) {
+             playPromise
+                .then(() => console.log(" [Redeem Debug] Audio playing successfully."))
+                .catch(e => {
+                     console.warn(" [Redeem Debug] Playback Failed (Did you click the page?):", e);
+                });
+        }
+    } else {
+        console.log(" [Redeem Debug] No soundKey in data packet.");
     }
 }
 
@@ -319,7 +334,9 @@ export function connectDashboardChatWS() {
       if (data.type === "chat") addDashboardChatMessage(data.message);
       
       // --- REDEEM HANDLER (New) ---
-      if (data.type === "redeem") addRedeemMessage(data);
+      if (data.type === "redeem") {
+          addRedeemMessage(data);
+      }
       // ----------------------------
 
       if (data.type === "user_update") { 
