@@ -266,20 +266,51 @@ export function playVideo(item, type) {
     // Only supports YouTube and direct URL (Cloudflare/MP4).
 
 if (item.vod_provider === 'youtube') {
-        const iframe = document.createElement('iframe');
-        iframe.id = 'nexus-youtube-embed';
-        
-        // [FIX] 
-        // 1. Use 'youtube-nocookie.com' for better privacy (helps with ad-blockers)
-        // 2. Set 'autoplay=0'. This forces a user click, which proves you aren't a bot.
-        iframe.src = `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=0&rel=0&modestbranding=1`;
-        
-        iframe.allow = "accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-        iframe.allowFullscreen = true;
-        iframe.style.width = '100%'; 
-        iframe.style.height = '100%'; 
-        iframe.style.border = 'none';
-        videoParent.appendChild(iframe);
+        // 1. Create a "Facade" Wrapper (Fake Player)
+        // We give it the ID 'nexus-youtube-embed' so your existing cleanup logic removes it automatically
+        const wrapper = document.createElement('div');
+        wrapper.id = 'nexus-youtube-embed';
+        wrapper.style.width = '100%';
+        wrapper.style.height = '100%';
+        wrapper.style.backgroundColor = '#000';
+        wrapper.style.position = 'relative';
+        wrapper.style.cursor = 'pointer';
+        wrapper.style.backgroundImage = `url('https://img.youtube.com/vi/${item.id}/maxresdefault.jpg')`;
+        wrapper.style.backgroundSize = 'cover';
+        wrapper.style.backgroundPosition = 'center';
+
+        // 2. Add a Big Play Button on top
+        const playBtn = document.createElement('div');
+        playBtn.innerHTML = "▶";
+        playBtn.style.position = 'absolute';
+        playBtn.style.top = '50%';
+        playBtn.style.left = '50%';
+        playBtn.style.transform = 'translate(-50%, -50%)';
+        playBtn.style.fontSize = '60px';
+        playBtn.style.color = '#fff';
+        playBtn.style.textShadow = '0 0 20px rgba(0,0,0,0.5)';
+        playBtn.style.pointerEvents = 'none'; // Let clicks pass to wrapper
+        wrapper.appendChild(playBtn);
+
+        // 3. The Magic: Only load YouTube when clicked
+        wrapper.onclick = () => {
+            const iframe = document.createElement('iframe');
+            
+            // We include 'origin' to help YouTube verify the request source
+            iframe.src = `https://www.youtube.com/embed/${item.id}?autoplay=1&rel=0&modestbranding=1&origin=${window.location.origin}`;
+            
+            iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+            iframe.allowFullscreen = true;
+            iframe.style.width = '100%'; 
+            iframe.style.height = '100%'; 
+            iframe.style.border = 'none';
+            
+            // Swap the fake player for the real one
+            wrapper.innerHTML = ''; 
+            wrapper.appendChild(iframe);
+        };
+
+        videoParent.appendChild(wrapper);
         return;
     }
 
