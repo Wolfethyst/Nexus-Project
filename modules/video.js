@@ -268,7 +268,7 @@ export function playVideo(item, type) {
     if (item.vod_provider === 'youtube') {
         const iframe = document.createElement('iframe');
         iframe.id = 'nexus-youtube-embed';
-        iframe.src = `https://www.youtube.com/embed/${item.id}?autoplay=1&rel=0&modestbranding=1`;
+        iframe.src = `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&rel=0&modestbranding=1`;
         iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
         iframe.allowFullscreen = true;
         iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.border = 'none';
