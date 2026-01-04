@@ -106,8 +106,9 @@
     .list-item {
         display: flex; justify-content: space-between; align-items: center;
         padding: 10px; background: rgba(255,255,255,0.03); border-radius: 6px; margin-bottom: 5px;
-        font-size: 13px;
+        font-size: 13px; cursor: pointer; transition: background 0.2s;
     }
+    .list-item:hover { background: rgba(255,255,255,0.07); }
     .list-item strong { color: #fff; }
     .list-item span { opacity: 0.7; }
     .list-actions { display: flex; gap: 5px; }
@@ -165,8 +166,7 @@
             </div>
         </div>
         
-        <div id="games-list">
-            </div>
+        <div id="games-list"></div>
     </div>
 
     <div id="tab-content" class="view-section">
@@ -221,10 +221,17 @@
                     <div style="flex:2;"><label>Name</label><input id="redeem-name"></div>
                     <div style="flex:1;"><label>Cost</label><input id="redeem-cost" type="number"></div>
                 </div>
-                <label>Sound File Key</label>
+
+                <label>Sound File</label>
                 <div class="form-row">
-                    <input id="redeem-soundKey" placeholder="sounds/file.mp3">
-                    <button id="save-redeem-btn" class="btn">Save</button>
+                    <input id="redeem-soundKey" placeholder="sounds/file.mp3" style="flex:2;">
+                    <button id="upload-sound-trigger" class="btn secondary" style="flex:1;">📂 Upload</button>
+                    <input type="file" id="sound-upload-input" accept="audio/*" style="display:none;">
+                </div>
+
+                <div class="form-row" style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
+                    <button id="save-redeem-btn" class="btn" style="flex:1;">Save Redeem</button>
+                    <button id="clear-redeem-btn" class="btn secondary">New</button>
                     <button id="delete-redeem-btn" class="btn danger">Del</button>
                 </div>
             </div>
@@ -306,7 +313,14 @@
         credentials: "include",
         headers: { "Content-Type": "application/json", ...(options.headers || {}) }
       };
-      if (options.body) init.body = JSON.stringify(options.body);
+      // Don't auto-json body if it is FormData
+      if (options.body && !(options.body instanceof FormData)) {
+          init.body = JSON.stringify(options.body);
+      } else if (options.body instanceof FormData) {
+          delete init.headers["Content-Type"]; // Browser sets boundary
+          init.body = options.body;
+      }
+      
       const res = await fetch(API_BASE + path, init);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || res.statusText);
@@ -321,11 +335,44 @@
                 document.body.innerHTML = "<h1 style='color:white;margin:50px;'>Unauthorized</h1>";
                 return;
             }
-            // Load initial data
             loadStreamInfo();
             loadTalathystConfig();
         } catch(e) { console.error(e); }
     })();
+
+    // --- UPLOAD HANDLER ---
+    const uploadInput = document.getElementById("sound-upload-input");
+    const uploadBtn = document.getElementById("upload-sound-trigger");
+    
+    uploadBtn.onclick = () => uploadInput.click();
+    
+    uploadInput.onchange = async () => {
+        const file = uploadInput.files[0];
+        if(!file) return;
+        
+        uploadBtn.innerText = "Uploading...";
+        const fd = new FormData();
+        fd.append("file", file);
+        
+        try {
+            // NOTE: Ensure your server has this endpoint: /admin/upload/sound
+            const data = await apiFetch("/admin/upload/sound", { method: "POST", body: fd });
+            
+            // Assume server returns { key: "filename.mp3" } or { url: "..." }
+            const key = data.key || data.filename || data.url;
+            if(key) {
+                document.getElementById("redeem-soundKey").value = key;
+                uploadBtn.innerText = "Done!";
+                setTimeout(() => uploadBtn.innerText = "📂 Upload", 2000);
+            } else {
+                throw new Error("No key returned from upload");
+            }
+        } catch(e) {
+            alert("Upload Failed: " + e.message);
+            uploadBtn.innerText = "Error";
+            setTimeout(() => uploadBtn.innerText = "📂 Upload", 2000);
+        }
+    };
 
     // --- STREAM ---
     async function loadStreamInfo() {
@@ -395,7 +442,6 @@
             const res = await apiFetch("/played/set-cover", { method:"POST", body: { name, cover: newCover } });
             btn.innerText = "Saved";
             setTimeout(() => btn.innerText = "Save Art", 2000);
-            // Refresh image
             const img = btn.closest(".game-item").querySelector(".game-thumb");
             if(res.cover) img.src = res.cover;
         } catch(e) { 
@@ -479,11 +525,21 @@
                     document.getElementById("redeem-name").value = r.name;
                     document.getElementById("redeem-cost").value = r.cost;
                     document.getElementById("redeem-soundKey").value = r.soundKey || "";
+                    document.getElementById("delete-redeem-btn").style.display = "block";
                 };
                 list.appendChild(d);
             });
         } catch(e) {}
     }
+    
+    document.getElementById("clear-redeem-btn").onclick = () => {
+        document.getElementById("redeem-id").value = "";
+        document.getElementById("redeem-name").value = "";
+        document.getElementById("redeem-cost").value = "";
+        document.getElementById("redeem-soundKey").value = "";
+        document.getElementById("delete-redeem-btn").style.display = "none";
+    };
+
     document.getElementById("save-redeem-btn").onclick = async () => {
         const redeem = {
             id: document.getElementById("redeem-id").value || undefined,
@@ -494,11 +550,14 @@
         };
         await apiFetch("/nexus/redeems/save", { method:"POST", body: { redeem } });
         loadRedeems();
+        document.getElementById("clear-redeem-btn").click();
+        alert("Redeem Saved");
     };
     document.getElementById("delete-redeem-btn").onclick = async () => {
         if(!confirm("Delete?")) return;
         await apiFetch("/nexus/redeems/delete", { method:"POST", body: { id: document.getElementById("redeem-id").value } });
         loadRedeems();
+        document.getElementById("clear-redeem-btn").click();
     };
 
     // --- INTELLIGENCE ---
@@ -530,7 +589,7 @@
             name: document.getElementById("store-name").value,
             cost: parseInt(document.getElementById("store-cost").value),
             type: document.getElementById("store-type").value,
-            id: undefined // New item
+            id: undefined 
         };
         try {
             await apiFetch("/store/save", { method:"POST", body: { item } });
@@ -538,7 +597,6 @@
         } catch(e) { alert(e.message); }
     };
     document.getElementById("push-tiers-btn").onclick = async () => {
-        // Just a dummy sync for now unless complex logic is needed
         alert("This requires the advanced editor to change descriptions. Default logic synced.");
     };
 
