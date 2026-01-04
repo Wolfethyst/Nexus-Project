@@ -773,20 +773,35 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 /* ================= VIDEO HUB (GAME FIRST) ================= */
 
 /* 1. Hub Container */
+/* Sets up the view to fill the panel without scrolling the whole page */
 .video-hub-container {
-    padding: 20px; height: 100%; overflow-y: auto;
-    display: flex; flex-direction: column; gap: 20px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Stop outer scroll */
+    padding: 0;       /* Padding moved to children for better scrollbars */
 }
 
 /* 2. Games Grid (Home View) */
 .hub-games-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    
+    /* SCROLLING LOGIC */
+    flex: 1;          /* Take all remaining space */
+    overflow-y: auto; /* Scroll internally */
+    min-height: 0;    /* Critical flexbox fix */
 }
+
 .hub-game-card {
     background: rgba(0,0,0,0.3); border-radius: 12px; overflow: hidden;
     border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
     transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
     position: relative; aspect-ratio: 2/3;
+    flex-shrink: 0;
 }
 .hub-game-card:hover {
     transform: translateY(-5px); border-color: var(--accent);
@@ -807,6 +822,10 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     background: linear-gradient(90deg, rgba(20,0,40,0.8), rgba(20,0,40,0.3));
     border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
     position: relative; overflow: hidden;
+    
+    /* LOCK HEADER (Don't shrink, don't scroll) */
+    flex-shrink: 0;
+    margin: 20px 20px 0 20px;
 }
 .game-hero-bg {
     position: absolute; inset: 0; opacity: 0.1; filter: blur(20px); z-index: 0;
@@ -817,10 +836,50 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     width: 140px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2);
 }
-.game-hero-info { flex: 1; }
+.game-hero-info { flex: 1; min-width: 0; }
 .game-hero-title { font-family: "Cinzel", serif; font-size: 32px; color: #fff; margin: 0 0 10px; text-shadow: 0 0 15px var(--accent); }
-.game-hero-stats { font-family: "Marcellus"; font-size: 14px; color: var(--text-muted); display: flex; gap: 15px; }
+.game-hero-stats { font-family: "Marcellus"; font-size: 14px; color: var(--text-muted); display: flex; gap: 15px; margin-top: 10px; }
 .game-hero-stat { display: flex; align-items: center; gap: 6px; }
+
+/* [NEW] Description & Steam Styles (Needed for your update) */
+.game-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #ccc;
+    line-height: 1.5;
+    margin: 10px 0;
+    max-width: 650px;
+    background: rgba(0,0,0,0.3);
+    padding: 10px;
+    border-radius: 6px;
+    border-left: 2px solid var(--accent);
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.game-steam-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #171a21 0%, #2a475e 100%);
+    border: 1px solid rgba(102, 192, 244, 0.3);
+    padding: 6px 14px;
+    border-radius: 4px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: bold;
+    transition: 0.2s;
+    margin-right: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.game-steam-btn:hover {
+    filter: brightness(1.2);
+    transform: translateY(-1px);
+}
+
 .hub-back-btn {
     background: rgba(255,255,255,0.1); border: none; color: #fff;
     padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: "Cinzel";
@@ -830,7 +889,12 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 .hub-back-btn:hover { background: var(--accent); color: #000; }
 
 /* 4. Sub Tabs */
-.hub-tabs { display: flex; gap: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+.hub-tabs { 
+    display: flex; gap: 20px; 
+    border-bottom: 1px solid rgba(255,255,255,0.1); 
+    margin: 20px 20px 10px 20px; 
+    flex-shrink: 0; /* Keep Tabs Fixed */
+}
 .hub-tab {
     background: none; border: none; padding: 10px 0; font-family: "Cinzel";
     font-size: 14px; color: var(--text-muted); cursor: pointer; position: relative;
@@ -841,6 +905,19 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 .hub-tab.active::after {
     content: ""; position: absolute; bottom: -1px; left: 0; width: 100%;
     height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--accent);
+}
+
+/* 5. VODs/Clips Grid (Inside Details View) */
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    
+    /* INDEPENDENT SCROLL */
+    flex: 1;          /* Take remaining height */
+    overflow-y: auto; /* Internal scroll */
+    padding: 0 20px 60px 20px;
+    min-height: 0;    /* Flex fix */
 }
 
 /* ================= DESKTOP-ONLY OVERRIDES ================= */
