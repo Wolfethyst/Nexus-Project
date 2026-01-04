@@ -396,31 +396,32 @@ export function toggleMainView(mode) {
 
 // [NEW] Refresh Metadata Logic
 window.refreshGameMetadata = async function(gameName) {
-    if (!confirm(`Fetch metadata for "${gameName}" from Steam?\nThis will overwrite current description and info.`)) return;
-
-    // Show loading state on the specific button
     const btn = document.activeElement;
-    const oldText = btn.innerText;
-    btn.innerText = "Wait...";
-    btn.disabled = true;
+    const oldText = btn ? btn.innerText : "↻ Info";
+    if(btn) { btn.innerText = "Wait..."; btn.disabled = true; }
 
     try {
-        const { res, data } = await apiPost('/played/refresh-metadata', { name: gameName });
-        if (res.ok && data.success) {
-            alert("Metadata updated!");
-            // Update local state so we don't need a full reload
+        const res = await apiPost('/played/refresh-metadata', { name: gameName });
+        
+        // Ensure we check for both HTTP 200 AND the success flag in the JSON
+        if (res && res.success) {
+            alert(`Updated!\n\nDeveloper: ${res.data.developer}\nRelease: ${res.data.release_date}`);
+            
+            // 1. Update the Local Data Cache (so we don't need to reload)
             const game = allPlayedGames.find(g => g.name === gameName);
             if(game) {
-                game.summary = data.data.summary;
-                game.developer = data.data.developer;
-                game.publisher = data.data.publisher;
-                game.release_date = data.data.release_date;
-                game.steam_url = data.data.steam_url;
+                game.summary = res.data.summary;
+                game.developer = res.data.developer;
+                game.publisher = res.data.publisher;
+                game.release_date = res.data.release_date;
+                game.steam_url = res.data.steam_url;
             }
-            // Re-render to show changes
-            openGameDetails(gameName);
+
+            // 2. Re-open the details view to show new data immediately
+            openGameDetails(gameName); 
         } else {
-            alert("Could not find game on Steam.");
+            console.warn("Refresh failed:", res);
+            alert("Could not find game info on IGDB.");
         }
     } catch(e) {
         console.error(e);
