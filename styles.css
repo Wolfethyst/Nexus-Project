@@ -795,22 +795,23 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     flex-shrink: 0;
     padding: 20px 20px 10px 20px;
     z-index: 5;
-    background: transparent;
 }
 
 /* The Game Grid - Scrolls Independently */
 .hub-games-grid {
     flex: 1; 
     overflow-y: auto; 
-    min-height: 0; /* Critical Fix */
+    min-height: 0;
     
     display: grid; 
+    /* Auto-fill with a minimum width */
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
     gap: 15px;
     padding: 10px 20px 40px 20px;
     
-    /* FIX: Prevents rows from stretching to fill vertical space */
-    align-content: start; 
+    /* CRITICAL FIXES FOR STRETCHING */
+    align-content: start; /* Packs rows to the top */
+    align-items: start;   /* Prevents items from stretching to match row height */
 }
 
 /* 3. DETAILS VIEW (Specific Game) */
@@ -828,7 +829,7 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     background: linear-gradient(90deg, rgba(20,0,40,0.8), rgba(20,0,40,0.3));
     border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
     
-    flex-shrink: 0; /* Lock Height */
+    flex-shrink: 0; 
     margin: 20px 20px 0 20px;
 }
 
@@ -875,7 +876,8 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 15px;
-    align-content: start; /* Fixes vertical stretching */
+    align-content: start;
+    align-items: start; /* Also fix stretching for VODs */
 }
 
 /* --- CARDS & ASSETS --- */
@@ -883,8 +885,12 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     background: rgba(0,0,0,0.3); border-radius: 12px; overflow: hidden;
     border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
     transition: transform 0.2s, border-color 0.2s;
-    position: relative; aspect-ratio: 2/3;
-    /* Removed flex-shrink here to let grid control size */
+    position: relative; 
+    
+    /* FORCE ASPECT RATIO */
+    width: 100%;
+    aspect-ratio: 2/3;
+    height: auto; /* Allow height to be determined by width + ratio */
 }
 .hub-game-card:hover { transform: translateY(-5px); border-color: var(--accent); }
 .hub-game-card img { width: 100%; height: 100%; object-fit: cover; }
