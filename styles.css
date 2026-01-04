@@ -772,16 +772,17 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 
 /* ================= VIDEO HUB (GAME FIRST) ================= */
 
-/* 1. Base Container Reset */
+/* 1. Base Container */
 .video-hub-container {
     width: 100%;
     height: 100%;
     position: relative;
     overflow: hidden; 
+    display: flex; 
+    flex-direction: column;
 }
 
-/* 2. HOME VIEW (Library) */
-/* Changed to Flex Column so header stays fixed and grid scrolls */
+/* 2. HOME VIEW (Game Library) */
 #hub-home-view {
     display: flex;
     flex-direction: column;
@@ -789,23 +790,27 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     overflow: hidden;
 }
 
-/* Target the Header Row (Title + Search) inside Home View */
+/* Header Row (Title & Search) - Pinned to Top */
 #hub-home-view > div:first-child {
-    flex-shrink: 0; /* Prevents header from scrolling away */
+    flex-shrink: 0;
     padding: 20px 20px 10px 20px;
     z-index: 5;
+    background: transparent;
 }
 
-/* The Scrolling Game Grid */
+/* The Game Grid - Scrolls Independently */
 .hub-games-grid {
-    flex: 1; /* Fills remaining space */
-    overflow-y: auto; /* Internal Scroll */
-    min-height: 0;
+    flex: 1; 
+    overflow-y: auto; 
+    min-height: 0; /* Critical Fix */
     
     display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+    gap: 15px;
     padding: 10px 20px 40px 20px;
+    
+    /* FIX: Prevents rows from stretching to fill vertical space */
+    align-content: start; 
 }
 
 /* 3. DETAILS VIEW (Specific Game) */
@@ -822,34 +827,12 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     display: flex; gap: 25px; align-items: flex-end; padding: 30px;
     background: linear-gradient(90deg, rgba(20,0,40,0.8), rgba(20,0,40,0.3));
     border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
-    overflow: hidden;
     
-    /* Layout Lock */
-    flex-shrink: 0; 
+    flex-shrink: 0; /* Lock Height */
     margin: 20px 20px 0 20px;
 }
 
-/* RESTORED: The "Library" Back Button */
-.hub-back-btn {
-    position: absolute; top: 15px; right: 15px; z-index: 10;
-    background: rgba(0, 0, 0, 0.6); 
-    border: 1px solid rgba(255,255,255,0.2); 
-    color: #fff;
-    padding: 6px 14px; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-family: "Cinzel", serif; 
-    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
-    display: flex; align-items: center; gap: 6px; 
-    transition: all 0.2s ease;
-}
-.hub-back-btn:hover { 
-    background: var(--accent); 
-    color: #000; 
-    border-color: var(--accent);
-}
-
-/* RESTORED: The Broadcasts/Videos/Clips Tabs */
+/* Navigation Tabs */
 .hub-tabs { 
     display: flex; gap: 20px; 
     border-bottom: 1px solid rgba(255,255,255,0.1); 
@@ -870,7 +853,19 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     box-shadow: 0 0 10px var(--accent);
 }
 
-/* Scrolling Content Area (VODs) */
+/* Back Button */
+.hub-back-btn {
+    position: absolute; top: 15px; right: 15px; z-index: 10;
+    background: rgba(0, 0, 0, 0.6); 
+    border: 1px solid rgba(255,255,255,0.2); 
+    color: #fff; padding: 6px 14px; 
+    border-radius: 6px; cursor: pointer; 
+    font-family: "Cinzel", serif; font-size: 11px; text-transform: uppercase;
+    display: flex; align-items: center; gap: 6px; transition: 0.2s;
+}
+.hub-back-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
+
+/* VOD List - Scrolls Independently */
 .video-grid {
     flex: 1;
     overflow-y: auto;
@@ -880,20 +875,18 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 15px;
-    align-content: start;
+    align-content: start; /* Fixes vertical stretching */
 }
 
 /* --- CARDS & ASSETS --- */
 .hub-game-card {
     background: rgba(0,0,0,0.3); border-radius: 12px; overflow: hidden;
     border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
-    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, border-color 0.2s;
     position: relative; aspect-ratio: 2/3;
+    /* Removed flex-shrink here to let grid control size */
 }
-.hub-game-card:hover {
-    transform: translateY(-5px); border-color: var(--accent);
-    box-shadow: 0 10px 30px rgba(180, 80, 255, 0.2);
-}
+.hub-game-card:hover { transform: translateY(-5px); border-color: var(--accent); }
 .hub-game-card img { width: 100%; height: 100%; object-fit: cover; }
 .hub-game-title {
     position: absolute; bottom: 0; left: 0; right: 0;
@@ -903,21 +896,14 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 }
 .hub-game-card:hover .hub-game-title { opacity: 1; }
 
-.game-hero-bg {
-    position: absolute; inset: 0; opacity: 0.1; filter: blur(20px); z-index: 0;
-    background-size: cover; background-position: center;
-}
+.game-hero-bg { position: absolute; inset: 0; opacity: 0.1; filter: blur(20px); z-index: 0; background-size: cover; background-position: center; }
 .game-hero-content { position: relative; z-index: 1; display: flex; gap: 25px; align-items: flex-end; width: 100%; }
-.game-hero-cover {
-    width: 140px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2);
-}
+.game-hero-cover { width: 140px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); }
 .game-hero-info { flex: 1; min-width: 0; }
 .game-hero-title { font-family: "Cinzel", serif; font-size: 32px; color: #fff; margin: 0 0 10px; text-shadow: 0 0 15px var(--accent); }
 .game-hero-stats { font-family: "Marcellus"; font-size: 14px; color: var(--text-muted); display: flex; gap: 15px; margin-top:10px; }
 .game-hero-stat { display: flex; align-items: center; gap: 6px; }
 
-/* Description & Steam Button */
 .game-desc {
     font-family: 'Inter', sans-serif; font-size: 13px; color: #ccc; line-height: 1.5; margin: 10px 0;
     max-width: 650px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;
@@ -933,11 +919,8 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 }
 .game-steam-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
 
-/* VOD Thumbnails */
 .video-card-thumb {
-    width: 100%;
-    aspect-ratio: 16/9;
-    height: auto;
+    width: 100%; aspect-ratio: 16/9; height: auto;
     background: #000; position: relative; overflow: hidden;
 }
 .video-card-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.2s; }
