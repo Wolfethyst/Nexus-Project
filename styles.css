@@ -772,68 +772,24 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 
 /* ================= VIDEO HUB (GAME FIRST) ================= */
 
-/* 1. MASTER CONTAINER */
-/* This fits strictly inside the parent panel */
+/* 1. Hub Container */
 .video-hub-container {
-    width: 100%;
-    height: 100%;
-    overflow: hidden; 
-    display: flex; 
-    flex-direction: column;
-    position: relative;
+    padding: 20px; height: 100%; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 20px;
 }
 
-/* ============================================================
-   VIEW 1: GAME LIBRARY (Home)
-   Behavior: Search bar fixed at top, Posters scroll underneath
-   ============================================================ */
-#hub-home-view {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
+/* 2. Games Grid (Home View) */
+.hub-games-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px;
 }
-
-/* FIXED HEADER: Title & Search */
-#hub-home-view > div:first-child {
-    flex: 0 0 auto; /* Don't grow, don't shrink */
-    padding: 20px 20px 10px 20px;
-    z-index: 5;
-    display: flex; justify-content: space-between; align-items: center;
-}
-
-/* SCROLLING GRID: Game Posters */
-#hubGamesGrid {
-    flex: 1; /* Take remaining height */
-    overflow-y: auto; /* Scroll internally */
-    min-height: 0;
-    padding: 10px 20px 40px 20px;
-    
-    display: grid; 
-    /* 140px is the perfect minimum width for a poster */
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
-    gap: 20px;
-    
-    /* Force rows to start at top, prevents vertical stretching */
-    align-content: start; 
-}
-
-/* POSTER CARD STYLE */
 .hub-game-card {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 2/3; /* Enforce Vertical Poster Shape */
-    background: rgba(0,0,0,0.3); 
-    border-radius: 12px; 
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.1); 
-    cursor: pointer;
+    background: rgba(0,0,0,0.3); border-radius: 12px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
     transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative; aspect-ratio: 2/3;
 }
 .hub-game-card:hover {
-    transform: translateY(-5px); 
-    border-color: var(--accent);
+    transform: translateY(-5px); border-color: var(--accent);
     box-shadow: 0 10px 30px rgba(180, 80, 255, 0.2);
 }
 .hub-game-card img { width: 100%; height: 100%; object-fit: cover; }
@@ -845,122 +801,47 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 }
 .hub-game-card:hover .hub-game-title { opacity: 1; }
 
-
-/* ============================================================
-   VIEW 2: GAME DETAILS (VODs)
-   Behavior: Hero fixed at top, Videos scroll underneath
-   ============================================================ */
-#hub-details-view {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-}
-
-/* FIXED HEADER: Game Info */
+/* 3. Game Details View (Drill Down) */
 .game-hero {
-    position: relative;
-    flex: 0 0 auto; /* Fixed height based on content */
     display: flex; gap: 25px; align-items: flex-end; padding: 30px;
     background: linear-gradient(90deg, rgba(20,0,40,0.8), rgba(20,0,40,0.3));
     border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
-    margin: 20px 20px 0 20px;
+    position: relative; overflow: hidden;
 }
+.game-hero-bg {
+    position: absolute; inset: 0; opacity: 0.1; filter: blur(20px); z-index: 0;
+    background-size: cover; background-position: center;
+}
+.game-hero-content { position: relative; z-index: 1; display: flex; gap: 25px; align-items: flex-end; width: 100%; }
+.game-hero-cover {
+    width: 140px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2);
+}
+.game-hero-info { flex: 1; }
+.game-hero-title { font-family: "Cinzel", serif; font-size: 32px; color: #fff; margin: 0 0 10px; text-shadow: 0 0 15px var(--accent); }
+.game-hero-stats { font-family: "Marcellus"; font-size: 14px; color: var(--text-muted); display: flex; gap: 15px; }
+.game-hero-stat { display: flex; align-items: center; gap: 6px; }
+.hub-back-btn {
+    background: rgba(255,255,255,0.1); border: none; color: #fff;
+    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: "Cinzel";
+    display: flex; align-items: center; gap: 6px; transition: 0.2s;
+    position: absolute; top: 20px; right: 20px; z-index: 2;
+}
+.hub-back-btn:hover { background: var(--accent); color: #000; }
 
-/* FIXED TABS */
-.hub-tabs { 
-    flex: 0 0 auto;
-    display: flex; gap: 20px; 
-    border-bottom: 1px solid rgba(255,255,255,0.1); 
-    margin: 15px 20px; 
-}
+/* 4. Sub Tabs */
+.hub-tabs { display: flex; gap: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
 .hub-tab {
-    background: none; border: none; padding: 10px 0; 
-    font-family: "Cinzel", serif; font-size: 14px; 
-    color: var(--text-muted); cursor: pointer; position: relative;
+    background: none; border: none; padding: 10px 0; font-family: "Cinzel";
+    font-size: 14px; color: var(--text-muted); cursor: pointer; position: relative;
     transition: 0.2s;
 }
-.hub-tab:hover { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
+.hub-tab:hover { color: #fff; }
 .hub-tab.active { color: var(--accent); font-weight: bold; }
 .hub-tab.active::after {
     content: ""; position: absolute; bottom: -1px; left: 0; width: 100%;
-    height: 2px; background: var(--accent); 
-    box-shadow: 0 0 10px var(--accent);
+    height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--accent);
 }
-
-/* SCROLLING GRID: Videos */
-/* This class is ONLY for the VOD list */
-.video-grid {
-    flex: 1; 
-    overflow-y: auto; 
-    min-height: 0;
-    padding: 0 20px 60px 20px;
-    
-    display: grid;
-    /* 220px is the minimum width for a readable video thumbnail */
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 15px;
-    
-    /* CRITICAL: Prevents vertical stretching */
-    align-content: start;
-    align-items: start;
-}
-
-/* VIDEO CARD (Thumbnail) */
-/* Reset any heights inherited from game cards */
-.video-grid .video-card {
-    height: auto !important;
-    aspect-ratio: auto !important;
-    display: flex; 
-    flex-direction: column;
-}
-
-/* Strict 16:9 Thumbnail */
-.video-card-thumb {
-    width: 100%;
-    aspect-ratio: 16/9;
-    height: auto;
-    background: #000; position: relative; overflow: hidden;
-    border-radius: 4px;
-}
-.video-card-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.2s; }
-.video-card:hover .video-card-thumb img { opacity: 1; transform: scale(1.05); }
-
-/* --- BUTTONS & EXTRAS --- */
-.hub-back-btn {
-    position: absolute; top: 15px; right: 15px; z-index: 10;
-    background: rgba(0, 0, 0, 0.6); 
-    border: 1px solid rgba(255,255,255,0.2); 
-    color: #fff; padding: 6px 14px; 
-    border-radius: 6px; cursor: pointer; 
-    font-family: "Cinzel", serif; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
-    display: flex; align-items: center; gap: 6px; transition: 0.2s;
-}
-.hub-back-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
-
-.game-hero-bg { position: absolute; inset: 0; opacity: 0.1; filter: blur(20px); z-index: 0; background-size: cover; background-position: center; }
-.game-hero-content { position: relative; z-index: 1; display: flex; gap: 25px; align-items: flex-end; width: 100%; }
-.game-hero-cover { width: 140px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); }
-.game-hero-info { flex: 1; min-width: 0; }
-.game-hero-title { font-family: "Cinzel", serif; font-size: 32px; color: #fff; margin: 0 0 10px; text-shadow: 0 0 15px var(--accent); }
-.game-hero-stats { font-family: "Marcellus"; font-size: 14px; color: var(--text-muted); display: flex; gap: 15px; margin-top:10px; }
-.game-hero-stat { display: flex; align-items: center; gap: 6px; }
-
-.game-desc {
-    font-family: 'Inter', sans-serif; font-size: 13px; color: #ccc; line-height: 1.5; margin: 10px 0;
-    max-width: 650px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;
-    border-left: 2px solid var(--accent);
-    display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
-}
-.game-steam-btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: linear-gradient(135deg, #171a21 0%, #2a475e 100%);
-    border: 1px solid rgba(102, 192, 244, 0.3); padding: 6px 14px; border-radius: 4px;
-    color: #fff; text-decoration: none; font-size: 12px; font-weight: bold;
-    transition: 0.2s; margin-right: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-.game-steam-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
 
 /* ================= DESKTOP-ONLY OVERRIDES ================= */
 /* Ensure Mobile Elements are Hidden on Desktop */
