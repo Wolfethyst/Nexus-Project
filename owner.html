@@ -171,6 +171,17 @@
 
     <div id="tab-content" class="view-section">
         <h2>Video Manager</h2>
+        
+        <div class="card" style="margin-bottom: 20px; border-left: 4px solid var(--success);">
+            <label>YouTube Auto-Sync</label>
+            <div class="form-row" style="align-items: center;">
+                <p style="font-size:12px; color:#aaa; margin:0; flex:1;">
+                    Force the system to check your YouTube channel for new streams immediately.
+                </p>
+                <button id="force-sync-btn" class="btn success">🔄 Sync Now</button>
+            </div>
+        </div>
+
         <div class="card">
             <label>Add Manual Video (YouTube)</label>
             <div class="form-row">
@@ -355,10 +366,7 @@
         fd.append("file", file);
         
         try {
-            // NOTE: Ensure your server has this endpoint: /admin/upload/sound
             const data = await apiFetch("/admin/upload/sound", { method: "POST", body: fd });
-            
-            // Assume server returns { key: "filename.mp3" } or { url: "..." }
             const key = data.key || data.filename || data.url;
             if(key) {
                 document.getElementById("redeem-soundKey").value = key;
@@ -451,6 +459,35 @@
     };
 
     // --- VIDEO ---
+    
+    // [NEW] SYNC LOGIC
+    document.getElementById("force-sync-btn").onclick = async () => {
+        const btn = document.getElementById("force-sync-btn");
+        const originalText = btn.innerText;
+        
+        btn.innerText = "Syncing...";
+        btn.disabled = true;
+        
+        try {
+            const res = await apiFetch("/admin/sync/youtube", { method: "POST" });
+            
+            if (res.ok) {
+                alert(`Sync Complete!\nFound ${res.count} new videos.`);
+                if (res.logs && res.logs.length > 0) {
+                    console.log("Imported:", res.logs);
+                }
+            } else {
+                alert("Sync Error: " + (res.error || "Unknown error"));
+            }
+        } catch(e) { 
+            alert("Network Error"); 
+            console.error(e);
+        }
+        
+        btn.innerText = originalText;
+        btn.disabled = false;
+    };
+
     document.getElementById("add-video-btn").onclick = async () => {
         const id = document.getElementById("vid-id").value;
         const title = document.getElementById("vid-title").value;
