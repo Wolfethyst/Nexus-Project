@@ -772,36 +772,65 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 
 /* ================= VIDEO HUB (GAME FIRST) ================= */
 
-/* 1. Hub Container */
-/* Sets up the view to fill the panel without scrolling the whole page */
+/* 1. Base Container Reset */
 .video-hub-container {
     width: 100%;
     height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; /* Stop outer scroll */
-    padding: 0;       /* Padding moved to children for better scrollbars */
+    position: relative;
+    /* We don't set overflow here, we let the IDs handle it */
 }
 
-/* 2. Games Grid (Home View) */
+/* 2. HOME VIEW (Library) - Scrolls naturally */
+#hub-home-view {
+    padding: 20px;
+    overflow-y: auto; /* The whole container scrolls */
+    display: block;   /* Resets flex stacking issues */
+}
+
 .hub-games-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 20px;
-    padding: 20px;
-    
-    /* SCROLLING LOGIC */
-    flex: 1;          /* Take all remaining space */
-    overflow-y: auto; /* Scroll internally */
-    min-height: 0;    /* Critical flexbox fix */
+    padding-bottom: 40px;
 }
 
+/* 3. DETAILS VIEW (Specific Game) - App-like Layout */
+#hub-details-view {
+    display: flex;       /* Use flex to lock the header */
+    flex-direction: column;
+    overflow: hidden;    /* Stop the container from scrolling */
+    padding: 0;          /* Remove padding to let scrollbar sit flush */
+}
+
+/* Fixed Header Elements */
+.game-hero {
+    margin: 20px 20px 0 20px;
+    flex-shrink: 0;      /* Prevent header from squishing */
+}
+.hub-tabs {
+    margin: 0 20px;
+    flex-shrink: 0;      /* Prevent tabs from squishing */
+}
+
+/* Scrolling Content Area (VODs) */
+.video-grid {
+    flex: 1;             /* Take all remaining height */
+    overflow-y: auto;    /* Scroll ONLY this area */
+    min-height: 0;       /* Critical fix for nested scrollbars */
+    padding: 20px;       /* Add padding inside the scroll area */
+    
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    align-content: start; /* Prevents items from stretching vertically */
+}
+
+/* --- CARDS & THUMBNAILS --- */
 .hub-game-card {
     background: rgba(0,0,0,0.3); border-radius: 12px; overflow: hidden;
     border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
     transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
     position: relative; aspect-ratio: 2/3;
-    flex-shrink: 0;
 }
 .hub-game-card:hover {
     transform: translateY(-5px); border-color: var(--accent);
@@ -816,17 +845,6 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 }
 .hub-game-card:hover .hub-game-title { opacity: 1; }
 
-/* 3. Game Details View (Drill Down) */
-.game-hero {
-    display: flex; gap: 25px; align-items: flex-end; padding: 30px;
-    background: linear-gradient(90deg, rgba(20,0,40,0.8), rgba(20,0,40,0.3));
-    border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
-    position: relative; overflow: hidden;
-    
-    /* LOCK HEADER (Don't shrink, don't scroll) */
-    flex-shrink: 0;
-    margin: 20px 20px 0 20px;
-}
 .game-hero-bg {
     position: absolute; inset: 0; opacity: 0.1; filter: blur(20px); z-index: 0;
     background-size: cover; background-position: center;
@@ -838,87 +856,34 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 }
 .game-hero-info { flex: 1; min-width: 0; }
 .game-hero-title { font-family: "Cinzel", serif; font-size: 32px; color: #fff; margin: 0 0 10px; text-shadow: 0 0 15px var(--accent); }
-.game-hero-stats { font-family: "Marcellus"; font-size: 14px; color: var(--text-muted); display: flex; gap: 15px; margin-top: 10px; }
+.game-hero-stats { font-family: "Marcellus"; font-size: 14px; color: var(--text-muted); display: flex; gap: 15px; margin-top:10px; }
 .game-hero-stat { display: flex; align-items: center; gap: 6px; }
 
-/* [NEW] Description & Steam Styles (Needed for your update) */
+/* [NEW] Description & Steam Button */
 .game-desc {
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    color: #ccc;
-    line-height: 1.5;
-    margin: 10px 0;
-    max-width: 650px;
-    background: rgba(0,0,0,0.3);
-    padding: 10px;
-    border-radius: 6px;
+    font-family: 'Inter', sans-serif; font-size: 13px; color: #ccc; line-height: 1.5; margin: 10px 0;
+    max-width: 650px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;
     border-left: 2px solid var(--accent);
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
 }
-
 .game-steam-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    display: inline-flex; align-items: center; gap: 8px;
     background: linear-gradient(135deg, #171a21 0%, #2a475e 100%);
-    border: 1px solid rgba(102, 192, 244, 0.3);
-    padding: 6px 14px;
-    border-radius: 4px;
-    color: #fff;
-    text-decoration: none;
-    font-size: 12px;
-    font-weight: bold;
-    transition: 0.2s;
-    margin-right: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    border: 1px solid rgba(102, 192, 244, 0.3); padding: 6px 14px; border-radius: 4px;
+    color: #fff; text-decoration: none; font-size: 12px; font-weight: bold;
+    transition: 0.2s; margin-right: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
-.game-steam-btn:hover {
-    filter: brightness(1.2);
-    transform: translateY(-1px);
-}
+.game-steam-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
 
-.hub-back-btn {
-    background: rgba(255,255,255,0.1); border: none; color: #fff;
-    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: "Cinzel";
-    display: flex; align-items: center; gap: 6px; transition: 0.2s;
-    position: absolute; top: 20px; right: 20px; z-index: 2;
+/* VOD Thumbnails (Prevent Stretching) */
+.video-card-thumb {
+    width: 100%;
+    aspect-ratio: 16/9; /* Enforce shape */
+    height: auto;       /* Stop flex stretch */
+    background: #000; position: relative; overflow: hidden;
 }
-.hub-back-btn:hover { background: var(--accent); color: #000; }
-
-/* 4. Sub Tabs */
-.hub-tabs { 
-    display: flex; gap: 20px; 
-    border-bottom: 1px solid rgba(255,255,255,0.1); 
-    margin: 20px 20px 10px 20px; 
-    flex-shrink: 0; /* Keep Tabs Fixed */
-}
-.hub-tab {
-    background: none; border: none; padding: 10px 0; font-family: "Cinzel";
-    font-size: 14px; color: var(--text-muted); cursor: pointer; position: relative;
-    transition: 0.2s;
-}
-.hub-tab:hover { color: #fff; }
-.hub-tab.active { color: var(--accent); font-weight: bold; }
-.hub-tab.active::after {
-    content: ""; position: absolute; bottom: -1px; left: 0; width: 100%;
-    height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--accent);
-}
-
-/* 5. VODs/Clips Grid (Inside Details View) */
-.video-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-    
-    /* INDEPENDENT SCROLL */
-    flex: 1;          /* Take remaining height */
-    overflow-y: auto; /* Internal scroll */
-    padding: 0 20px 60px 20px;
-    min-height: 0;    /* Flex fix */
-}
+.video-card-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.2s; }
+.video-card:hover .video-card-thumb img { opacity: 1; transform: scale(1.05); }
 
 /* ================= DESKTOP-ONLY OVERRIDES ================= */
 /* Ensure Mobile Elements are Hidden on Desktop */
