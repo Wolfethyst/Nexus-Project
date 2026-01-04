@@ -778,48 +778,38 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     height: 100%;
     position: relative;
     overflow: hidden; 
-    display: flex; 
-    flex-direction: column;
 }
 
-/* 2. HOME VIEW (Game Library) */
+/* --- VIEW 1: GAME LIBRARY (Scrolls normally) --- */
 #hub-home-view {
-    display: flex;
-    flex-direction: column;
+    width: 100%;
     height: 100%;
-    overflow: hidden;
+    overflow-y: auto; /* The whole view scrolls together */
+    display: block;
 }
 
-/* Library Header (Title & Search) - Pinned */
+/* Library Header (Search Bar) */
 #hub-home-view > div:first-child {
-    flex-shrink: 0;
     padding: 20px 20px 10px 20px;
-    z-index: 5;
-    background: transparent;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-/* LIBRARY GRID (Game Posters - Tall 2:3) */
+/* LIBRARY GRID (Tall Posters) */
 .hub-games-grid {
-    flex: 1; 
-    overflow-y: auto; 
-    min-height: 0;
-    padding: 10px 20px 40px 20px;
-    
     display: grid; 
-    /* Use 140px min width for game posters */
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
     gap: 20px;
-    align-content: start; 
+    padding: 10px 20px 60px 20px;
+    align-content: start; /* Prevents vertical stretching */
 }
 
 /* Game Poster Card */
 .hub-game-card {
     position: relative;
     width: 100%;
-    aspect-ratio: 2/3; /* Enforce vertical poster shape */
+    aspect-ratio: 2/3; /* Enforces vertical poster shape */
     background: rgba(0,0,0,0.3); 
     border-radius: 12px; 
     overflow: hidden;
@@ -832,11 +822,7 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     border-color: var(--accent);
     box-shadow: 0 10px 30px rgba(180, 80, 255, 0.2);
 }
-.hub-game-card img { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; 
-}
+.hub-game-card img { width: 100%; height: 100%; object-fit: cover; }
 .hub-game-title {
     position: absolute; bottom: 0; left: 0; right: 0;
     background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
@@ -846,12 +832,12 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 .hub-game-card:hover .hub-game-title { opacity: 1; }
 
 
-/* 3. DETAILS VIEW (Specific Game VODs) */
+/* --- VIEW 2: GAME DETAILS (Fixed Header, Scrollable Videos) --- */
 #hub-details-view {
     display: flex;
     flex-direction: column;
     height: 100%;
-    overflow: hidden;
+    overflow: hidden; /* Lock outer scroll */
 }
 
 /* Fixed Header Area */
@@ -860,26 +846,11 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     display: flex; gap: 25px; align-items: flex-end; padding: 30px;
     background: linear-gradient(90deg, rgba(20,0,40,0.8), rgba(20,0,40,0.3));
     border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
-    flex-shrink: 0; /* Pinned */
+    flex-shrink: 0; /* Prevents header shrinking */
     margin: 20px 20px 0 20px;
 }
 
-/* VOD GRID (Videos - Wide 16:9) */
-/* This is a separate class from the game grid to avoid conflicts */
-.video-grid {
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
-    padding: 0 20px 60px 20px;
-    
-    display: grid;
-    /* VODs need to be wider (220px min) */
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 15px;
-    align-content: start;
-}
-
-/* --- TABS & BUTTONS --- */
+/* Tabs - Fixed */
 .hub-tabs { 
     display: flex; gap: 20px; 
     border-bottom: 1px solid rgba(255,255,255,0.1); 
@@ -900,6 +871,23 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     box-shadow: 0 0 10px var(--accent);
 }
 
+/* VOD LIST (Scrollable Area) */
+/* Note: This is separate from hub-games-grid */
+.video-grid {
+    flex: 1; /* Fills remaining height */
+    overflow-y: auto; /* Internal Scroll */
+    min-height: 0;
+    padding: 0 20px 60px 20px;
+    
+    display: grid;
+    /* Wide thumbnails (220px min) */
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    align-content: start;
+    align-items: start;
+}
+
+/* Back Button */
 .hub-back-btn {
     position: absolute; top: 15px; right: 15px; z-index: 10;
     background: rgba(0, 0, 0, 0.6); 
@@ -911,7 +899,7 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 }
 .hub-back-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
 
-/* --- GAME INFO STYLES --- */
+/* --- GAME INFO & ASSETS --- */
 .game-hero-bg { position: absolute; inset: 0; opacity: 0.1; filter: blur(20px); z-index: 0; background-size: cover; background-position: center; }
 .game-hero-content { position: relative; z-index: 1; display: flex; gap: 25px; align-items: flex-end; width: 100%; }
 .game-hero-cover { width: 140px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); }
@@ -935,8 +923,7 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 }
 .game-steam-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
 
-/* --- VOD CARD THUMBNAIL FIX --- */
-/* Ensures video thumbnails are always 16:9 and don't stretch */
+/* VOD Thumbnails - Strict 16:9 */
 .video-card-thumb {
     width: 100%;
     aspect-ratio: 16/9;
