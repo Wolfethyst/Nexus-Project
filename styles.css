@@ -782,7 +782,9 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     flex-direction: column;
 }
 
-/* 2. HOME VIEW (Game Library) */
+/* =========================================
+   VIEW 1: GAME LIBRARY (Tall Posters)
+   ========================================= */
 #hub-home-view {
     display: flex;
     flex-direction: column;
@@ -790,18 +792,16 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     overflow: hidden;
 }
 
-/* Library Header (Search Bar) - Fixed Top */
+/* Header (Search) - Fixed */
 #hub-home-view > div:first-child {
     flex-shrink: 0;
     padding: 20px 20px 10px 20px;
     z-index: 5;
     background: transparent;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; justify-content: space-between; align-items: center;
 }
 
-/* LIBRARY GRID (Tall Posters) */
+/* Library Grid - Scrolling */
 .hub-games-grid {
     flex: 1; 
     overflow-y: auto; 
@@ -809,20 +809,17 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     padding: 10px 20px 60px 20px;
     
     display: grid; 
-    /* 140px min-width is perfect for posters */
+    /* Vertical Poster Width (140px) */
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
     gap: 20px;
-    
-    /* FIX: Prevents items from stretching vertically to fill the screen */
-    align-content: start;
-    align-items: start; 
+    align-content: start; /* Don't stretch rows */
 }
 
-/* Game Poster Card */
+/* Poster Card Styling */
 .hub-game-card {
     position: relative;
     width: 100%;
-    aspect-ratio: 2/3; /* Forces vertical poster shape */
+    aspect-ratio: 2/3; /* Enforce Vertical 2:3 */
     background: rgba(0,0,0,0.3); 
     border-radius: 12px; 
     overflow: hidden;
@@ -845,7 +842,9 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 .hub-game-card:hover .hub-game-title { opacity: 1; }
 
 
-/* 3. DETAILS VIEW (Specific Game VODs) */
+/* =========================================
+   VIEW 2: GAME DETAILS (Wide Videos)
+   ========================================= */
 #hub-details-view {
     display: flex;
     flex-direction: column;
@@ -853,14 +852,13 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     overflow: hidden;
 }
 
-/* Fixed Header Area */
+/* Header Area - Fixed */
 .game-hero {
     position: relative;
     display: flex; gap: 25px; align-items: flex-end; padding: 30px;
     background: linear-gradient(90deg, rgba(20,0,40,0.8), rgba(20,0,40,0.3));
     border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
-    
-    flex-shrink: 0; /* Prevents header shrinking */
+    flex-shrink: 0;
     margin: 20px 20px 0 20px;
 }
 
@@ -881,26 +879,32 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 .hub-tab.active { color: var(--accent); font-weight: bold; }
 .hub-tab.active::after {
     content: ""; position: absolute; bottom: -1px; left: 0; width: 100%;
-    height: 2px; background: var(--accent); 
-    box-shadow: 0 0 10px var(--accent);
+    height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--accent);
 }
 
-/* VOD GRID (The Fix for the Videos Page) */
-/* This ensures the videos list uses the same logic as the library, just wider cards */
+/* Video Grid - Scrolling */
 .video-grid {
-    flex: 1; /* Fills remaining height */
-    overflow-y: auto; /* Internal Scroll */
+    flex: 1;
+    overflow-y: auto;
     min-height: 0;
     padding: 0 20px 60px 20px;
     
     display: grid;
-    /* 240px min-width ensures they are wide enough (16:9ish) */
+    /* Wide Video Width (240px) */
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 15px;
     
-    /* FIX: Packs rows to the top, prevents vertical stretching */
+    /* CRITICAL: Force items to top, do NOT stretch height */
     align-content: start;
     align-items: start;
+}
+
+/* Reset Video Card Height to prevent stacking/stretching */
+.video-grid .video-card {
+    height: auto !important;
+    aspect-ratio: auto !important;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Back Button */
@@ -948,7 +952,6 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 }
 .video-card-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.2s; }
 .video-card:hover .video-card-thumb img { opacity: 1; transform: scale(1.05); }
-
 /* ================= DESKTOP-ONLY OVERRIDES ================= */
 /* Ensure Mobile Elements are Hidden on Desktop */
 #mobileHeader, #mobileNav { display: none !important; }
