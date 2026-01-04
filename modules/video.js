@@ -198,7 +198,7 @@ export async function openGameDetails(gameName) {
         return true;
     });
 
-    const gameVods = filteredContent.filter(v => !v.type || v.type === 'vod').sort((a, b) => (b.created_at || b.createdAt) - (a.created_at || a.createdAt));
+    const gameVods = filteredContent.filter(v => !v.type || v.type === 'vod').sort((a, b) => (a.created_at || a.createdAt) - (b.created_at || b.createdAt));
     const gameVideos = filteredContent.filter(v => v.type === 'video').sort((a, b) => (b.created_at || b.createdAt) - (a.created_at || a.createdAt));
     const gameClips = clipsData.filter(c => {
         if (c.game) return c.game.toLowerCase() === targetGameLower;
