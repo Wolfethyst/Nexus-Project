@@ -265,13 +265,20 @@ export function playVideo(item, type) {
     // [CHANGE] Removed Bunny handling logic entirely. 
     // Only supports YouTube and direct URL (Cloudflare/MP4).
 
-    if (item.vod_provider === 'youtube') {
+if (item.vod_provider === 'youtube') {
         const iframe = document.createElement('iframe');
         iframe.id = 'nexus-youtube-embed';
-        iframe.src = `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&rel=0&modestbranding=1`;
-        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+        
+        // [FIX] 
+        // 1. Use 'youtube-nocookie.com' for better privacy (helps with ad-blockers)
+        // 2. Set 'autoplay=0'. This forces a user click, which proves you aren't a bot.
+        iframe.src = `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=0&rel=0&modestbranding=1`;
+        
+        iframe.allow = "accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
         iframe.allowFullscreen = true;
-        iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.border = 'none';
+        iframe.style.width = '100%'; 
+        iframe.style.height = '100%'; 
+        iframe.style.border = 'none';
         videoParent.appendChild(iframe);
         return;
     }
