@@ -136,7 +136,7 @@ function renderHubGrid(containerId, items, type) {
     }).join("");
 }
 
-// [FIXED] Updated to REMOVE Bunny VODs entirely from the view
+// --- OPEN GAME DETAILS (UPDATED LAYOUT) ---
 export async function openGameDetails(gameName) {
     const game = allPlayedGames.find(g => g.name === gameName);
     if (!game) return;
@@ -144,40 +144,64 @@ export async function openGameDetails(gameName) {
     document.getElementById('hub-home-view').classList.add('hidden');
     document.getElementById('hub-details-view').classList.remove('hidden');
 
-    const existingTitle = document.getElementById('heroTitle');
-    if (existingTitle) {
-        const wrapper = existingTitle.closest('.game-hero-wrapper');
-        if(State.isModOrOwner && !game.isInbox) {
-             const newContent = `
-                <h1 id="heroTitle" class="game-hero-title" style="margin:0;">${escapeHtml(game.name)}</h1>
-                <div style="display:flex; gap:5px;">
-                    <button onclick="window.promptRenameGame()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7;" title="Rename">✏️</button>
-                    <button onclick="window.promptChangeCover()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7;" title="Cover">🖼️</button>
-                    <button onclick="window.promptDeleteGame()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7; background:rgba(255,0,0,0.2); color:#ffaaaa;" title="Delete">🗑️</button>
-                </div>`;
-             
-             if (wrapper) wrapper.innerHTML = newContent;
-             else {
-                 const newWrapper = document.createElement('div');
-                 newWrapper.className = "game-hero-wrapper"; 
-                 newWrapper.style.cssText = "display:flex; align-items:center; gap:10px; margin-bottom:10px;";
-                 newWrapper.innerHTML = newContent;
-                 existingTitle.replaceWith(newWrapper);
-             }
-        } else {
-             if (wrapper) {
-                 const h1 = document.createElement('h1');
-                 h1.id = "heroTitle";
-                 h1.className = "game-hero-title";
-                 h1.innerText = game.name;
-                 wrapper.replaceWith(h1);
-             } else { existingTitle.innerText = game.name; }
-        }
+    // 1. Prepare Data with Defaults
+    const summary = game.summary || "No description available.";
+    const dev = game.developer || "--";
+    const pub = game.publisher || "--";
+    const rel = game.release_date || "--";
+    const steamUrl = game.steam_url || game.steamUrl || "";
+
+    // 2. Prepare Steam Button HTML
+    let steamBtnHtml = "";
+    if (steamUrl) {
+        steamBtnHtml = `<a href="${steamUrl}" target="_blank" class="game-steam-btn"><img src="https://store.steampowered.com/favicon.ico" style="width:14px;height:14px;"> View on Steam</a>`;
     }
 
-    document.getElementById('heroCover').src = game.cover;
-    document.getElementById('heroBg').style.backgroundImage = `url('${game.cover}')`;
+    // 3. Prepare Admin Buttons (Rename, Delete, REFRESH INFO)
+    let adminBtnsHtml = "";
+    if (State.isModOrOwner && !game.isInbox) {
+        adminBtnsHtml = `
+            <div style="display:flex; gap:5px; margin-top:10px;">
+                <button onclick="window.refreshGameMetadata('${escapeHtml(game.name)}')" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.8; font-size:11px;" title="Fetch info from Steam">↻ Info</button>
+                <button onclick="window.promptRenameGame()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7;" title="Rename">✏️</button>
+                <button onclick="window.promptChangeCover()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7;" title="Cover">🖼️</button>
+                <button onclick="window.promptDeleteGame()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7; background:rgba(255,0,0,0.2); color:#ffaaaa;" title="Delete">🗑️</button>
+            </div>
+        `;
+    }
 
+    // 4. Inject Full Hero HTML (Left: Title/Stats, Right: Desc/Meta)
+    const heroContentEl = document.querySelector('.game-hero-content');
+    if (heroContentEl) {
+        heroContentEl.innerHTML = `
+            <img id="heroCover" class="game-hero-cover" src="${game.cover}" onerror="this.src='${PLACEHOLDER_IMG}'">
+            
+            <div class="game-hero-main">
+                <h1 id="heroTitle" class="game-hero-title">${escapeHtml(game.name)}</h1>
+                <div class="game-hero-stats">
+                     <span class="game-hero-stat">📼 <span id="heroVodCount">...</span> VODs</span>
+                     <span class="game-hero-stat">🎬 <span id="heroClipCount">...</span> Clips</span>
+                </div>
+                ${steamBtnHtml}
+                ${adminBtnsHtml}
+            </div>
+
+            <div class="game-hero-details">
+                <div id="heroDescription" class="game-desc-text">${escapeHtml(summary)}</div>
+                <div class="game-meta-grid">
+                    <div class="game-meta-item"><span class="meta-label">Developer</span><span id="heroDev" class="meta-value">${escapeHtml(dev)}</span></div>
+                    <div class="game-meta-item"><span class="meta-label">Publisher</span><span id="heroPub" class="meta-value">${escapeHtml(pub)}</span></div>
+                    <div class="game-meta-item"><span class="meta-label">Release</span><span id="heroRelease" class="meta-value">${escapeHtml(rel)}</span></div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Set Background
+    const heroBg = document.getElementById('heroBg');
+    if (heroBg) heroBg.style.backgroundImage = `url('${game.cover}')`;
+
+    // --- Load VODs Logic (Unchanged) ---
     activeGameVods = [];
 
     if (game.isInbox) {
@@ -192,7 +216,7 @@ export async function openGameDetails(gameName) {
 
     const targetGameLower = game.name.toLowerCase();
     
-    // [CHANGE] STRICT FILTER: Remove any items where provider is 'bunny'
+    // STRICT FILTER: Remove any items where provider is 'bunny'
     const filteredContent = activeGameVods.filter(v => {
         if (v.vod_provider === 'bunny') return false; 
         return true;
@@ -205,8 +229,11 @@ export async function openGameDetails(gameName) {
         return (c.title || "").toLowerCase().includes(targetGameLower);
     });
 
-    document.getElementById('heroVodCount').innerText = gameVods.length + gameVideos.length; 
-    document.getElementById('heroClipCount').innerText = gameClips.length;
+    // Update Counts
+    const vodCountEl = document.getElementById('heroVodCount');
+    const clipCountEl = document.getElementById('heroClipCount');
+    if(vodCountEl) vodCountEl.innerText = gameVods.length + gameVideos.length; 
+    if(clipCountEl) clipCountEl.innerText = gameClips.length;
 
     renderHubGrid('hub-content-vods', gameVods, 'vod');
     renderHubGrid('hub-content-videos', gameVideos, 'vod');
@@ -262,12 +289,7 @@ export function playVideo(item, type) {
     mainVideoPlayer.style.display = 'none'; mainVideoPlayer.src = "";
     if(btnDownload) btnDownload.style.display = 'none'; 
 
-    // [CHANGE] Removed Bunny handling logic entirely. 
-    // Only supports YouTube and direct URL (Cloudflare/MP4).
-
-if (item.vod_provider === 'youtube') {
-        // 1. Create a "Facade" Wrapper (Fake Player)
-        // We give it the ID 'nexus-youtube-embed' so your existing cleanup logic removes it automatically
+    if (item.vod_provider === 'youtube') {
         const wrapper = document.createElement('div');
         wrapper.id = 'nexus-youtube-embed';
         wrapper.style.width = '100%';
@@ -279,7 +301,6 @@ if (item.vod_provider === 'youtube') {
         wrapper.style.backgroundSize = 'cover';
         wrapper.style.backgroundPosition = 'center';
 
-        // 2. Add a Big Play Button on top
         const playBtn = document.createElement('div');
         playBtn.innerHTML = "▶";
         playBtn.style.position = 'absolute';
@@ -289,23 +310,17 @@ if (item.vod_provider === 'youtube') {
         playBtn.style.fontSize = '60px';
         playBtn.style.color = '#fff';
         playBtn.style.textShadow = '0 0 20px rgba(0,0,0,0.5)';
-        playBtn.style.pointerEvents = 'none'; // Let clicks pass to wrapper
+        playBtn.style.pointerEvents = 'none'; 
         wrapper.appendChild(playBtn);
 
-        // 3. The Magic: Only load YouTube when clicked
         wrapper.onclick = () => {
             const iframe = document.createElement('iframe');
-            
-            // We include 'origin' to help YouTube verify the request source
             iframe.src = `https://www.youtube.com/embed/${item.id}?autoplay=1&rel=0&modestbranding=1&origin=${window.location.origin}`;
-            
             iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
             iframe.allowFullscreen = true;
             iframe.style.width = '100%'; 
             iframe.style.height = '100%'; 
             iframe.style.border = 'none';
-            
-            // Swap the fake player for the real one
             wrapper.innerHTML = ''; 
             wrapper.appendChild(iframe);
         };
@@ -378,6 +393,43 @@ export function toggleMainView(mode) {
 }
 
 // --- FOLDER MANAGEMENT ---
+
+// [NEW] Refresh Metadata Logic
+window.refreshGameMetadata = async function(gameName) {
+    if (!confirm(`Fetch metadata for "${gameName}" from Steam?\nThis will overwrite current description and info.`)) return;
+
+    // Show loading state on the specific button
+    const btn = document.activeElement;
+    const oldText = btn.innerText;
+    btn.innerText = "Wait...";
+    btn.disabled = true;
+
+    try {
+        const { res, data } = await apiPost('/played/refresh-metadata', { name: gameName });
+        if (res.ok && data.success) {
+            alert("Metadata updated!");
+            // Update local state so we don't need a full reload
+            const game = allPlayedGames.find(g => g.name === gameName);
+            if(game) {
+                game.summary = data.data.summary;
+                game.developer = data.data.developer;
+                game.publisher = data.data.publisher;
+                game.release_date = data.data.release_date;
+                game.steam_url = data.data.steam_url;
+            }
+            // Re-render to show changes
+            openGameDetails(gameName);
+        } else {
+            alert("Could not find game on Steam.");
+        }
+    } catch(e) {
+        console.error(e);
+        alert("Error refreshing metadata.");
+    } finally {
+        if(btn) { btn.innerText = oldText; btn.disabled = false; }
+    }
+};
+
 export async function promptRenameGame() {
     const oldNameElement = document.getElementById('heroTitle');
     const oldName = oldNameElement ? oldNameElement.innerText : "";
@@ -482,3 +534,12 @@ export function handleGameCardClick(el) {
     if(el.dataset.steam) { btn.style.display = "inline-block"; btn.href = el.dataset.steam; } else { btn.style.display = "none"; }
     gameInfoModalEl.classList.add("open");
 }
+// Attach to window so onclick attributes work
+window.openGameDetails = openGameDetails;
+window.openHubHome = openHubHome;
+window.handleVideoClick = handleVideoClick;
+window.promptRenameGame = promptRenameGame;
+window.promptChangeCover = promptChangeCover;
+window.promptDeleteGame = promptDeleteGame;
+window.handleGameCardClick = handleGameCardClick;
+// Note: refreshGameMetadata is already attached to window above
