@@ -92,6 +92,10 @@
     text-shadow:0 0 10px rgba(80,40,160,.55);min-height:1.2em;
   }
 
+  /* Visual Flash for Debugging */
+  @keyframes flash { 0% { box-shadow: inset 0 0 0 transparent; } 50% { box-shadow: inset 0 0 50px rgba(255,255,255,0.3); } 100% { box-shadow: inset 0 0 0 transparent; } }
+  .flash-trigger { animation: flash 0.3s ease-out; }
+
   @media (max-width:1200px){
     .caption-wrap{right:5%;bottom:calc(5% + 360px);max-width:90vw}
   }
@@ -128,7 +132,6 @@ const SFX_BASE_URL    = "https://data.wolfethyst.tv/assets/sfx";
 
 const USE_TYPEWRITER        = true;
 const TYPE_SPEED_MS         = 18;
-// Base hide delay, but we will add reading time to this
 const OVERLAY_HIDE_DELAY_MS = 1000; 
 const FORCED_VOICE_ID       = null; 
 
@@ -143,8 +146,6 @@ let typing = false;
 let processingQueue = false;
 let audioEnabled = false; 
 const talaQueue = [];
-
-// New: Global resolver to pause queue until audio is done
 let resolveCurrentAudio = null; 
 
 /** ============== HELPERS ==================== **/
@@ -155,11 +156,17 @@ function enableAudio() {
   audioEnabled = true;
   initScreen.classList.add("hidden");
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  ctx.resume().then(() => console.log("[TalaOverlay] Audio unlocked."));
+  ctx.resume().then(() => console.log("[Nexus] Audio Engine Started"));
 }
 
 function showOverlay() { overlayRoot.classList.add("visible"); }
 function hideOverlay() { overlayRoot.classList.remove("visible"); }
+
+function triggerVisualFlash() {
+    document.body.classList.remove("flash-trigger");
+    void document.body.offsetWidth; // force reflow
+    document.body.classList.add("flash-trigger");
+}
 
 function clamp01(v) {
   v = Number(v); return Number.isNaN(v) ? 1 : (v < 0 ? 0 : (v > 1 ? 1 : v));
@@ -182,13 +189,8 @@ async function typeOut(text) {
 
 // --- AUDIO PLAYERS ---
 
-// 1. Play Base64 (TTS Response)
 function playBase64Audio(base64Data) {
-    if (!audioEnabled) {
-        console.warn("[TTS] Audio not enabled.");
-        return Promise.resolve();
-    }
-    
+    if (!audioEnabled) { console.warn("[TTS] Audio blocked (click overlay)"); return Promise.resolve(); }
     return new Promise((resolve) => {
         try {
             const binaryString = atob(base64Data);
@@ -197,25 +199,25 @@ function playBase64Audio(base64Data) {
             for (let i = 0; i < len; i++) { bytes[i] = binaryString.charCodeAt(i); }
             const blob = new Blob([bytes], { type: 'audio/mpeg' });
             const url = URL.createObjectURL(blob);
-            
             const audio = new Audio(url);
             audio.onended = () => { URL.revokeObjectURL(url); resolve(); };
-            audio.onerror = (e) => { console.error("[TTS] Play Error:", e); URL.revokeObjectURL(url); resolve(); };
-            audio.play().catch(e => { console.error("[TTS] Autoplay blocked:", e); resolve(); });
-        } catch(e) {
-            console.error("[TTS] Decode failed:", e);
-            resolve();
-        }
+            audio.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+            audio.play().catch(() => resolve());
+        } catch(e) { resolve(); }
     });
 }
 
-// 2. Play File (Redeems)
+// 2. Play File (Redeems) - FIXED LOGIC
 async function playAlertSound(sound) {
-  if (!audioEnabled) return;
+  if (!audioEnabled) {
+      console.warn("Audio disabled - Click the overlay to enable!");
+      return;
+  }
   if (!sound) return;
 
+  // Derive URL from Key or ID or URL property
   let url = sound.url || null;
-  const key = sound.key || "";
+  const key = sound.key || sound.id || ""; 
 
   if (!url && key) {
     if (key.startsWith("sounds/")) {
@@ -228,13 +230,13 @@ async function playAlertSound(sound) {
   }
 
   if (!url) return;
-  console.log("Playing Sound:", url);
+  console.log("[Nexus] Playing:", url);
 
   try {
     const audio = new Audio(url);
     if (sound.volume != null) audio.volume = clamp01(sound.volume);
-    await audio.play().catch(e => console.error("Sound play failed:", e));
-  } catch (err) { }
+    await audio.play().catch(e => console.error("Playback Failed:", e));
+  } catch (err) { console.error("Audio Error", err); }
 }
 
 // --- QUEUE & COMMANDS ---
@@ -254,39 +256,21 @@ function enqueueTala(text, voiceId) {
 async function processQueue() {
   if (processingQueue) return;
   processingQueue = true;
-  
   while (talaQueue.length > 0) {
     const item = talaQueue.shift();
-    
     if (item.type === "tts") {
         showOverlay();
         captionEl.textContent = "…";
-        
-        // 1. Send Command to Backend
         sendTtsCommand(item.text, item.voiceId);
-        
-        // 2. Visuals: Type out the text immediately
         await typeOut(item.text); 
-        
-        // 3. WAIT FOR AUDIO: Create a promise that pauses this loop
         await new Promise(resolve => {
             resolveCurrentAudio = resolve; 
-            
-            // Fallback: If audio never arrives, advance anyway after ~10s
             const readingTime = (item.text.length * 100) + 2000;
-            setTimeout(() => {
-                if (resolveCurrentAudio) {
-                    console.warn("[Queue] Audio timed out. Advancing.");
-                    resolveCurrentAudio();
-                    resolveCurrentAudio = null;
-                }
-            }, Math.min(readingTime, 10000));
+            setTimeout(() => { if (resolveCurrentAudio) { resolveCurrentAudio(); resolveCurrentAudio = null; } }, Math.min(readingTime, 10000));
         });
-        
         await delay(OVERLAY_HIDE_DELAY_MS);
     }
   }
-  
   hideOverlay();
   processingQueue = false;
 }
@@ -296,7 +280,7 @@ function connectWebSocket() {
   try { chatWs = new WebSocket(WS_URL); } catch (e) { return; }
 
   chatWs.onopen = () => {
-    console.log("[TalaOverlay] Connected.");
+    console.log("[Nexus] WS Connected");
     captionEl.textContent = "Connected";
     showOverlay();
     setTimeout(() => { if (!processingQueue) hideOverlay(); }, 1500);
@@ -306,40 +290,34 @@ function connectWebSocket() {
     let data;
     try { data = JSON.parse(ev.data); } catch { return; }
     
-    // -- TTS AUDIO DATA RECEIVED --
+    // -- TTS AUDIO --
     if (data.type === "tts_play_data" && data.audioData) {
-        console.log("[TTS WS] Received audio. Playing...");
         playBase64Audio(data.audioData).then(() => {
-            if (resolveCurrentAudio) {
-                resolveCurrentAudio(); // Resumes processQueue loop
-                resolveCurrentAudio = null;
-            }
+            if (resolveCurrentAudio) { resolveCurrentAudio(); resolveCurrentAudio = null; }
         });
         return;
     }
 
     // -- REDEEMS --
     if (data.type === "redeem" && data.redeem) {
-      // Sound Playback (FIXED)
+      triggerVisualFlash(); // Visual confirm we got the signal
+      
       let sound = null;
-      // 1. Priority: Explicit soundKey (New uploads)
-      if (data.redeem.soundKey) {
-          sound = { key: data.redeem.soundKey };
-      }
-      // 2. Fallback: 'sound' property inside redeem (Legacy/Standard)
-      else if (data.redeem.sound) {
-          sound = { key: data.redeem.sound }; 
-      }
-      // 3. Fallback: 'sound' property on root data (Edge case)
-      else if (data.sound) {
-          sound = data.sound;
+      // [FIX] Check ALL possible locations for sound
+      let rawSound = data.redeem.soundKey || data.redeem.sound || data.sound;
+
+      if (rawSound) {
+          if (typeof rawSound === "string") {
+              sound = { key: rawSound };
+          } else {
+              sound = rawSound;
+          }
       }
 
       if (sound) playAlertSound(sound);
 
-      // TTS Trigger
       const key = data.redeem.key || data.redeem.id;
-      if (key === "nexus_tts" || key === "tala_tts") {
+      if ((key && key.includes("tts")) || key === "nexus_tts") {
         const rawText = (data.input || "").toString().trim();
         if (rawText) enqueueTala(rawText);
       }
