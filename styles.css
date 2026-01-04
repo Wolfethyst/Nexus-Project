@@ -773,13 +773,30 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 /* ================= VIDEO HUB (GAME FIRST) ================= */
 
 /* 1. Hub Container */
-/* [FIXED] Changed to hidden overflow + flex column so internal elements scroll instead of the whole page */
+/* acts as the flex parent for the whole view */
 .video-hub-container {
     height: 100%;
+    width: 100%;
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* Prevents the main window from scrolling */
+    position: relative;
+}
+
+/* Wrapper for the "Home" view (Game List) */
+#hub-home-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     overflow: hidden;
-    padding: 0; /* Padding moved to children for better scrollbar placement */
+}
+
+/* Wrapper for the "Details" view (Specific Game) */
+#hub-details-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
 }
 
 /* 2. Games Grid (Home View) */
@@ -787,11 +804,12 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
     gap: 20px;
-    /* [FIXED] Make the grid take remaining space and scroll internally */
-    flex: 1;
-    overflow-y: auto;
     padding: 20px;
-    min-height: 0;
+    
+    /* SCROLLING LOGIC */
+    flex: 1; /* Take all available space */
+    overflow-y: auto; /* Scroll inside this element */
+    min-height: 0; /* Critical flexbox fix for scrolling */
 }
 
 .hub-game-card {
@@ -799,6 +817,7 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
     transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
     position: relative; aspect-ratio: 2/3;
+    flex-shrink: 0; /* Prevent squishing */
 }
 .hub-game-card:hover {
     transform: translateY(-5px); border-color: var(--accent);
@@ -819,10 +838,12 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     background: linear-gradient(90deg, rgba(20,0,40,0.8), rgba(20,0,40,0.3));
     border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
     position: relative; overflow: hidden;
-    /* [FIXED] Added margin since container padding was removed */
+    
+    /* FIX: Don't let the header shrink or scroll */
+    flex-shrink: 0; 
     margin: 20px 20px 0 20px;
-    flex-shrink: 0; /* Prevent header from squishing */
 }
+
 .game-hero-bg {
     position: absolute; inset: 0; opacity: 0.1; filter: blur(20px); z-index: 0;
     background-size: cover; background-position: center;
@@ -832,12 +853,12 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     width: 140px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2);
 }
-.game-hero-info { flex: 1; }
+.game-hero-info { flex: 1; min-width: 0; /* Prevents text overflow issues */ }
 .game-hero-title { font-family: "Cinzel", serif; font-size: 32px; color: #fff; margin: 0 0 10px; text-shadow: 0 0 15px var(--accent); }
 .game-hero-stats { font-family: "Marcellus"; font-size: 14px; color: var(--text-muted); display: flex; gap: 15px; }
 .game-hero-stat { display: flex; align-items: center; gap: 6px; }
 
-/* [NEW] Description & Steam Button Styles */
+/* [NEW] Description & Steam Styles */
 .game-desc {
     font-family: 'Inter', sans-serif;
     font-size: 13px;
@@ -849,7 +870,6 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     padding: 10px;
     border-radius: 6px;
     border-left: 2px solid var(--accent);
-    /* Limit lines */
     display: -webkit-box;
     -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
@@ -872,10 +892,7 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
     margin-right: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
-.game-steam-btn:hover {
-    filter: brightness(1.2);
-    transform: translateY(-1px);
-}
+.game-steam-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
 
 .hub-back-btn {
     background: rgba(255,255,255,0.1); border: none; color: #fff;
@@ -889,9 +906,8 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 .hub-tabs { 
     display: flex; gap: 20px; 
     border-bottom: 1px solid rgba(255,255,255,0.1); 
-    /* [FIXED] Adjusted margins */
     margin: 20px 20px 10px 20px;
-    flex-shrink: 0;
+    flex-shrink: 0; /* Ensure tabs don't scroll away or shrink */
 }
 .hub-tab {
     background: none; border: none; padding: 10px 0; font-family: "Cinzel";
@@ -906,15 +922,16 @@ body.hide-decorations .chatMsg.youtube { border-left-color: #ff0000 !important; 
 }
 
 /* 5. VODs/Clips Grid (Inside Details View) */
-/* [NEW] This class ensures the video list scrolls independently */
 .video-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 15px;
-    flex: 1; /* Fills remaining height */
-    overflow-y: auto; /* Scrolls */
-    padding: 0 20px 60px 20px;
-    min-height: 0;
+    
+    /* SCROLLING LOGIC */
+    flex: 1; /* Take remaining height */
+    overflow-y: auto; /* Scroll internally */
+    padding: 0 20px 60px 20px; /* Bottom padding for spacing */
+    min-height: 0; /* Critical flexbox fix */
 }
 .video-grid.hidden { display: none; }
 
