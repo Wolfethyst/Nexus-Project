@@ -401,26 +401,31 @@ window.refreshGameMetadata = async function(gameName) {
     if(btn) { btn.innerText = "Wait..."; btn.disabled = true; }
 
     try {
-        const res = await apiPost('/played/refresh-metadata', { name: gameName });
+        // [FIX] Destructure '{ data }' because apiPost returns { res, data }
+        const { data } = await apiPost('/played/refresh-metadata', { name: gameName });
         
-        // Ensure we check for both HTTP 200 AND the success flag in the JSON
-        if (res && res.success) {
-            alert(`Updated!\n\nDeveloper: ${res.data.developer}\nRelease: ${res.data.release_date}`);
+        // [FIX] Check 'data.success' instead of 'res.success'
+        if (data && data.success) {
+            // Access properties via data.data (since backend sends { data: metadata })
+            alert(`Updated!\n\nDeveloper: ${data.data.developer}\nRelease: ${data.data.release_date}`);
             
-            // 1. Update the Local Data Cache (so we don't need to reload)
+            // 1. Update the Local Data Cache
             const game = allPlayedGames.find(g => g.name === gameName);
             if(game) {
-                game.summary = res.data.summary;
-                game.developer = res.data.developer;
-                game.publisher = res.data.publisher;
-                game.release_date = res.data.release_date;
-                game.steam_url = res.data.steam_url;
+                game.summary = data.data.summary;
+                game.developer = data.data.developer;
+                game.publisher = data.data.publisher;
+                game.release_date = data.data.release_date;
+                game.steam_url = data.data.steam_url;
+                
+                // Bonus: Update cover immediately if it changed
+                if (data.data.cover) game.cover = data.data.cover;
             }
 
             // 2. Re-open the details view to show new data immediately
             openGameDetails(gameName); 
         } else {
-            console.warn("Refresh failed:", res);
+            console.warn("Refresh failed:", data);
             alert("Could not find game info on IGDB.");
         }
     } catch(e) {
