@@ -127,13 +127,11 @@
 <script>
 /** ================= CONFIG ================== **/
 const WS_URL          = "wss://data.wolfethyst.tv/nexus/chat/stream";
-const UPLOAD_BASE_URL = "https://data.wolfethyst.tv";
-const SFX_BASE_URL    = "https://data.wolfethyst.tv/assets/sfx";
+const API_BASE        = "https://data.wolfethyst.tv"; // Matches your config.js
 
 const USE_TYPEWRITER        = true;
 const TYPE_SPEED_MS         = 18;
-const OVERLAY_HIDE_DELAY_MS = 1000; 
-const FORCED_VOICE_ID       = null; 
+const OVERLAY_HIDE_DELAY_MS = 3000; // Increased duration so you can see it
 
 /** ============== ELEMENTS =================== **/
 const overlayRoot = document.getElementById("overlayRoot");
@@ -151,6 +149,7 @@ let resolveCurrentAudio = null;
 /** ============== HELPERS ==================== **/
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
+// Force audio enabled on click
 function enableAudio() {
   if (audioEnabled) return;
   audioEnabled = true;
@@ -207,35 +206,37 @@ function playBase64Audio(base64Data) {
     });
 }
 
-// 2. Play File (Redeems) - FIXED LOGIC
+// [FIXED] Updated to match chat.js logic
 async function playAlertSound(sound) {
   if (!audioEnabled) {
-      console.warn("Audio disabled - Click the overlay to enable!");
-      return;
+      console.warn("[Nexus] Audio disabled - Click the overlay to enable!");
   }
   if (!sound) return;
 
-  // Derive URL from Key or ID or URL property
+  // 1. Check for full URL in sound object
   let url = sound.url || null;
-  const key = sound.key || sound.id || ""; 
+  
+  // 2. Check for key/id
+  const key = sound.key || sound.id || sound.soundKey || ""; 
 
   if (!url && key) {
-    if (key.startsWith("sounds/")) {
-      url = `${UPLOAD_BASE_URL}/redeems/sound/${key}`;
-    } else if (key.includes("http")) {
+    if (key.includes("http")) {
       url = key;
     } else {
-      url = `${SFX_BASE_URL}/${encodeURIComponent(key)}.mp3`;
+      // Use the API endpoint that chat.js uses to ensure compatibility
+      url = `${API_BASE}/redeems/sound/${encodeURIComponent(key)}`;
     }
   }
 
   if (!url) return;
-  console.log("[Nexus] Playing:", url);
+  console.log("[Nexus] Playing Sound:", url);
 
   try {
     const audio = new Audio(url);
     if (sound.volume != null) audio.volume = clamp01(sound.volume);
-    await audio.play().catch(e => console.error("Playback Failed:", e));
+    
+    // We return the promise so we can wait for it if needed
+    await audio.play().catch(e => console.warn("[Nexus] Playback Failed (Autoplay blocked?):", e));
   } catch (err) { console.error("Audio Error", err); }
 }
 
@@ -243,34 +244,53 @@ async function playAlertSound(sound) {
 
 function sendTtsCommand(text, voiceId) {
     if (!chatWs || chatWs.readyState !== WebSocket.OPEN) return;
-    chatWs.send(JSON.stringify({ type: "tts_command", text, voiceId: FORCED_VOICE_ID || voiceId || null }));
+    chatWs.send(JSON.stringify({ type: "tts_command", text, voiceId: null }));
 }
 
-function enqueueTala(text, voiceId) {
-  const clean = String(text || "").trim();
-  if (!clean) return;
-  talaQueue.push({ text: clean, voiceId: FORCED_VOICE_ID || voiceId || null, type: "tts" });
-  if (!processingQueue) processQueue();
+// We treat regular redeems as items in the queue now too, so they display text
+function enqueueEvent(item) {
+    talaQueue.push(item);
+    if (!processingQueue) processQueue();
 }
 
 async function processQueue() {
   if (processingQueue) return;
   processingQueue = true;
+  
   while (talaQueue.length > 0) {
     const item = talaQueue.shift();
+    
+    // Show Overlay for visual feedback
+    showOverlay();
+    
     if (item.type === "tts") {
-        showOverlay();
         captionEl.textContent = "…";
         sendTtsCommand(item.text, item.voiceId);
         await typeOut(item.text); 
+        // Wait for audio to finish (resolved by websocket audio handler)
         await new Promise(resolve => {
             resolveCurrentAudio = resolve; 
             const readingTime = (item.text.length * 100) + 2000;
             setTimeout(() => { if (resolveCurrentAudio) { resolveCurrentAudio(); resolveCurrentAudio = null; } }, Math.min(readingTime, 10000));
         });
+    } 
+    else if (item.type === "redeem") {
+        // Visual text for regular redeems
+        const user = item.userDisplayName || "Someone";
+        const redeemName = item.redeemName || "Redeemed Item";
+        await typeOut(`${user} redeemed\n${redeemName}`);
+        
+        // Play sound if exists
+        if (item.sound) {
+            await playAlertSound(item.sound);
+        }
+        // Keep visible for a moment
         await delay(OVERLAY_HIDE_DELAY_MS);
     }
+    
+    await delay(500); // small pause between events
   }
+  
   hideOverlay();
   processingQueue = false;
 }
@@ -280,7 +300,7 @@ function connectWebSocket() {
   try { chatWs = new WebSocket(WS_URL); } catch (e) { return; }
 
   chatWs.onopen = () => {
-    console.log("[Nexus] WS Connected");
+    console.log("[Nexus] WS Connected to " + WS_URL);
     captionEl.textContent = "Connected";
     showOverlay();
     setTimeout(() => { if (!processingQueue) hideOverlay(); }, 1500);
@@ -289,8 +309,11 @@ function connectWebSocket() {
   chatWs.onmessage = (ev) => {
     let data;
     try { data = JSON.parse(ev.data); } catch { return; }
+
+    // Log everything for debugging
+    if (data.type === "redeem") console.log("[Nexus Debug] Redeem Event:", data);
     
-    // -- TTS AUDIO --
+    // -- TTS AUDIO DATA (Server responding to tts_command) --
     if (data.type === "tts_play_data" && data.audioData) {
         playBase64Audio(data.audioData).then(() => {
             if (resolveCurrentAudio) { resolveCurrentAudio(); resolveCurrentAudio = null; }
@@ -300,26 +323,28 @@ function connectWebSocket() {
 
     // -- REDEEMS --
     if (data.type === "redeem" && data.redeem) {
-      triggerVisualFlash(); // Visual confirm we got the signal
+      triggerVisualFlash(); 
       
-      let sound = null;
-      // [FIX] Check ALL possible locations for sound
-      let rawSound = data.redeem.soundKey || data.redeem.sound || data.sound;
+      const r = data.redeem;
+      const soundKey = r.soundKey || r.sound || data.sound;
+      
+      // Determine if this is a TTS redeem or a standard one
+      const key = r.key || r.id || "";
+      const isTTS = (key && key.includes("tts")) || key === "nexus_tts";
 
-      if (rawSound) {
-          if (typeof rawSound === "string") {
-              sound = { key: rawSound };
-          } else {
-              sound = rawSound;
+      if (isTTS) {
+          const rawText = (data.input || "").toString().trim();
+          if (rawText) {
+              enqueueEvent({ type: "tts", text: rawText, voiceId: null });
           }
-      }
-
-      if (sound) playAlertSound(sound);
-
-      const key = data.redeem.key || data.redeem.id;
-      if ((key && key.includes("tts")) || key === "nexus_tts") {
-        const rawText = (data.input || "").toString().trim();
-        if (rawText) enqueueTala(rawText);
+      } else {
+          // It's a normal redeem (visual + sound)
+          enqueueEvent({ 
+              type: "redeem", 
+              userDisplayName: data.user ? data.user.display : "User",
+              redeemName: r.name || "Item",
+              sound: soundKey ? { key: soundKey } : null
+          });
       }
     }
   };
