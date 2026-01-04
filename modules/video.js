@@ -1,10 +1,10 @@
 // src/modules/video.js
-import { apiGet, apiPost, escapeHtml, PLACEHOLDER_IMG, BUNNY_HOSTNAME, BUNNY_LIBRARY_ID, CLOUDFLARE_CUSTOMER, State } from './config.js';
+import { apiGet, apiPost, escapeHtml, PLACEHOLDER_IMG, CLOUDFLARE_CUSTOMER, State } from './config.js';
 import { openVodEditModal } from './admin.js';
 
 let allPlayedGames = [];
-let vodsData = []; // Stores "Inbox" / Recent items
-let activeGameVods = []; // [NEW] Stores videos for the currently open game
+let vodsData = []; 
+let activeGameVods = []; 
 let clipsData = [];
 let activeVideoItem = null;
 let activeVideoType = null;
@@ -15,10 +15,11 @@ const mainVideoPlayer = document.getElementById('main-video-player');
 // --- HELPERS ---
 function getThumbUrl(item, type) {
     if (item.vod_provider === 'youtube') return `https://img.youtube.com/vi/${item.id}/maxresdefault.jpg`;
-    const bunnyId = item.bunnyId || item.bunny_id || (type === 'vod' ? item.id : null);
-    if (bunnyId) return `https://${BUNNY_HOSTNAME}/${bunnyId}/thumbnail.jpg`;
+    
+    // Cloudflare Fallback
     const vidId = item.videoId || item.cloudflare_id; 
     if(vidId) return `https://customer-${CLOUDFLARE_CUSTOMER}.cloudflarestream.com/${vidId}/thumbnails/thumbnail.jpg`;
+    
     return PLACEHOLDER_IMG;
 }
 
@@ -135,7 +136,7 @@ function renderHubGrid(containerId, items, type) {
     }).join("");
 }
 
-// [FIXED] Now populates activeGameVods so the player can find them
+// [FIXED] Updated to REMOVE Bunny VODs entirely from the view
 export async function openGameDetails(gameName) {
     const game = allPlayedGames.find(g => g.name === gameName);
     if (!game) return;
@@ -145,9 +146,7 @@ export async function openGameDetails(gameName) {
 
     const existingTitle = document.getElementById('heroTitle');
     if (existingTitle) {
-        // Find existing wrapper if we made one previously
         const wrapper = existingTitle.closest('.game-hero-wrapper');
-
         if(State.isModOrOwner && !game.isInbox) {
              const newContent = `
                 <h1 id="heroTitle" class="game-hero-title" style="margin:0;">${escapeHtml(game.name)}</h1>
@@ -157,9 +156,8 @@ export async function openGameDetails(gameName) {
                     <button onclick="window.promptDeleteGame()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7; background:rgba(255,0,0,0.2); color:#ffaaaa;" title="Delete">🗑️</button>
                 </div>`;
              
-             if (wrapper) {
-                 wrapper.innerHTML = newContent;
-             } else {
+             if (wrapper) wrapper.innerHTML = newContent;
+             else {
                  const newWrapper = document.createElement('div');
                  newWrapper.className = "game-hero-wrapper"; 
                  newWrapper.style.cssText = "display:flex; align-items:center; gap:10px; margin-bottom:10px;";
@@ -173,19 +171,15 @@ export async function openGameDetails(gameName) {
                  h1.className = "game-hero-title";
                  h1.innerText = game.name;
                  wrapper.replaceWith(h1);
-             } else {
-                 existingTitle.innerText = game.name;
-             }
+             } else { existingTitle.innerText = game.name; }
         }
     }
 
     document.getElementById('heroCover').src = game.cover;
     document.getElementById('heroBg').style.backgroundImage = `url('${game.cover}')`;
 
-    // 1. CLEAR PREVIOUS GAME DATA
     activeGameVods = [];
 
-    // 2. FETCH NEW DATA
     if (game.isInbox) {
         activeGameVods = vodsData.filter(v => !v.game_name);
     } else {
@@ -197,21 +191,10 @@ export async function openGameDetails(gameName) {
     }
 
     const targetGameLower = game.name.toLowerCase();
-    const bunnyDates = new Set();
     
-    // 3. USE ACTIVE GAME DATA
-    activeGameVods.forEach(v => {
-        if (v.vod_provider === 'bunny' && (!v.type || v.type === 'vod')) {
-            const dateKey = new Date(v.created_at || v.createdAt).toLocaleDateString();
-            bunnyDates.add(dateKey);
-        }
-    });
-
+    // [CHANGE] STRICT FILTER: Remove any items where provider is 'bunny'
     const filteredContent = activeGameVods.filter(v => {
-        const isYT = v.vod_provider === 'youtube';
-        const isVod = !v.type || v.type === 'vod';
-        const dateKey = new Date(v.created_at || v.createdAt).toLocaleDateString();
-        if (isYT && isVod && bunnyDates.has(dateKey)) return false; 
+        if (v.vod_provider === 'bunny') return false; 
         return true;
     });
 
@@ -279,6 +262,9 @@ export function playVideo(item, type) {
     mainVideoPlayer.style.display = 'none'; mainVideoPlayer.src = "";
     if(btnDownload) btnDownload.style.display = 'none'; 
 
+    // [CHANGE] Removed Bunny handling logic entirely. 
+    // Only supports YouTube and direct URL (Cloudflare/MP4).
+
     if (item.vod_provider === 'youtube') {
         const iframe = document.createElement('iframe');
         iframe.id = 'nexus-youtube-embed';
@@ -287,19 +273,6 @@ export function playVideo(item, type) {
         iframe.allowFullscreen = true;
         iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.border = 'none';
         videoParent.appendChild(iframe);
-        return;
-    }
-
-    const bunnyId = item.bunnyId || item.bunny_id || (type === 'vod' ? item.id : null);
-    if (bunnyId) {
-        const iframe = document.createElement('iframe');
-        iframe.id = 'nexus-bunny-embed';
-        iframe.src = `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${bunnyId}?autoplay=true&preload=true`;
-        iframe.loading = 'lazy';
-        iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.border = 'none';
-        iframe.allow = "accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"; iframe.allowFullscreen = true;
-        videoParent.appendChild(iframe);
-        if(btnDownload) { btnDownload.href = `https://${BUNNY_HOSTNAME}/${bunnyId}/play_720p.mp4`; btnDownload.style.display = 'inline-block'; }
         return;
     }
 
@@ -313,21 +286,16 @@ export function playVideo(item, type) {
     }
 }
 
-// [FIXED] Updated to search activeGameVods if not found in global inbox
 export function handleVideoClick(id, type) {
-    // 1. Try Global Inbox (Recent)
     let item = vodsData.find(i => i.id === id);
-    
-    // 2. Try Global Clips
     if(type === 'clip') item = clipsData.find(i => i.id === id);
     
-    // 3. Try Active Game Data (Specific Search Result)
     if (!item && activeGameVods.length > 0) {
         item = activeGameVods.find(i => i.id === id);
     }
 
     if(item) playVideo(item, type);
-    else console.warn("Video not found in any available list:", id);
+    else console.warn("Video not found:", id);
 }
 
 export function closeVideoStage() {
@@ -371,7 +339,7 @@ export function toggleMainView(mode) {
     }
 }
 
-// --- FOLDER MANAGEMENT (DELETE/RENAME) ---
+// --- FOLDER MANAGEMENT ---
 export async function promptRenameGame() {
     const oldNameElement = document.getElementById('heroTitle');
     const oldName = oldNameElement ? oldNameElement.innerText : "";

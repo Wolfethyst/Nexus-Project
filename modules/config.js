@@ -5,8 +5,6 @@ export const OWNER_UUID = "7fea3331-7c36-49ac-975b-58de25ecf6ba";
 export const INFINITE_POINTS = 999999999999;
 
 // Video Configuration
-export const BUNNY_LIBRARY_ID = "563857"; 
-export const BUNNY_HOSTNAME = "vz-564d87dc-3df.b-cdn.net"; 
 export const CLOUDFLARE_CUSTOMER = "gc5hjo8ti1eiebgs"; 
 export const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Crect width='640' height='360' fill='%23222'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%23555'%3EProcessing%3C/text%3E%3C/svg%3E";
 
@@ -17,7 +15,6 @@ export const DECO_DURATIONS = {
 export const STRIPE_PUBLISHABLE_KEY = "pk_live_51Sa1xwIBlzxfqwrlKe3BQ2jHqPritOhHeR5aOL7a7ZRlX7l4n83ZybvjCZubSkt7GwOGqRbM2OqxfgLbuVKLc7tP00vRbgVwYt";
 
 // --- SHARED STATE ---
-// This replaces window.dashboardUser etc.
 export const State = {
     user: null,
     isOwner: false,
