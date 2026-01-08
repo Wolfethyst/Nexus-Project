@@ -37,10 +37,15 @@ export async function loadLeaderboard() {
 
   // Update local user points if they are logged in
   if (State.user) {
-      // We fetch the specific user balance separately or rely on session, 
-      // but for UI consistency let's update if we see them in the top list.
-      const meInLb = data.leaderboard.find(u => String(u.id) === String(State.user.id));
-      if (meInLb) State.points = meInLb.points;
+      // 1. If I am the owner, FORCE Infinite
+      if (State.isOwner) {
+          State.points = INFINITE_POINTS;
+      } 
+      // 2. Otherwise try to find me in the leaderboard list
+      else {
+          const meInLb = data.leaderboard.find(u => String(u.id) === String(State.user.id));
+          if (meInLb) State.points = meInLb.points;
+      }
 
       // Update Header Text
       const displayPoints = State.points >= INFINITE_POINTS ? "∞" : State.points.toLocaleString(); 
