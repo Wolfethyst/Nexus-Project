@@ -15,30 +15,41 @@ let currentSubIndex = 0;
 let selectedTipAmount = null;
 let currentTipMethod = "card";
 
-// --- LEADERBOARD ---
+// --- LEADERBOARD (FIXED) ---
 export async function loadLeaderboard() {
-  const { data } = await apiGet("/userdata");
-  const map = {};
-  for (const u of Object.values(data?.users || {})) { if (!u.uuid) continue; if (!map[u.uuid]) map[u.uuid] = { name: u.displayName, points: 0 }; map[u.uuid].points += (u.points || 0); }
-  if (State.user && map[State.user.id]) { 
-      State.points = map[State.user.id].points;
-      const displayPoints = State.points >= INFINITE_POINTS ? "∞" : State.points.toLocaleString(); 
-      document.getElementById("headerPoints").textContent = `${displayPoints} Crystals`; 
-      document.getElementById("chatPointsText").textContent = formatCompact(State.points); 
-  }
+  // [FIX] Use the dedicated DB endpoint instead of parsing /userdata
+  const { res, data } = await apiGet("/leaderboard");
   
-  // [UPDATED] Filter out Adventurer, Anonymous, Unknown, etc.
-  let rows = Object.values(map)
-    .sort((a, b) => b.points - a.points)
-    .filter(u => {
-        const name = (u.name || "").toLowerCase();
-        const hiddenNames = ["wolfethyst", "talathyst", "adventurer", "anonymous", "unknown"];
-        return name && !hiddenNames.includes(name);
-    });
+  if (!res.ok || !data.leaderboard) return;
 
+  // Render the rows directly from the SQL result
   const lbEl = document.getElementById("leaderboard");
   if (!lbEl) return;
-  lbEl.innerHTML = rows.map((u, i) => { let rankClass = ""; if (i === 0) rankClass = "gold"; else if (i === 1) rankClass = "silver"; else if (i === 2) rankClass = "bronze"; return `<div class="lbRow ${rankClass}"><div class="lbPos">${i+1}</div><div class="lbName">${escapeHtml(u.name)}</div><div class="lbRight"><span>${formatCompact(u.points)}</span><img class="lbCrystal" src="https://data.wolfethyst.tv/assets/wolfe_crystal"></div></div>`; }).join("");
+  
+  lbEl.innerHTML = data.leaderboard.map((u, i) => { 
+      let rankClass = ""; 
+      if (i === 0) rankClass = "gold"; 
+      else if (i === 1) rankClass = "silver"; 
+      else if (i === 2) rankClass = "bronze"; 
+      
+      return `<div class="lbRow ${rankClass}"><div class="lbPos">${i+1}</div><div class="lbName">${escapeHtml(u.displayName)}</div><div class="lbRight"><span>${formatCompact(u.points)}</span><img class="lbCrystal" src="https://data.wolfethyst.tv/assets/wolfe_crystal"></div></div>`; 
+  }).join("");
+
+  // Update local user points if they are logged in
+  if (State.user) {
+      // We fetch the specific user balance separately or rely on session, 
+      // but for UI consistency let's update if we see them in the top list.
+      const meInLb = data.leaderboard.find(u => String(u.id) === String(State.user.id));
+      if (meInLb) State.points = meInLb.points;
+
+      // Update Header Text
+      const displayPoints = State.points >= INFINITE_POINTS ? "∞" : State.points.toLocaleString(); 
+      const headerPoints = document.getElementById("headerPoints");
+      const chatPoints = document.getElementById("chatPointsText");
+      
+      if(headerPoints) headerPoints.textContent = `${displayPoints} Crystals`; 
+      if(chatPoints) chatPoints.textContent = formatCompact(State.points); 
+  }
 }
 
 // --- STORE CORE ---

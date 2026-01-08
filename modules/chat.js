@@ -170,9 +170,9 @@ export function addSupportEventMessage(data) {
     scrollChatToBottom();
 }
 
-// --- NEW FUNCTION: Handes visual alert and audio playback for redeems (with Debug) ---
+// --- NEW FUNCTION: Handes visual alert only (Audio removed) ---
 export function addRedeemMessage(data) {
-    console.log(" [Redeem Debug] Event Received:", data);
+    console.log(" [Redeem Debug] Event Received (Visual Only):", data);
 
     if (!chatPanelEl) return;
     const el = document.createElement("div");
@@ -195,27 +195,8 @@ export function addRedeemMessage(data) {
 
     chatPanelEl.appendChild(el);
     scrollChatToBottom();
-
-    // Audio Playback Logic with logging
-    if (data.redeem.soundKey) {
-        const key = data.redeem.soundKey;
-        const audioUrl = `${API}/redeems/sound/${encodeURIComponent(key)}`;
-        console.log(" [Redeem Debug] Attempting to play:", audioUrl);
-
-        const audio = new Audio(audioUrl);
-        audio.volume = 0.6; // Adjust volume as needed
-        const playPromise = audio.play();
-
-        if (playPromise !== undefined) {
-             playPromise
-                .then(() => console.log(" [Redeem Debug] Audio playing successfully."))
-                .catch(e => {
-                     console.warn(" [Redeem Debug] Playback Failed (Did you click the page?):", e);
-                });
-        }
-    } else {
-        console.log(" [Redeem Debug] No soundKey in data packet.");
-    }
+    
+    // [FIX] AUDIO PLAYBACK REMOVED SO IT ONLY PLAYS ON OVERLAY
 }
 
 export function addDashboardChatMessage(msg) {
