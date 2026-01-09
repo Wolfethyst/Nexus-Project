@@ -14,31 +14,20 @@ const mainVideoPlayer = document.getElementById('main-video-player');
 
 // --- HELPERS ---
 function getThumbUrl(item, type) {
-    // Priority 1: YouTube (Native Thumb)
     if (item.vod_provider === 'youtube' || item.youtube_id) {
         const yId = item.id || item.youtube_id;
         return `https://img.youtube.com/vi/${yId}/maxresdefault.jpg`;
     }
-    
-    // Priority 2: Cloudflare (Legacy Clips)
     const vidId = item.videoId || item.cloudflare_id; 
     if(vidId) return `https://customer-${CLOUDFLARE_CUSTOMER}.cloudflarestream.com/${vidId}/thumbnails/thumbnail.jpg`;
-    
     return PLACEHOLDER_IMG;
 }
 
 // --- DATA LOADING ---
 export async function loadVideoData() {
-    // 1. Load folders first
     await loadGames();
-    
-    // [FIX] Render folders IMMEDIATELY so the screen isn't blank
-    renderHubGames();
-
-    // 2. Load Title/Status
+    renderHubGames(); // Instant render
     await loadStreamTitle();
-    
-    // 3. Load Content (Videos & Clips) in the background
     await Promise.all([loadClips(), loadVods()]);
 }
 
@@ -53,14 +42,10 @@ async function loadClips() {
 
 async function loadVods() {
     try {
-      // Backend now strictly returns WHERE vod_provider='youtube'
       const { data } = await apiGet('/streams/list?limit=100');
-      
       if(data && data.streams) {
         vodsData = data.streams;
         let unsortedCount = 0;
-        
-        // Helper: Extract game name if missing
         vodsData.forEach(v => {
             if (!v.game_name && v.title) {
                 if (v.title.includes(" - ")) {
@@ -74,15 +59,11 @@ async function loadVods() {
             if (!v.game_name) unsortedCount++;
         });
 
-        // Add "Inbox" if there are unsorted videos and user is admin
         if (State.isModOrOwner && unsortedCount > 0) {
             allPlayedGames = allPlayedGames.filter(g => g.name !== "⚠️ Inbox");
             allPlayedGames.push({ name: "⚠️ Inbox", cover: "https://data.wolfethyst.tv/assets/nexus_icon", isVirtual: true, isInbox: true });
         }
-        
         allPlayedGames.sort((a,b) => (a.isInbox ? -1 : a.name.localeCompare(b.name)));
-        
-        // Re-render to update counts once data arrives
         renderHubGames(); 
       }
     } catch(e) { console.error("VODs load error", e); }
@@ -114,7 +95,7 @@ export async function loadStreamTitle() {
   } catch (err) { }
 }
 
-// --- HUB LOGIC (FOLDERS) ---
+// --- HUB LOGIC ---
 export function renderHubGames(filterText = "") {
     const grid = document.getElementById('hubGamesGrid');
     if(!grid) return;
@@ -128,7 +109,8 @@ export function renderHubGames(filterText = "") {
         });
 
     grid.innerHTML = games.map(g => {
-        const safeName = g.name.replace(/'/g, "\\'"); 
+        // [FIX] Escape Quotes (' -> \') so names like "Baldur's Gate" don't break JS
+        const safeName = escapeHtml(g.name).replace(/'/g, "\\'"); 
         return `<div class="hub-game-card" onclick="window.openGameDetails('${safeName}')"><img src="${g.cover}" loading="lazy" onerror="this.src='${PLACEHOLDER_IMG}'"><div class="hub-game-title">${escapeHtml(g.name)}</div></div>`;
     }).join("");
 }
@@ -139,9 +121,7 @@ function renderHubGrid(containerId, items, type) {
     if(items.length === 0) { container.innerHTML = `<div class="empty-state">No content found.</div>`; return; }
 
     container.innerHTML = items.map(item => {
-        // [STRICT] Only mark as YouTube if provider matches or ID exists
         const isYouTube = item.vod_provider === 'youtube' || !!item.youtube_id;
-        
         const thumbUrl = getThumbUrl(item, type);
         const title = escapeHtml(item.title || "Untitled");
         const dateStr = new Date(item.createdAt || item.created_at).toLocaleDateString();
@@ -167,25 +147,25 @@ export async function openGameDetails(gameName) {
     document.getElementById('hub-home-view').classList.add('hidden');
     document.getElementById('hub-details-view').classList.remove('hidden');
 
-    // 1. Prepare Data
     const summary = game.summary || "No description available.";
     const dev = game.developer || "--";
     const pub = game.publisher || "--";
     const rel = game.release_date || "--";
     const steamUrl = game.steam_url || game.steamUrl || "";
 
-    // 2. Steam Button
     let steamBtnHtml = "";
     if (steamUrl) {
         steamBtnHtml = `<a href="${steamUrl}" target="_blank" class="game-steam-btn"><img src="https://store.steampowered.com/favicon.ico" style="width:14px;height:14px;"> View on Steam</a>`;
     }
 
-    // 3. Admin Buttons
     let adminBtnsHtml = "";
     if (State.isModOrOwner && !game.isInbox) {
+        // [FIX] Escape Quotes here too! This fixes the "Info" button.
+        const safeName = escapeHtml(game.name).replace(/'/g, "\\'");
+        
         adminBtnsHtml = `
             <div style="display:flex; gap:5px; margin-top:10px;">
-                <button onclick="window.refreshGameMetadata('${escapeHtml(game.name)}')" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.8; font-size:11px;" title="Fetch info from Steam/IGDB">↻ Info</button>
+                <button onclick="window.refreshGameMetadata('${safeName}')" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.8; font-size:11px;" title="Fetch info from Steam">↻ Info</button>
                 <button onclick="window.promptRenameGame()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7;" title="Rename">✏️</button>
                 <button onclick="window.promptChangeCover()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7;" title="Cover">🖼️</button>
                 <button onclick="window.promptDeleteGame()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7; background:rgba(255,0,0,0.2); color:#ffaaaa;" title="Delete">🗑️</button>
@@ -193,7 +173,6 @@ export async function openGameDetails(gameName) {
         `;
     }
 
-    // 4. Inject Hero HTML
     const heroContentEl = document.querySelector('.game-hero-content');
     if (heroContentEl) {
         heroContentEl.innerHTML = `
@@ -220,7 +199,6 @@ export async function openGameDetails(gameName) {
         `;
     }
 
-    // Hero Background
     const heroBg = document.getElementById('heroBg');
     if (heroBg) heroBg.style.backgroundImage = `url('${game.cover}')`;
 
@@ -238,8 +216,6 @@ export async function openGameDetails(gameName) {
     }
 
     const targetGameLower = game.name.toLowerCase();
-    
-    // [STRICT] Using raw YouTube data now
     const filteredContent = activeGameVods; 
 
     const gameVods = filteredContent.filter(v => !v.type || v.type === 'vod').sort((a, b) => (b.created_at || b.createdAt) - (a.created_at || a.createdAt));
@@ -249,7 +225,6 @@ export async function openGameDetails(gameName) {
         return (c.title || "").toLowerCase().includes(targetGameLower);
     });
 
-    // Update Counts
     const vodCountEl = document.getElementById('heroVodCount');
     const clipCountEl = document.getElementById('heroClipCount');
     if(vodCountEl) vodCountEl.innerText = gameVods.length + gameVideos.length; 
@@ -309,7 +284,6 @@ export function playVideo(item, type) {
     mainVideoPlayer.style.display = 'none'; mainVideoPlayer.src = "";
     if(btnDownload) btnDownload.style.display = 'none'; 
 
-    // 1. YouTube Player (Primary)
     if (item.vod_provider === 'youtube' || item.youtube_id) {
         const yId = item.id || item.youtube_id;
         
@@ -352,7 +326,6 @@ export function playVideo(item, type) {
         return;
     }
 
-    // 2. Fallback Player (Legacy / Clips)
     if (item.url) {
         mainVideoPlayer.style.display = 'block';
         if (typeof Hls !== 'undefined' && Hls.isSupported() && item.url.endsWith('.m3u8')) {
@@ -425,12 +398,10 @@ window.refreshGameMetadata = async function(gameName) {
     try {
         const { data } = await apiPost('/played/refresh-metadata', { name: gameName });
         
-        // [FIX] Check for data.ok (Backend returns { ok: true, data: ... })
         if (data && data.ok) {
             const meta = data.data;
             alert(`Updated!\n\nDeveloper: ${meta.developer}\nRelease: ${meta.release_date}`);
             
-            // 1. Update Local Cache
             const game = allPlayedGames.find(g => g.name === gameName);
             if(game) {
                 game.summary = meta.summary || meta.description;
@@ -440,8 +411,6 @@ window.refreshGameMetadata = async function(gameName) {
                 game.steam_url = meta.steam_url || meta.steamUrl;
                 if (meta.cover || meta.coverUrl) game.cover = meta.cover || meta.coverUrl;
             }
-
-            // 2. Refresh View
             openGameDetails(gameName); 
         } else {
             console.warn("Refresh failed:", data);
