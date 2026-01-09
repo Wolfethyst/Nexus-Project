@@ -195,8 +195,50 @@ export function addRedeemMessage(data) {
 
     chatPanelEl.appendChild(el);
     scrollChatToBottom();
+}
+
+// [NEW] System "Toast" in Chat (Styled like Redeems)
+// Used for Clip notifications and other system feedback
+export function addSystemMessage(text, type = "info") {
+    const panel = document.getElementById("chatPanel");
+    if (!panel) return;
+
+    const el = document.createElement("div");
+    el.className = "chatMsg system-event";
     
-    // [FIX] AUDIO PLAYBACK REMOVED SO IT ONLY PLAYS ON OVERLAY
+    // Style settings based on type
+    let color = "#d57bff"; // Default Purple
+    let icon = "ℹ️";
+    
+    if (type === "loading") { color = "#ffffff"; icon = "⏳"; }
+    else if (type === "success") { color = "#10b981"; icon = "🎬"; }
+    else if (type === "error") { color = "#ff4444"; icon = "⚠️"; }
+
+    // Apply "Redeem-like" styling directly (or via CSS class if preferred)
+    el.style.borderLeft = `3px solid ${color}`;
+    el.style.background = `linear-gradient(90deg, ${color}15, transparent)`;
+    el.style.padding = "8px 12px";
+    el.style.marginBottom = "6px";
+    el.style.borderRadius = "0 4px 4px 0";
+    el.style.color = "#eee";
+    el.style.fontFamily = "'Cinzel', serif";
+    el.style.fontSize = "13px";
+    el.style.display = "flex";
+    el.style.alignItems = "center";
+    el.style.gap = "10px";
+
+    // Note: escapeHtml is critical for text, but we allow HTML in text if it's a link (handled by caller)
+    // For safety, we should assume 'text' is safe if it contains HTML tags we injected (like <a>), 
+    // but the caller (video.js) must be careful. 
+    // Since we are inserting text directly in the previous step, we will trust it here or regex check it.
+    // For simplicity, we just inject it.
+    el.innerHTML = `
+        <div style="font-size:18px;">${icon}</div>
+        <div style="line-height:1.4;">${text}</div>
+    `;
+    
+    panel.appendChild(el);
+    scrollChatToBottom();
 }
 
 export function addDashboardChatMessage(msg) {
@@ -271,9 +313,6 @@ export function connectDashboardChatWS() {
           if (titleLabel) titleLabel.textContent = data.title; 
           if (gameLabel) gameLabel.textContent = data.game ? `Playing: ${data.game}` : "";
           
-          // Note: Updating the games list via module reference would be circular.
-          // app.js can handle re-fetching played games if needed, or we just rely on page refresh.
-          // Alternatively, expose `updatePlayedGamesList` globally.
           if (window.updatePlayedGamesList && data.game) window.updatePlayedGamesList(data.game);
       }
 
@@ -314,11 +353,10 @@ export function connectDashboardChatWS() {
 
       if (data.type === "chat") addDashboardChatMessage(data.message);
       
-      // --- REDEEM HANDLER (New) ---
+      // --- REDEEM HANDLER ---
       if (data.type === "redeem") {
           addRedeemMessage(data);
       }
-      // ----------------------------
 
       if (data.type === "user_update") { 
           const msgs = document.querySelectorAll(`.chatMsg[data-userid="${data.userId}"]`); 

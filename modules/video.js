@@ -1,6 +1,7 @@
 // src/modules/video.js
 import { apiGet, apiPost, escapeHtml, PLACEHOLDER_IMG, CLOUDFLARE_CUSTOMER, State } from './config.js';
 import { openVodEditModal } from './admin.js';
+import { addSystemMessage } from './chat.js'; 
 
 let allPlayedGames = [];
 let vodsData = []; 
@@ -26,7 +27,7 @@ function getThumbUrl(item, type) {
 // --- DATA LOADING ---
 export async function loadVideoData() {
     await loadGames();
-    renderHubGames(); // Instant render
+    renderHubGames(); // Instant render to prevent blank screen
     await loadStreamTitle();
     await Promise.all([loadClips(), loadVods()]);
 }
@@ -109,7 +110,7 @@ export function renderHubGames(filterText = "") {
         });
 
     grid.innerHTML = games.map(g => {
-        // [FIX] Escape Quotes (' -> \') so names like "Baldur's Gate" don't break JS
+        // Escape Quotes (' -> \') so names like "Baldur's Gate" don't break JS
         const safeName = escapeHtml(g.name).replace(/'/g, "\\'"); 
         return `<div class="hub-game-card" onclick="window.openGameDetails('${safeName}')"><img src="${g.cover}" loading="lazy" onerror="this.src='${PLACEHOLDER_IMG}'"><div class="hub-game-title">${escapeHtml(g.name)}</div></div>`;
     }).join("");
@@ -160,12 +161,12 @@ export async function openGameDetails(gameName) {
 
     let adminBtnsHtml = "";
     if (State.isModOrOwner && !game.isInbox) {
-        // [FIX] Escape Quotes here too! This fixes the "Info" button.
+        // Escape Quotes here too! Fixes "Info" button for games with apostrophes
         const safeName = escapeHtml(game.name).replace(/'/g, "\\'");
         
         adminBtnsHtml = `
             <div style="display:flex; gap:5px; margin-top:10px;">
-                <button onclick="window.refreshGameMetadata('${safeName}')" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.8; font-size:11px;" title="Fetch info from Steam">↻ Info</button>
+                <button onclick="window.refreshGameMetadata('${safeName}')" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.8; font-size:11px;" title="Fetch info from Steam/IGDB">↻ Info</button>
                 <button onclick="window.promptRenameGame()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7;" title="Rename">✏️</button>
                 <button onclick="window.promptChangeCover()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7;" title="Cover">🖼️</button>
                 <button onclick="window.promptDeleteGame()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7; background:rgba(255,0,0,0.2); color:#ffaaaa;" title="Delete">🗑️</button>
@@ -389,7 +390,7 @@ export function toggleMainView(mode) {
     }
 }
 
-// --- FOLDER MANAGEMENT (REFRESH LOGIC) ---
+// --- FOLDER MANAGEMENT ---
 window.refreshGameMetadata = async function(gameName) {
     const btn = document.activeElement;
     const oldText = btn ? btn.innerText : "↻ Info";
@@ -434,7 +435,6 @@ export async function promptRenameGame() {
 
     if (!confirm(`This will move all videos from "${oldName}" to "${newName}" and rename the folder permanently.\n\nProceed?`)) return;
 
-    // Use the new backend route
     const btn = document.querySelector(".panelSmallBtn[title='Rename']");
     const originalText = btn ? btn.innerText : "";
     if(btn) btn.innerText = "Moving...";
@@ -444,11 +444,7 @@ export async function promptRenameGame() {
         
         if (res.ok) {
             alert(`Success! Moved ${data.count} videos.`);
-            
-            // Reload everything to reflect changes
             await loadVideoData(); 
-            
-            // Open the new folder
             openGameDetails(newName);
         } else {
             alert("Error: " + (data.error || "Move failed"));
@@ -484,22 +480,53 @@ export async function promptDeleteGame() {
     const titleEl = document.getElementById('heroTitle');
     if (!titleEl) return;
     const gameName = titleEl.innerText;
+    
+    // Find the game object
     const game = allPlayedGames.find(g => g.name === gameName);
     if (!game) return;
+    
     if (game.isInbox) { alert("You cannot delete the Inbox."); return; }
+    
     if (!confirm(`Are you sure you want to delete the folder "${gameName}"?\n\nThis does NOT delete videos, only the folder entry.`)) return;
-    if (game.__index === undefined || game.__index === -1) { alert("Cannot delete (virtual folder). Refresh page."); return; }
+    
+    if (game.__index === undefined || game.__index === -1) { 
+        alert("Cannot delete (virtual folder). Refresh page."); 
+        return; 
+    }
+
+    const targetIndex = game.__index; 
+
     try {
-        const { res } = await apiPost('/played/delete', { index: game.__index });
+        const { res } = await apiPost('/played/delete', { index: targetIndex });
+        
         if (res.ok) {
+            // 1. INSTANTLY remove from local list
+            const localArrayIndex = allPlayedGames.indexOf(game);
+            if (localArrayIndex > -1) {
+                allPlayedGames.splice(localArrayIndex, 1);
+            }
+
+            // 2. Shift indexes for Optimistic UI
+            allPlayedGames.forEach(g => {
+                if (g.__index > targetIndex) {
+                    g.__index -= 1;
+                }
+            });
+
+            // 3. Update UI
             alert("Folder deleted!");
-            await loadGames();
-            openHubHome();
-        } else { alert("Failed to delete."); }
-    } catch(e) { alert("Error deleting folder."); }
+            openHubHome();   
+            renderHubGames(); 
+        } else { 
+            alert("Failed to delete."); 
+        }
+    } catch(e) { 
+        console.error(e);
+        alert("Error deleting folder."); 
+    }
 }
 
-// --- LEGACY ---
+// --- LEGACY SIDEBAR ---
 function renderPlayedGames(list) {
   const gamesPlayedEl = document.getElementById("gamesPlayed");
   if (!gamesPlayedEl) return;
@@ -532,6 +559,41 @@ export function handleGameCardClick(el) {
     gameInfoModalEl.classList.add("open");
 }
 
+// --- CLIP BUTTON HANDLER (Uses Chat System) ---
+document.addEventListener("DOMContentLoaded", () => {
+    const clipBtn = document.getElementById("clipBtn");
+    if (clipBtn) {
+        clipBtn.addEventListener("click", async () => {
+            if (!State.user) { 
+                addSystemMessage("You must be logged in to clip!", "error"); 
+                return; 
+            }
+
+            // 1. Notify "Creating..."
+            addSystemMessage("Clip is being created and will be available shortly...", "loading");
+            clipBtn.disabled = true;
+
+            try {
+                const { res, data } = await apiPost("/clips/create", { windowSeconds: 30 });
+                
+                if (res.ok && data.url) {
+                    // 2. Notify "Ready"
+                    // We send the raw URL so user can copy/click it
+                    addSystemMessage(`Clip Ready! ${data.url}`, "success");
+                    navigator.clipboard.writeText(data.url).catch(() => {});
+                } else {
+                    addSystemMessage(data.error || "Failed to create clip.", "error");
+                }
+            } catch (e) {
+                addSystemMessage("Network Error", "error");
+            } finally {
+                clipBtn.disabled = false;
+            }
+        });
+    }
+});
+
+// Attach to window so onclick attributes work
 window.openGameDetails = openGameDetails;
 window.openHubHome = openHubHome;
 window.handleVideoClick = handleVideoClick;
