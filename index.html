@@ -54,11 +54,10 @@
             </button>
             
             <button onclick="document.getElementById('settingsModal').classList.add('open')" title="Settings" style="background:none; border:none; padding:5px; cursor:pointer;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
             </button>
         </div>
     </div>
-
     <div id="userMenu">
       <div id="nexusProfileSection"></div>
       <hr />
@@ -108,56 +107,45 @@
 
       <div class="col-center live-view" id="mobile-sticky-section">
         <div class="panel glass-panel" id="streamPanel">
-          <div class="panel-header stream-header">
-            
-            <div class="stream-header-info">
-              <div id="streamTitleLabel" style="font-weight:bold; font-size:1.1em;">Loading Title...</div>
-              <div id="streamGameLabel" style="font-size:0.9em; opacity:0.8; color:var(--accent);">Playing: ...</div>
+            <div class="panel-header stream-header">
+                <div class="stream-header-info">
+                    <div id="streamTitleLabel" style="font-weight:bold; font-size:1.1em;">Loading Title...</div>
+                    <div id="streamGameLabel" style="font-size:0.9em; opacity:0.8; color:var(--accent);">Playing: ...</div>
+                </div>
+                <div class="streamTitleControls adminOnly" style="display:flex; align-items:center; gap:8px; width:100%; max-width:650px; margin-left:auto;">
+                    <input id="streamTitleInput" type="text" placeholder="Stream Title" style="flex:2; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:6px 12px; border-radius:4px; font-family:inherit;" />
+                    <input id="streamGameInput" type="text" placeholder="Game Name" style="flex:1; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:6px 12px; border-radius:4px; font-family:inherit;" />
+                    <button id="streamTitleSaveBtn" class="panelSmallBtn" style="white-space:nowrap; padding: 6px 15px;">Save Info</button>
+                    <button id="clipBtn" class="panelSmallBtn" style="white-space:nowrap; padding: 6px 15px;">Clip</button>
+                </div>
             </div>
-
-            <div class="streamTitleControls adminOnly" style="display:flex; align-items:center; gap:8px; width:100%; max-width:650px; margin-left:auto;">
-              <input id="streamTitleInput" type="text" placeholder="Stream Title" 
-                     style="flex:2; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:6px 12px; border-radius:4px; font-family:inherit;" />
-              
-              <input id="streamGameInput" type="text" placeholder="Game Name" 
-                     style="flex:1; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:6px 12px; border-radius:4px; font-family:inherit;" />
-              
-              <button id="streamTitleSaveBtn" class="panelSmallBtn" style="white-space:nowrap; padding: 6px 15px;">Save Info</button>
-              <button id="clipBtn" class="panelSmallBtn" style="white-space:nowrap; padding: 6px 15px;">Clip</button>
+            <div class="panel-body stream-body">
+                <div class="streamOuter">
+                    <iframe id="stream-player" src="https://customer-gc5hjo8ti1eiebgs.cloudflarestream.com/b58b43ebaa1f57a6f55f861b9b366726/iframe" allow="autoplay; picture-in-picture;" allowfullscreen="true"></iframe>
+                </div>
             </div>
-
-          </div>
-          <div class="panel-body stream-body">
-            <div class="streamOuter">
-              <iframe id="stream-player" src="https://customer-gc5hjo8ti1eiebgs.cloudflarestream.com/b58b43ebaa1f57a6f55f861b9b366726/iframe" allow="autoplay; picture-in-picture;" allowfullscreen="true"></iframe>
-            </div>
-          </div>
         </div>
 
         <div class="panel glass-panel" id="marketplacePanel">
-          <div class="market-header">
-            <div class="market-tabs-group">
-              <button class="market-tab active" id="tabStoreBtn" onclick="switchMarketTab('store')">Store</button>
-              <button class="market-tab" id="tabInvBtn" onclick="switchMarketTab('inventory')">Inventory</button>
+            <div class="market-header">
+                <div class="market-tabs-group">
+                    <button class="market-tab active" id="tabStoreBtn" onclick="switchMarketTab('store')">Store</button>
+                    <button class="market-tab" id="tabInvBtn" onclick="switchMarketTab('inventory')">Inventory</button>
+                </div>
+                <div class="market-controls-right">
+                    <button id="storeSortBtn" class="panelSmallBtn" style="margin-right:8px; min-width:80px;" onclick="toggleStoreSort()">Price ⬆</button>
+                    <div class="market-search"><input id="storeSearchInput" type="text" placeholder="Search..." /></div>
+                </div>
             </div>
-            <div class="market-controls-right">
-              <button id="storeSortBtn" class="panelSmallBtn" style="margin-right:8px; min-width:80px;" onclick="toggleStoreSort()">
-                 Price ⬆
-              </button>
-              <div class="market-search">
-                <input id="storeSearchInput" type="text" placeholder="Search..." />
-              </div>
+            <div class="panel-body">
+                <div id="storeGrid" class="store-grid-layout"></div>
+                <div id="storeGridLegacy" style="display:none;"></div>
             </div>
-          </div>
-          <div class="panel-body">
-            <div id="storeGrid" class="store-grid-layout"></div>
-            <div id="storeGridLegacy" style="display:none;"></div>
-          </div>
         </div>
       </div>
 
       <div class="col-left live-view">
-        <div class="panel glass-panel mobile-tab-target" id="playedPanel">
+         <div class="panel glass-panel mobile-tab-target" id="playedPanel">
           <div class="panel-header games-played-header">
             <span>Games Played</span>
             <div class="games-search-wrapper">
@@ -197,7 +185,6 @@
                         <select id="videoQualitySelect" class="panelSmallBtn" style="background:rgba(0,0,0,0.5); display:none;">
                             <option value="-1">Auto</option>
                         </select>
-
                         <button id="btn-share" class="panelSmallBtn" onclick="shareActiveVideo()">Share</button>
                         <a id="btn-download" href="#" class="panelSmallBtn" download>Download</a>
                         <button class="panelSmallBtn" onclick="closeVideoStage()">Close Player</button>
@@ -217,157 +204,143 @@
                 <div id="hubGamesGrid" class="hub-games-grid"></div>
             </div>
 
-            <div id="hub-details-view" class="video-hub-container hidden">
-                <div class="game-hero">
+            <div id="hub-details-view" class="video-hub-container hidden" style="display:flex; flex-direction:column; height:100%; overflow:hidden;">
+                
+                <div class="game-hero" style="flex-shrink:0;">
                     <div class="game-hero-bg" id="heroBg"></div>
                     <button class="hub-back-btn" onclick="openHubHome()">
                         <span>←</span> Library
                     </button>
-<div class="game-hero-content">
-    <img id="heroCover" class="game-hero-cover" src="">
-    
-    <div class="game-hero-main">
-        <h1 id="heroTitle" class="game-hero-title">Game Title</h1>
-        <div class="game-hero-stats">
-            <span class="game-hero-stat">📼 <span id="heroVodCount">0</span> VODs</span>
-            <span class="game-hero-stat">🎬 <span id="heroClipCount">0</span> Clips</span>
-        </div>
-        <a id="heroSteamBtn" class="game-steam-btn hidden" href="#" target="_blank">
-            <img src="https://store.steampowered.com/favicon.ico" style="width:14px;height:14px;">
-            View on Steam
-        </a>
-    </div>
-
-    <div class="game-hero-details">
-        <div id="heroDescription" class="game-desc-text">
-            No description available.
-        </div>
-        <div class="game-meta-grid">
-            <div class="game-meta-item">
-                <span class="meta-label">Developer</span>
-                <span id="heroDev" class="meta-value">--</span>
-            </div>
-            <div class="game-meta-item">
-                <span class="meta-label">Publisher</span>
-                <span id="heroPub" class="meta-value">--</span>
-            </div>
-            <div class="game-meta-item">
-                <span class="meta-label">Release</span>
-                <span id="heroRelease" class="meta-value">--</span>
-            </div>
-        </div>
-    </div>
-</div>
+                    <div class="game-hero-content">
+                        <img id="heroCover" class="game-hero-cover" src="">
+                        <div class="game-hero-main">
+                            <h1 id="heroTitle" class="game-hero-title">Game Title</h1>
+                            <div class="game-hero-stats">
+                                <span class="game-hero-stat">📼 <span id="heroVodCount">0</span> VODs</span>
+                                <span class="game-hero-stat">🎬 <span id="heroClipCount">0</span> Clips</span>
+                            </div>
+                            <a id="heroSteamBtn" class="game-steam-btn hidden" href="#" target="_blank">
+                                <img src="https://store.steampowered.com/favicon.ico" style="width:14px;height:14px;">
+                                View on Steam
+                            </a>
+                        </div>
+                        <div class="game-hero-details">
+                            <div id="heroDescription" class="game-desc-text">No description available.</div>
+                            <div class="game-meta-grid">
+                                <div class="game-meta-item"><span class="meta-label">Developer</span><span id="heroDev" class="meta-value">--</span></div>
+                                <div class="game-meta-item"><span class="meta-label">Publisher</span><span id="heroPub" class="meta-value">--</span></div>
+                                <div class="game-meta-item"><span class="meta-label">Release</span><span id="heroRelease" class="meta-value">--</span></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="hub-tabs">
+                <div class="hub-tabs" style="flex-shrink:0;">
                     <button class="hub-tab active" onclick="switchHubTab('vods')">Broadcasts</button>
                     <button class="hub-tab" onclick="switchHubTab('videos')">Videos</button>
                     <button class="hub-tab" onclick="switchHubTab('clips')">Clips</button>
                 </div>
 
-                <div id="hub-content-vods" class="video-grid"></div>
-                <div id="hub-content-videos" class="video-grid hidden">
-                    <div class="empty-state">No uploaded videos yet.</div>
+                <div class="hub-scroll-wrapper" style="flex:1; overflow-y:auto; min-height:0; padding-bottom:20px;">
+                    <div id="hub-content-vods" class="video-grid"></div>
+                    <div id="hub-content-videos" class="video-grid hidden">
+                        <div class="empty-state">No uploaded videos yet.</div>
+                    </div>
+                    <div id="hub-content-clips" class="video-grid hidden"></div>
                 </div>
-                <div id="hub-content-clips" class="video-grid hidden"></div>
-            </div>
 
-        </div>
+            </div>
+            </div>
       </div>
 
       <div class="col-right">
-        <div class="panel glass-panel mobile-tab-target mobile-panel-active" id="leaderboardPanel">
+         <div class="panel glass-panel mobile-tab-target mobile-panel-active" id="leaderboardPanel">
           <div class="panel-header">Leaderboard</div>
           <div class="panel-body" id="leaderboard"></div>
         </div>
 
         <div class="panel glass-panel mobile-tab-target" id="chatPanelWrapper">
-          <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+           <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
             <span>Chat</span>
             <div style="display:flex; gap:6px; align-items:center;">
               <button id="clearChatBtn" class="panelSmallBtn adminOnly">Clear</button>
             </div>
           </div>
-
           <div id="chatPanel"></div>
-
           <div id="subCarouselOverlay" class="chat-overlay hidden">
-            <div class="chat-card">
-              <div class="chat-card-header">
-                <h3>Subscribe</h3>
-                <button class="modal-close-btn-embedded" onclick="toggleSubModal(false)">×</button>
-              </div>
-              <div class="carousel-stage">
-                <button class="nav-arrow" id="subPrevBtn">&#10094;</button>
-                <div class="tier-card-active">
-                  <div class="tier-icon-area" id="carouselIcon"></div>
-                  <h2 id="carouselTitle">TIER</h2>
-                  <div class="carousel-price" id="carouselPrice">$0</div>
-                  <div class="preview-box">
-                     <div class="preview-label">Chat Preview</div>
-                     <div id="carouselMsgPreview" class="chatMsg">
-                        <div class="chatAvatarCol">
-                            <img class="chatAvatarImg" src="https://data.wolfethyst.tv/assets/nexus_icon">
-                        </div>
-                        <div class="chatContentCol">
-                            <div class="chatHeader">
-                                <span class="chatUsername" id="previewUser">User</span>
+             <div class="chat-card">
+                  <div class="chat-card-header">
+                    <h3>Subscribe</h3>
+                    <button class="modal-close-btn-embedded" onclick="toggleSubModal(false)">×</button>
+                  </div>
+                  <div class="carousel-stage">
+                    <button class="nav-arrow" id="subPrevBtn">&#10094;</button>
+                    <div class="tier-card-active">
+                      <div class="tier-icon-area" id="carouselIcon"></div>
+                      <h2 id="carouselTitle">TIER</h2>
+                      <div class="carousel-price" id="carouselPrice">$0</div>
+                      <div class="preview-box">
+                         <div class="preview-label">Chat Preview</div>
+                         <div id="carouselMsgPreview" class="chatMsg">
+                            <div class="chatAvatarCol">
+                                <img class="chatAvatarImg" src="https://data.wolfethyst.tv/assets/nexus_icon">
                             </div>
-                            <div class="chatText">This is how I look!</div>
-                        </div>
-                     </div>
+                            <div class="chatContentCol">
+                                <div class="chatHeader">
+                                    <span class="chatUsername" id="previewUser">User</span>
+                                </div>
+                                <div class="chatText">This is how I look!</div>
+                            </div>
+                         </div>
+                      </div>
+                      <ul id="carouselBenefits" class="benefits-list"></ul>
+                      <button id="carouselSubBtn" class="cta-button">Select Tier</button>
+                    </div>
+                    <button class="nav-arrow" id="subNextBtn">&#10095;</button>
                   </div>
-                  <ul id="carouselBenefits" class="benefits-list"></ul>
-                  <button id="carouselSubBtn" class="cta-button">Select Tier</button>
+                  <div class="carousel-dots" id="carouselDots"></div>
                 </div>
-                <button class="nav-arrow" id="subNextBtn">&#10095;</button>
-              </div>
-              <div class="carousel-dots" id="carouselDots"></div>
-            </div>
-          </div>
-
-          <div id="tipOverlay" class="chat-overlay hidden">
-            <div class="chat-card">
-              <div class="chat-card-header">
-                  <h3>Send a Tip</h3>
-                  <button class="modal-close-btn-embedded" onclick="toggleTipModal(false)">×</button>
-              </div>
-              <div class="tip-input-group">
-                  <button class="tip-preset" onclick="selectTipAmount(3)">$3</button>
-                  <button class="tip-preset" onclick="selectTipAmount(5)">$5</button>
-                  <button class="tip-preset" onclick="selectTipAmount(10)">$10</button>
-                  <input id="tipCustomInput" class="tip-custom-input" type="number" placeholder="$ Custom" />
-              </div>
-              <div style="text-align:center; font-size:12px; color:#aaa; margin-bottom:10px;">
-                  Selected: <span id="tipSelectedAmountValue" style="color:var(--accent); font-weight:bold;">$0</span>
-              </div>
-              
-              <div id="tipMethodToggle" style="display:flex; gap:10px; margin-bottom:15px; justify-content:center;">
-                  <button id="btnMethodCard" class="panelSmallBtn active" style="min-width: 80px;" onclick="window.toggleTipMethod('card')">💳 Card</button>
-                  <button id="btnMethodCrypto" class="panelSmallBtn" style="min-width: 80px;" onclick="window.toggleTipMethod('crypto')">🪙 Crypto</button>
-              </div>
-
-              <div id="tipCardSection">
-                  <div id="tipCardElement"></div>
-                  <button id="tipCheckoutBtn" class="cta-button" style="display:none; margin-top:5px;">Send Tip (Card)</button>
-                  <div style="text-align:center; margin-top:10px; font-size:9px; opacity:0.5;">
-                      Secured by Stripe
+           </div>
+           <div id="tipOverlay" class="chat-overlay hidden">
+               <div class="chat-card">
+                  <div class="chat-card-header">
+                      <h3>Send a Tip</h3>
+                      <button class="modal-close-btn-embedded" onclick="toggleTipModal(false)">×</button>
                   </div>
-              </div>
-
-              <div id="tipCryptoSection" style="display:none; text-align:center;">
-                  <p style="font-size:12px; color:#ccc; margin-bottom:10px;">Pay with USDC, ETH, BTC, etc.</p>
-                  <input id="tipCryptoMessage" type="text" placeholder="Leave a message..." class="panelInput" style="width:100%; margin-bottom:10px; box-sizing:border-box;">
-                  <button id="tipCryptoBtn" class="cta-button">Pay with Crypto</button>
-                  <div style="text-align:center; margin-top:10px; font-size:9px; opacity:0.5;">
-                      Powered by Coinbase Commerce
+                  <div class="tip-input-group">
+                      <button class="tip-preset" onclick="selectTipAmount(3)">$3</button>
+                      <button class="tip-preset" onclick="selectTipAmount(5)">$5</button>
+                      <button class="tip-preset" onclick="selectTipAmount(10)">$10</button>
+                      <input id="tipCustomInput" class="tip-custom-input" type="number" placeholder="$ Custom" />
                   </div>
-              </div>
+                  <div style="text-align:center; font-size:12px; color:#aaa; margin-bottom:10px;">
+                      Selected: <span id="tipSelectedAmountValue" style="color:var(--accent); font-weight:bold;">$0</span>
+                  </div>
+                  
+                  <div id="tipMethodToggle" style="display:flex; gap:10px; margin-bottom:15px; justify-content:center;">
+                      <button id="btnMethodCard" class="panelSmallBtn active" style="min-width: 80px;" onclick="window.toggleTipMethod('card')">💳 Card</button>
+                      <button id="btnMethodCrypto" class="panelSmallBtn" style="min-width: 80px;" onclick="window.toggleTipMethod('crypto')">🪙 Crypto</button>
+                  </div>
 
-            </div>
-          </div>
-          
+                  <div id="tipCardSection">
+                      <div id="tipCardElement"></div>
+                      <button id="tipCheckoutBtn" class="cta-button" style="display:none; margin-top:5px;">Send Tip (Card)</button>
+                      <div style="text-align:center; margin-top:10px; font-size:9px; opacity:0.5;">
+                          Secured by Stripe
+                      </div>
+                  </div>
+
+                  <div id="tipCryptoSection" style="display:none; text-align:center;">
+                      <p style="font-size:12px; color:#ccc; margin-bottom:10px;">Pay with USDC, ETH, BTC, etc.</p>
+                      <input id="tipCryptoMessage" type="text" placeholder="Leave a message..." class="panelInput" style="width:100%; margin-bottom:10px; box-sizing:border-box;">
+                      <button id="tipCryptoBtn" class="cta-button">Pay with Crypto</button>
+                      <div style="text-align:center; margin-top:10px; font-size:9px; opacity:0.5;">
+                          Powered by Coinbase Commerce
+                      </div>
+                  </div>
+                </div>
+           </div>
+
           <div id="chatBottomBar">
             <div class="chat-input-row">
                 <div id="redeemChip">
@@ -395,7 +368,7 @@
           </div>
 
           <div id="redeemDrawer">
-            <div id="redeemDrawerInner">
+             <div id="redeemDrawerInner">
               <div id="ttsRedeemSection">
                 <div class="ttsHeaderRow">
                   <span class="ttsTitle">Text-To-Speech</span>
@@ -431,29 +404,21 @@
 
   <nav id="mobileNav">
       <button class="nav-item active" onclick="switchMobileView('chat')">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-          </span>
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></span>
           <span class="nav-label">Chat</span>
       </button>
-
       <button class="nav-item" onclick="switchMobileView('games')">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v2H6v-2H4v-2h2V9h2v2h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-          </span>
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v2H6v-2H4v-2h2V9h2v2h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></span>
           <span class="nav-label">History</span>
       </button>
-
       <button class="nav-item" onclick="switchMobileView('profile')">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24"><path d="M12 7.5c1.38 0 2.5-1.12 2.5-2.5 0-1.38-1.12-2.5-2.5-2.5S9.5 3.62 9.5 5c0 1.38 1.12 2.5 2.5 2.5zm7.5 7.5h-3.33c.47-.79.79-1.69.82-2.66l.01-.21c0-2.31-1.62-4.23-3.79-4.83.22-.68.39-1.38.39-2.12 0-3.31-2.69-6-6-6S1.6 2.69 1.6 6c0 .73.16 1.44.38 2.12-2.16.6-3.78 2.52-3.78 4.83l.01.21c.03.97.35 1.87.82 2.66H-4.3c-.37 0-.71.16-.95.42L-6.5 18l1.25 1.25c.26.24.61.38.97.38h17.56c.36 0 .71-.14.97-.38L15.5 18l-1.25-1.73c-.24-.26-.58-.42-.95-.42z"/></svg>
-          </span>
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 7.5c1.38 0 2.5-1.12 2.5-2.5 0-1.38-1.12-2.5-2.5-2.5S9.5 3.62 9.5 5c0 1.38 1.12 2.5 2.5 2.5zm7.5 7.5h-3.33c.47-.79.79-1.69.82-2.66l.01-.21c0-2.31-1.62-4.23-3.79-4.83.22-.68.39-1.38.39-2.12 0-3.31-2.69-6-6-6S1.6 2.69 1.6 6c0 .73.16 1.44.38 2.12-2.16.6-3.78 2.52-3.78 4.83l.01.21c.03.97.35 1.87.82 2.66H-4.3c-.37 0-.71.16-.95.42L-6.5 18l1.25 1.25c.26.24.61.38.97.38h17.56c.36 0 .71-.14.97-.38L15.5 18l-1.25-1.73c-.24-.26-.58-.42-.95-.42z"/></svg></span>
           <span class="nav-label">Rank</span>
       </button>
   </nav>
 
   <div id="vodEditModal" class="requestModal">
-    <div class="requestModalWindow">
+      <div class="requestModalWindow">
       <h3>Edit Broadcast</h3>
       <input type="hidden" id="editVodId">
       
@@ -478,9 +443,8 @@
       </div>
     </div>
   </div>
-
   <div id="requestModal" class="requestModal">
-    <div class="requestModalWindow">
+      <div class="requestModalWindow">
       <h3>Request a Game</h3>
       <input id="requestGameInput" type="text" placeholder="Enter a game name..." />
       <div class="requestModalButtons">
@@ -489,9 +453,8 @@
       </div>
     </div>
   </div>
-
   <div id="settingsModal" class="requestModal">
-    <div class="requestModalWindow" style="max-width: 400px;">
+      <div class="requestModalWindow" style="max-width: 400px;">
         <h2 class="modal-title">Nexus Settings</h2>
         
         <div style="margin-bottom: 20px;">
@@ -517,9 +480,8 @@
         <button class="modal-close-btn" onclick="document.getElementById('settingsModal').classList.remove('open')">Close</button>
     </div>
   </div>
-
   <div id="gameInfoModal" class="requestModal">
-    <div class="requestModalWindow">
+      <div class="requestModalWindow">
       <h3 id="gameInfoTitle">Game</h3>
       <div id="gameInfoBody" class="game-info-body" style="display:none;">
         <img id="gameInfoCover" class="game-info-cover" alt="">
@@ -531,9 +493,8 @@
       </div>
     </div>
   </div>
-
   <div id="unbanRequestModal" class="requestModal">
-    <div class="requestModalWindow">
+      <div class="requestModalWindow">
       <h3>Unban Request</h3>
       <textarea id="unbanMessageInput" placeholder="Why should we unban you?" style="width:100%; height:80px; margin-bottom:10px;"></textarea>
       <div class="requestModalButtons">
@@ -542,9 +503,8 @@
       </div>
     </div>
   </div>
-
   <div id="unbanSubmittedModal" class="requestModal">
-    <div class="requestModalWindow">
+      <div class="requestModalWindow">
       <h3>Request Submitted</h3>
       <p>Your request has been sent to the moderators.</p>
       <div class="requestModalButtons">
@@ -552,9 +512,8 @@
       </div>
     </div>
   </div>
-
   <div id="chatContextMenu" class="context-menu">
-    <div class="ctx-header" id="ctxHeader">User</div>
+      <div class="ctx-header" id="ctxHeader">User</div>
     <div class="ctx-item" id="ctxReplyBtn">Reply</div>
     <div class="ctx-item" id="ctxDeleteBtn">Delete Message</div>
     <div class="ctx-item" id="ctxTimeoutBtn">Timeout</div>
@@ -562,9 +521,8 @@
     <div class="ctx-item" id="ctxModBtn">Promote to Mod</div>
     <div class="ctx-item" id="ctxCopyIdBtn">Copy ID</div>
   </div>
-
   <div id="timeoutModal" class="requestModal">
-    <div class="requestModalWindow">
+      <div class="requestModalWindow">
       <h3>Timeout User</h3>
       <p id="timeoutUserLabel" style="color:var(--accent); margin-bottom:10px;"></p>
       <div class="duration-buttons">
@@ -580,18 +538,16 @@
       </div>
     </div>
   </div>
-
   <div id="timeoutInfoModal" class="requestModal">
-    <div class="requestModalWindow">
+      <div class="requestModalWindow">
       <div id="timeoutInfoBody" style="margin: 15px 0; line-height: 1.5;"></div>
       <div class="requestModalButtons">
         <button data-close-modal="timeoutInfoModal">Acknowledge</button>
       </div>
     </div>
   </div>
-
   <div id="banModal" class="requestModal">
-    <div class="requestModalWindow">
+      <div class="requestModalWindow">
       <h3>Ban User</h3>
       <p id="banUserLabel" style="color:#ff4444; margin-bottom:10px; font-weight:bold;"></p>
       <input id="banReasonInput" type="text" placeholder="Reason (Required)" style="width:100%; box-sizing:border-box;" />
@@ -601,9 +557,8 @@
       </div>
     </div>
   </div>
-
   <div id="modConfirmModal" class="requestModal">
-    <div class="requestModalWindow">
+      <div class="requestModalWindow">
       <h3>Promote to Moderator</h3>
       <p>Are you sure you want to make <span id="modUserLabel" style="color:var(--accent);"></span> a moderator?</p>
       <p style="font-size:12px; color:var(--text-muted);">They will have full access to ban/timeout users.</p>
@@ -613,9 +568,8 @@
       </div>
     </div>
   </div>
-
   <div id="clearChatConfirmModal" class="requestModal">
-    <div class="requestModalWindow">
+      <div class="requestModalWindow">
       <h3>Clear Chat?</h3>
       <p style="margin-bottom:15px;">Are you sure you want to delete all messages for everyone? This cannot be undone.</p>
       <div class="requestModalButtons">
@@ -624,9 +578,8 @@
       </div>
     </div>
   </div>
-
   <div id="confirmModal">
-    <div class="confirm-window">
+      <div class="confirm-window">
       <div class="confirm-title" id="confirmTitle">Confirm Action</div>
       <div class="confirm-message" id="confirmMessage">Are you sure?</div>
       <div class="confirm-actions">
