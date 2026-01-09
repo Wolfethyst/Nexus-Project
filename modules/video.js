@@ -428,34 +428,37 @@ export async function promptRenameGame() {
     const oldNameElement = document.getElementById('heroTitle');
     const oldName = oldNameElement ? oldNameElement.innerText : "";
     if(!oldName) return;
+
     const newName = prompt(`Rename folder "${oldName}" to:`, oldName);
     if (!newName || newName === oldName) return;
-    if (!confirm(`This will update all videos in "${oldName}" to "${newName}".\n\nProceed?`)) return;
 
-    let fullList = [];
+    if (!confirm(`This will move all videos from "${oldName}" to "${newName}" and rename the folder permanently.\n\nProceed?`)) return;
+
+    // Use the new backend route
+    const btn = document.querySelector(".panelSmallBtn[title='Rename']");
+    const originalText = btn ? btn.innerText : "";
+    if(btn) btn.innerText = "Moving...";
+
     try {
-         const encoded = encodeURIComponent(oldName);
-         const { data } = await apiGet(`/streams/list?game=${encoded}&limit=500`);
-         fullList = data.streams || [];
-    } catch(e) {}
-
-    if (fullList.length === 0) { alert("No videos found to move."); return; }
-
-    let successCount = 0;
-    for (const v of fullList) {
-        try {
-            await apiPost('/streams/update', { id: v.id, title: v.title, game: newName, youtubeId: v.youtube_id, isExclusive: v.is_exclusive });
-            successCount++;
-        } catch(e) { console.error("Failed to move", v.title, e); }
+        const { res, data } = await apiPost('/played/rename', { oldName, newName });
+        
+        if (res.ok) {
+            alert(`Success! Moved ${data.count} videos.`);
+            
+            // Reload everything to reflect changes
+            await loadVideoData(); 
+            
+            // Open the new folder
+            openGameDetails(newName);
+        } else {
+            alert("Error: " + (data.error || "Move failed"));
+        }
+    } catch(e) {
+        console.error(e);
+        alert("Network error during move.");
+    } finally {
+        if(btn) btn.innerText = originalText;
     }
-    const newGameExists = allPlayedGames.find(g => g.name.toLowerCase() === newName.toLowerCase());
-    if (!newGameExists) { allPlayedGames.push({ name: newName, cover: fullList[0].thumbnail_url || PLACEHOLDER_IMG, isVirtual: true }); }
-    const oldIdx = allPlayedGames.findIndex(g => g.name.toLowerCase() === oldName.toLowerCase());
-    if (oldIdx > -1) allPlayedGames.splice(oldIdx, 1);
-    allPlayedGames.sort((a,b) => a.name.localeCompare(b.name));
-    alert(`Successfully moved ${successCount} videos!`);
-    loadVods(); 
-    openGameDetails(newName);
 }
 
 export async function promptChangeCover() {
