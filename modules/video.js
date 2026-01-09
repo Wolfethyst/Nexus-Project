@@ -14,9 +14,13 @@ const mainVideoPlayer = document.getElementById('main-video-player');
 
 // --- HELPERS ---
 function getThumbUrl(item, type) {
-    if (item.vod_provider === 'youtube') return `https://img.youtube.com/vi/${item.id}/maxresdefault.jpg`;
+    if (item.vod_provider === 'youtube' || item.youtube_id) {
+        // Prefer the ID if available, otherwise fall back to youtube_id prop
+        const yId = item.id || item.youtube_id;
+        return `https://img.youtube.com/vi/${yId}/maxresdefault.jpg`;
+    }
     
-    // Cloudflare Fallback
+    // Cloudflare Fallback (for Clips or legacy)
     const vidId = item.videoId || item.cloudflare_id; 
     if(vidId) return `https://customer-${CLOUDFLARE_CUSTOMER}.cloudflarestream.com/${vidId}/thumbnails/thumbnail.jpg`;
     
@@ -25,15 +29,24 @@ function getThumbUrl(item, type) {
 
 // --- DATA LOADING ---
 export async function loadVideoData() {
+    // 1. Load the folder names first
     await loadGames();
+    
+    // [FIX] Render the folders IMMEDIATELY. 
+    // This prevents the "Blank Screen" issue while waiting for videos to download.
+    renderHubGames();
+
+    // 2. Load Title/Status
     await loadStreamTitle();
+    
+    // 3. Load Content (Videos & Clips) in the background
     await Promise.all([loadClips(), loadVods()]);
 }
 
 async function loadGames() {
     const { data } = await apiGet("/played");
     allPlayedGames = (data?.games || []).map((g, i) => ({ ...g, __index: i }));
-    renderPlayedGames(allPlayedGames);
+    // We render inside loadVideoData now to be safe, but we can also render here if needed.
 }
 
 async function loadClips() {
@@ -42,10 +55,14 @@ async function loadClips() {
 
 async function loadVods() {
     try {
-      const { data } = await apiGet('/streams/list?limit=50');
+      // The backend now filters this to ONLY return YouTube videos (vod_provider='youtube')
+      const { data } = await apiGet('/streams/list?limit=100');
+      
       if(data && data.streams) {
         vodsData = data.streams;
         let unsortedCount = 0;
+        
+        // Helper to extract game name from title if missing
         vodsData.forEach(v => {
             if (!v.game_name && v.title) {
                 if (v.title.includes(" - ")) {
@@ -60,10 +77,14 @@ async function loadVods() {
         });
 
         if (State.isModOrOwner && unsortedCount > 0) {
+            // Remove old inbox if exists, add new one
             allPlayedGames = allPlayedGames.filter(g => g.name !== "⚠️ Inbox");
             allPlayedGames.push({ name: "⚠️ Inbox", cover: "https://data.wolfethyst.tv/assets/nexus_icon", isVirtual: true, isInbox: true });
         }
+        
         allPlayedGames.sort((a,b) => (a.isInbox ? -1 : a.name.localeCompare(b.name)));
+        
+        // Re-render to update counts or "Inbox" status once VODs are actually loaded
         renderHubGames(); 
       }
     } catch(e) { console.error("VODs load error", e); }
@@ -99,6 +120,7 @@ export async function loadStreamTitle() {
 export function renderHubGames(filterText = "") {
     const grid = document.getElementById('hubGamesGrid');
     if(!grid) return;
+    
     const games = allPlayedGames.filter(g => {
             if (!g.name.toLowerCase().includes(filterText.toLowerCase())) return false;
             return true;
@@ -119,10 +141,12 @@ function renderHubGrid(containerId, items, type) {
     if(items.length === 0) { container.innerHTML = `<div class="empty-state">No content found.</div>`; return; }
 
     container.innerHTML = items.map(item => {
-        const isYouTube = item.vod_provider === 'youtube';
+        // [UPDATED] Since we only use YouTube now, we check that or generic fallback
+        const isYouTube = item.vod_provider === 'youtube' || !!item.youtube_id;
         const thumbUrl = getThumbUrl(item, type);
         const title = escapeHtml(item.title || "Untitled");
         const dateStr = new Date(item.createdAt || item.created_at).toLocaleDateString();
+        
         let badgeHtml = "";
         if (isYouTube) badgeHtml = `<div class="provider-badge">YouTube</div>`;
         else if (item.is_exclusive) badgeHtml = `<div class="provider-badge" style="background:var(--accent);">Exclusive</div>`;
@@ -201,7 +225,7 @@ export async function openGameDetails(gameName) {
     const heroBg = document.getElementById('heroBg');
     if (heroBg) heroBg.style.backgroundImage = `url('${game.cover}')`;
 
-    // --- Load VODs Logic (Unchanged) ---
+    // --- Load VODs Logic ---
     activeGameVods = [];
 
     if (game.isInbox) {
@@ -216,13 +240,11 @@ export async function openGameDetails(gameName) {
 
     const targetGameLower = game.name.toLowerCase();
     
-    // STRICT FILTER: Remove any items where provider is 'bunny'
-    const filteredContent = activeGameVods.filter(v => {
-        if (v.vod_provider === 'bunny') return false; 
-        return true;
-    });
+    // [UPDATED] Deprecated Bunny Filter Removed.
+    // We trust the backend is sending us clean, YouTube-only data now.
+    const filteredContent = activeGameVods; 
 
-    const gameVods = filteredContent.filter(v => !v.type || v.type === 'vod').sort((a, b) => (a.created_at || a.createdAt) - (b.created_at || b.createdAt));
+    const gameVods = filteredContent.filter(v => !v.type || v.type === 'vod').sort((a, b) => (b.created_at || b.createdAt) - (a.created_at || a.createdAt));
     const gameVideos = filteredContent.filter(v => v.type === 'video').sort((a, b) => (b.created_at || b.createdAt) - (a.created_at || a.createdAt));
     const gameClips = clipsData.filter(c => {
         if (c.game) return c.game.toLowerCase() === targetGameLower;
@@ -273,7 +295,7 @@ export function playVideo(item, type) {
     
     let tagLabel = "Broadcast Archive";
     if(type === 'clip') tagLabel = "Live Clip";
-    else if (item.vod_provider === 'youtube') tagLabel = "Archive (YouTube)";
+    else if (item.vod_provider === 'youtube' || item.youtube_id) tagLabel = "Archive (YouTube)";
     document.getElementById('meta-tag').textContent = tagLabel;
     
     const btnDownload = document.getElementById('btn-download');
@@ -289,7 +311,10 @@ export function playVideo(item, type) {
     mainVideoPlayer.style.display = 'none'; mainVideoPlayer.src = "";
     if(btnDownload) btnDownload.style.display = 'none'; 
 
-    if (item.vod_provider === 'youtube') {
+    // YOUTUBE PLAYER LOGIC (Primary)
+    if (item.vod_provider === 'youtube' || item.youtube_id) {
+        const yId = item.id || item.youtube_id; // Handle legacy prop names
+        
         const wrapper = document.createElement('div');
         wrapper.id = 'nexus-youtube-embed';
         wrapper.style.width = '100%';
@@ -297,7 +322,7 @@ export function playVideo(item, type) {
         wrapper.style.backgroundColor = '#000';
         wrapper.style.position = 'relative';
         wrapper.style.cursor = 'pointer';
-        wrapper.style.backgroundImage = `url('https://img.youtube.com/vi/${item.id}/maxresdefault.jpg')`;
+        wrapper.style.backgroundImage = `url('https://img.youtube.com/vi/${yId}/maxresdefault.jpg')`;
         wrapper.style.backgroundSize = 'cover';
         wrapper.style.backgroundPosition = 'center';
 
@@ -315,7 +340,7 @@ export function playVideo(item, type) {
 
         wrapper.onclick = () => {
             const iframe = document.createElement('iframe');
-            iframe.src = `https://www.youtube.com/embed/${item.id}?autoplay=1&rel=0&modestbranding=1&origin=${window.location.origin}`;
+            iframe.src = `https://www.youtube.com/embed/${yId}?autoplay=1&rel=0&modestbranding=1&origin=${window.location.origin}`;
             iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
             iframe.allowFullscreen = true;
             iframe.style.width = '100%'; 
@@ -329,6 +354,7 @@ export function playVideo(item, type) {
         return;
     }
 
+    // CLOUDFLARE PLAYER LOGIC (For clips or legacy manual uploads)
     if (item.url) {
         mainVideoPlayer.style.display = 'block';
         if (Hls.isSupported() && item.url.endsWith('.m3u8')) {
@@ -401,12 +427,9 @@ window.refreshGameMetadata = async function(gameName) {
     if(btn) { btn.innerText = "Wait..."; btn.disabled = true; }
 
     try {
-        // [FIX] Destructure '{ data }' because apiPost returns { res, data }
         const { data } = await apiPost('/played/refresh-metadata', { name: gameName });
         
-        // [FIX] Check 'data.success' instead of 'res.success'
         if (data && data.success) {
-            // Access properties via data.data (since backend sends { data: metadata })
             alert(`Updated!\n\nDeveloper: ${data.data.developer}\nRelease: ${data.data.release_date}`);
             
             // 1. Update the Local Data Cache
@@ -417,8 +440,6 @@ window.refreshGameMetadata = async function(gameName) {
                 game.publisher = data.data.publisher;
                 game.release_date = data.data.release_date;
                 game.steam_url = data.data.steam_url;
-                
-                // Bonus: Update cover immediately if it changed
                 if (data.data.cover) game.cover = data.data.cover;
             }
 
@@ -548,4 +569,3 @@ window.promptRenameGame = promptRenameGame;
 window.promptChangeCover = promptChangeCover;
 window.promptDeleteGame = promptDeleteGame;
 window.handleGameCardClick = handleGameCardClick;
-// Note: refreshGameMetadata is already attached to window above
