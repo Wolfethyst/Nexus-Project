@@ -15,41 +15,43 @@ const mainVideoPlayer = document.getElementById('main-video-player');
 
 // --- HELPERS ---
 function getThumbUrl(item, type) {
-    if (item.vod_provider === 'youtube' || item.youtube_id) {
-        const yId = item.id || item.youtube_id;
-        return `https://img.youtube.com/vi/${yId}/maxresdefault.jpg`;
-    }
+    if (item.vod_provider === 'youtube') return `https://img.youtube.com/vi/${item.id}/maxresdefault.jpg`;
+    
+    // Cloudflare Fallback
     const vidId = item.videoId || item.cloudflare_id; 
     if(vidId) return `https://customer-${CLOUDFLARE_CUSTOMER}.cloudflarestream.com/${vidId}/thumbnails/thumbnail.jpg`;
+    
     return PLACEHOLDER_IMG;
 }
 
 // --- DATA LOADING ---
-
+// [UPDATED] Prioritized Loading Sequence
 export async function loadVideoData() {
+    // 1. Check if the user is visiting a specific link (Direct Play)
     const params = new URLSearchParams(window.location.search);
     const directClipId = params.get("clip");
     const directVodId = params.get("vod");
 
+    // 2. If there is a direct link, load and play it IMMEDIATELY
     if (directClipId) {
-        // Fetch JUST this clip first
         try {
+            // Fetch JUST this clip metadata first (Fast!)
             const { data } = await apiGet(`/clips/meta?id=${directClipId}`);
             if (data && data.ok && data.clip) {
-                // Play immediately (don't wait for games/vods)
                 playVideo(data.clip, 'clip'); 
             }
         } catch(e) { console.error("Fast load failed", e); }
     } 
     else if (directVodId) {
+        // VODs still rely on the main list for now, but we check immediately after list loads
     }
 
+    // 3. Load the rest of the site content in the background
     const heavyLifting = Promise.all([
-        loadGames().then(() => renderHubGames()), // Render folders as soon as they arrive
+        loadGames().then(() => renderHubGames()), // Render folders ASAP
         loadStreamTitle(),
         loadClips(),
         loadVods().then(() => {
-
             if (directVodId && vodsData.length > 0) {
                 handleVideoClick(directVodId, 'vod');
             }
@@ -70,7 +72,7 @@ async function loadClips() {
 
 async function loadVods() {
     try {
-      const { data } = await apiGet('/streams/list?limit=100');
+      const { data } = await apiGet('/streams/list?limit=50');
       if(data && data.streams) {
         vodsData = data.streams;
         let unsortedCount = 0;
@@ -127,7 +129,6 @@ export async function loadStreamTitle() {
 export function renderHubGames(filterText = "") {
     const grid = document.getElementById('hubGamesGrid');
     if(!grid) return;
-    
     const games = allPlayedGames.filter(g => {
             if (!g.name.toLowerCase().includes(filterText.toLowerCase())) return false;
             return true;
@@ -137,8 +138,7 @@ export function renderHubGames(filterText = "") {
         });
 
     grid.innerHTML = games.map(g => {
-        // Escape Quotes (' -> \') so names like "Baldur's Gate" don't break JS
-        const safeName = escapeHtml(g.name).replace(/'/g, "\\'"); 
+        const safeName = g.name.replace(/'/g, "\\'"); 
         return `<div class="hub-game-card" onclick="window.openGameDetails('${safeName}')"><img src="${g.cover}" loading="lazy" onerror="this.src='${PLACEHOLDER_IMG}'"><div class="hub-game-title">${escapeHtml(g.name)}</div></div>`;
     }).join("");
 }
@@ -149,11 +149,10 @@ function renderHubGrid(containerId, items, type) {
     if(items.length === 0) { container.innerHTML = `<div class="empty-state">No content found.</div>`; return; }
 
     container.innerHTML = items.map(item => {
-        const isYouTube = item.vod_provider === 'youtube' || !!item.youtube_id;
+        const isYouTube = item.vod_provider === 'youtube';
         const thumbUrl = getThumbUrl(item, type);
         const title = escapeHtml(item.title || "Untitled");
         const dateStr = new Date(item.createdAt || item.created_at).toLocaleDateString();
-        
         let badgeHtml = "";
         if (isYouTube) badgeHtml = `<div class="provider-badge">YouTube</div>`;
         else if (item.is_exclusive) badgeHtml = `<div class="provider-badge" style="background:var(--accent);">Exclusive</div>`;
@@ -188,9 +187,7 @@ export async function openGameDetails(gameName) {
 
     let adminBtnsHtml = "";
     if (State.isModOrOwner && !game.isInbox) {
-        // Escape Quotes here too! Fixes "Info" button for games with apostrophes
         const safeName = escapeHtml(game.name).replace(/'/g, "\\'");
-        
         adminBtnsHtml = `
             <div style="display:flex; gap:5px; margin-top:10px;">
                 <button onclick="window.refreshGameMetadata('${safeName}')" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.8; font-size:11px;" title="Fetch info from Steam/IGDB">↻ Info</button>
@@ -205,7 +202,6 @@ export async function openGameDetails(gameName) {
     if (heroContentEl) {
         heroContentEl.innerHTML = `
             <img id="heroCover" class="game-hero-cover" src="${game.cover}" onerror="this.src='${PLACEHOLDER_IMG}'">
-            
             <div class="game-hero-main">
                 <h1 id="heroTitle" class="game-hero-title">${escapeHtml(game.name)}</h1>
                 <div class="game-hero-stats">
@@ -215,7 +211,6 @@ export async function openGameDetails(gameName) {
                 ${steamBtnHtml}
                 ${adminBtnsHtml}
             </div>
-
             <div class="game-hero-details">
                 <div id="heroDescription" class="game-desc-text">${escapeHtml(summary)}</div>
                 <div class="game-meta-grid">
@@ -230,9 +225,7 @@ export async function openGameDetails(gameName) {
     const heroBg = document.getElementById('heroBg');
     if (heroBg) heroBg.style.backgroundImage = `url('${game.cover}')`;
 
-    // --- Filter Content ---
     activeGameVods = [];
-
     if (game.isInbox) {
         activeGameVods = vodsData.filter(v => !v.game_name);
     } else {
@@ -244,9 +237,9 @@ export async function openGameDetails(gameName) {
     }
 
     const targetGameLower = game.name.toLowerCase();
-    const filteredContent = activeGameVods; 
+    const filteredContent = activeGameVods.filter(v => v.vod_provider !== 'bunny');
 
-    const gameVods = filteredContent.filter(v => !v.type || v.type === 'vod').sort((a, b) => (b.created_at || b.createdAt) - (a.created_at || a.createdAt));
+    const gameVods = filteredContent.filter(v => !v.type || v.type === 'vod').sort((a, b) => (a.created_at || a.createdAt) - (b.created_at || b.createdAt));
     const gameVideos = filteredContent.filter(v => v.type === 'video').sort((a, b) => (b.created_at || b.createdAt) - (a.created_at || a.createdAt));
     const gameClips = clipsData.filter(c => {
         if (c.game) return c.game.toLowerCase() === targetGameLower;
@@ -296,7 +289,7 @@ export function playVideo(item, type) {
     
     let tagLabel = "Broadcast Archive";
     if(type === 'clip') tagLabel = "Live Clip";
-    else if (item.vod_provider === 'youtube' || item.youtube_id) tagLabel = "Archive (YouTube)";
+    else if (item.vod_provider === 'youtube') tagLabel = "Archive (YouTube)";
     document.getElementById('meta-tag').textContent = tagLabel;
     
     const btnDownload = document.getElementById('btn-download');
@@ -312,9 +305,7 @@ export function playVideo(item, type) {
     mainVideoPlayer.style.display = 'none'; mainVideoPlayer.src = "";
     if(btnDownload) btnDownload.style.display = 'none'; 
 
-    if (item.vod_provider === 'youtube' || item.youtube_id) {
-        const yId = item.id || item.youtube_id;
-        
+    if (item.vod_provider === 'youtube') {
         const wrapper = document.createElement('div');
         wrapper.id = 'nexus-youtube-embed';
         wrapper.style.width = '100%';
@@ -322,7 +313,7 @@ export function playVideo(item, type) {
         wrapper.style.backgroundColor = '#000';
         wrapper.style.position = 'relative';
         wrapper.style.cursor = 'pointer';
-        wrapper.style.backgroundImage = `url('https://img.youtube.com/vi/${yId}/maxresdefault.jpg')`;
+        wrapper.style.backgroundImage = `url('https://img.youtube.com/vi/${item.id}/maxresdefault.jpg')`;
         wrapper.style.backgroundSize = 'cover';
         wrapper.style.backgroundPosition = 'center';
 
@@ -340,7 +331,7 @@ export function playVideo(item, type) {
 
         wrapper.onclick = () => {
             const iframe = document.createElement('iframe');
-            iframe.src = `https://www.youtube.com/embed/${yId}?autoplay=1&rel=0&modestbranding=1&origin=${window.location.origin}`;
+            iframe.src = `https://www.youtube.com/embed/${item.id}?autoplay=1&rel=0&modestbranding=1&origin=${window.location.origin}`;
             iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
             iframe.allowFullscreen = true;
             iframe.style.width = '100%'; 
@@ -356,7 +347,7 @@ export function playVideo(item, type) {
 
     if (item.url) {
         mainVideoPlayer.style.display = 'block';
-        if (typeof Hls !== 'undefined' && Hls.isSupported() && item.url.endsWith('.m3u8')) {
+        if (Hls.isSupported() && item.url.endsWith('.m3u8')) {
             const hls = new Hls(); hls.loadSource(item.url); hls.attachMedia(mainVideoPlayer);
         } else { mainVideoPlayer.src = item.url; }
         mainVideoPlayer.play().catch(e => console.log("Autoplay blocked", e));
@@ -425,63 +416,58 @@ window.refreshGameMetadata = async function(gameName) {
 
     try {
         const { data } = await apiPost('/played/refresh-metadata', { name: gameName });
-        
-        if (data && data.ok) {
-            const meta = data.data;
-            alert(`Updated!\n\nDeveloper: ${meta.developer}\nRelease: ${meta.release_date}`);
-            
+        if (data && data.success) {
+            alert(`Updated!\n\nDeveloper: ${data.data.developer}\nRelease: ${data.data.release_date}`);
             const game = allPlayedGames.find(g => g.name === gameName);
             if(game) {
-                game.summary = meta.summary || meta.description;
-                game.developer = meta.developer;
-                game.publisher = meta.publisher;
-                game.release_date = meta.release_date;
-                game.steam_url = meta.steam_url || meta.steamUrl;
-                if (meta.cover || meta.coverUrl) game.cover = meta.cover || meta.coverUrl;
+                game.summary = data.data.summary;
+                game.developer = data.data.developer;
+                game.publisher = data.data.publisher;
+                game.release_date = data.data.release_date;
+                game.steam_url = data.data.steam_url;
+                if (data.data.cover) game.cover = data.data.cover;
             }
             openGameDetails(gameName); 
         } else {
             console.warn("Refresh failed:", data);
             alert("Could not find game info on IGDB.");
         }
-    } catch(e) {
-        console.error(e);
-        alert("Error refreshing metadata.");
-    } finally {
-        if(btn) { btn.innerText = oldText; btn.disabled = false; }
-    }
+    } catch(e) { console.error(e); alert("Error refreshing metadata."); } 
+    finally { if(btn) { btn.innerText = oldText; btn.disabled = false; } }
 };
 
 export async function promptRenameGame() {
     const oldNameElement = document.getElementById('heroTitle');
     const oldName = oldNameElement ? oldNameElement.innerText : "";
     if(!oldName) return;
-
     const newName = prompt(`Rename folder "${oldName}" to:`, oldName);
     if (!newName || newName === oldName) return;
+    if (!confirm(`This will update all videos in "${oldName}" to "${newName}".\n\nProceed?`)) return;
 
-    if (!confirm(`This will move all videos from "${oldName}" to "${newName}" and rename the folder permanently.\n\nProceed?`)) return;
-
-    const btn = document.querySelector(".panelSmallBtn[title='Rename']");
-    const originalText = btn ? btn.innerText : "";
-    if(btn) btn.innerText = "Moving...";
-
+    let fullList = [];
     try {
-        const { res, data } = await apiPost('/played/rename', { oldName, newName });
-        
-        if (res.ok) {
-            alert(`Success! Moved ${data.count} videos.`);
-            await loadVideoData(); 
-            openGameDetails(newName);
-        } else {
-            alert("Error: " + (data.error || "Move failed"));
-        }
-    } catch(e) {
-        console.error(e);
-        alert("Network error during move.");
-    } finally {
-        if(btn) btn.innerText = originalText;
+         const encoded = encodeURIComponent(oldName);
+         const { data } = await apiGet(`/streams/list?game=${encoded}&limit=500`);
+         fullList = data.streams || [];
+    } catch(e) {}
+
+    if (fullList.length === 0) { alert("No videos found to move."); return; }
+
+    let successCount = 0;
+    for (const v of fullList) {
+        try {
+            await apiPost('/streams/update', { id: v.id, title: v.title, game: newName, youtubeId: v.youtube_id, isExclusive: v.is_exclusive });
+            successCount++;
+        } catch(e) { console.error("Failed to move", v.title, e); }
     }
+    const newGameExists = allPlayedGames.find(g => g.name.toLowerCase() === newName.toLowerCase());
+    if (!newGameExists) { allPlayedGames.push({ name: newName, cover: fullList[0].thumbnail_url || PLACEHOLDER_IMG, isVirtual: true }); }
+    const oldIdx = allPlayedGames.findIndex(g => g.name.toLowerCase() === oldName.toLowerCase());
+    if (oldIdx > -1) allPlayedGames.splice(oldIdx, 1);
+    allPlayedGames.sort((a,b) => a.name.localeCompare(b.name));
+    alert(`Successfully moved ${successCount} videos!`);
+    loadVods(); 
+    openGameDetails(newName);
 }
 
 export async function promptChangeCover() {
@@ -507,53 +493,22 @@ export async function promptDeleteGame() {
     const titleEl = document.getElementById('heroTitle');
     if (!titleEl) return;
     const gameName = titleEl.innerText;
-    
-    // Find the game object
     const game = allPlayedGames.find(g => g.name === gameName);
     if (!game) return;
-    
     if (game.isInbox) { alert("You cannot delete the Inbox."); return; }
-    
     if (!confirm(`Are you sure you want to delete the folder "${gameName}"?\n\nThis does NOT delete videos, only the folder entry.`)) return;
-    
-    if (game.__index === undefined || game.__index === -1) { 
-        alert("Cannot delete (virtual folder). Refresh page."); 
-        return; 
-    }
-
-    const targetIndex = game.__index; 
-
+    if (game.__index === undefined || game.__index === -1) { alert("Cannot delete (virtual folder). Refresh page."); return; }
     try {
-        const { res } = await apiPost('/played/delete', { index: targetIndex });
-        
+        const { res } = await apiPost('/played/delete', { index: game.__index });
         if (res.ok) {
-            // 1. INSTANTLY remove from local list
-            const localArrayIndex = allPlayedGames.indexOf(game);
-            if (localArrayIndex > -1) {
-                allPlayedGames.splice(localArrayIndex, 1);
-            }
-
-            // 2. Shift indexes for Optimistic UI
-            allPlayedGames.forEach(g => {
-                if (g.__index > targetIndex) {
-                    g.__index -= 1;
-                }
-            });
-
-            // 3. Update UI
             alert("Folder deleted!");
-            openHubHome();   
-            renderHubGames(); 
-        } else { 
-            alert("Failed to delete."); 
-        }
-    } catch(e) { 
-        console.error(e);
-        alert("Error deleting folder."); 
-    }
+            await loadGames();
+            openHubHome();
+        } else { alert("Failed to delete."); }
+    } catch(e) { alert("Error deleting folder."); }
 }
 
-// --- LEGACY SIDEBAR ---
+// --- LEGACY SIDEBAR GAMES LIST ---
 function renderPlayedGames(list) {
   const gamesPlayedEl = document.getElementById("gamesPlayed");
   if (!gamesPlayedEl) return;
@@ -604,9 +559,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 const { res, data } = await apiPost("/clips/create", { windowSeconds: 30 });
                 
                 if (res.ok && data.url) {
-                    // 2. Notify "Ready"
-                    // We send the raw URL so user can copy/click it
-                    addSystemMessage(`Clip Ready! ${data.url}`, "success");
+                    // [FIX] "Clean it up and make it clickable"
+                    // We render an HTML link inside the success toast
+                    addSystemMessage(`Clip Ready! <a href="${data.url}" target="_blank" style="color:#fff; text-decoration:underline; font-weight:bold;">Click to Watch</a>`, "success");
+                    
+                    // Still copy to clipboard for convenience
                     navigator.clipboard.writeText(data.url).catch(() => {});
                 } else {
                     addSystemMessage(data.error || "Failed to create clip.", "error");
