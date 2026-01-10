@@ -59,7 +59,6 @@
   <div class="main-grid">
 
     <div class="col-left live-view">
-        
         <div class="now-playing-card" id="nowPlayingCard">
             <img id="gameCoverImage" src="https://images.igdb.com/igdb/image/upload/t_cover_big/co85cg.jpg" class="game-cover" onerror="this.src='https://data.wolfethyst.tv/assets/nexus_icon'">
             <div class="game-info-overlay">
@@ -74,35 +73,35 @@
 
         <div class="panel" id="leaderboardPanel" style="flex:1;">
             <div class="panel-header">All-Time Top Crystals</div>
-            <div class="panel-body" id="leaderboard">
-                </div>
+            <div class="panel-body" id="leaderboard"></div>
         </div>
-
         <div id="playedPanel" style="display:none;"><div id="gamesPlayed"></div></div>
     </div>
 
     <div class="col-center live-view">
         
-        <div class="stream-info-bar">
-            <div style="flex: 1; min-width: 0;">
-                <h2 id="centerStreamTitle" class="stream-main-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Stream Title Loading...</h2>
-                <div class="stream-sub-meta">
-                    <span id="centerStreamGame" class="stream-game-tag">Game Name</span>
-                    <span style="color:#ff4b4b; font-weight:bold;">● Live</span>
+        <div class="stream-block">
+            <div class="stream-info-bar">
+                <div style="flex: 1; min-width: 0;">
+                    <h2 id="centerStreamTitle" class="stream-main-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Stream Title Loading...</h2>
+                    <div class="stream-sub-meta">
+                        <span id="centerStreamGame" class="stream-game-tag">Game Name</span>
+                        <span style="color:#ff4b4b; font-weight:bold;">● Live</span>
+                    </div>
+                </div>
+
+                <div class="adminOnly admin-controls-area">
+                    <input id="streamTitleInput" type="text" placeholder="Title..." class="panelInput" style="width: 200px;">
+                    <input id="streamGameInput" type="text" placeholder="Game..." class="panelInput" style="width: 120px;">
+                    <button id="streamTitleSaveBtn" class="panelSmallBtn">Save</button>
+                    <button id="clipBtn" class="panelSmallBtn">🎬 Clip</button>
                 </div>
             </div>
 
-            <div class="adminOnly admin-controls-area">
-                <input id="streamTitleInput" type="text" placeholder="Title..." class="panelInput" style="width: 200px;">
-                <input id="streamGameInput" type="text" placeholder="Game..." class="panelInput" style="width: 120px;">
-                <button id="streamTitleSaveBtn" class="panelSmallBtn">Save</button>
-                <button id="clipBtn" class="panelSmallBtn">🎬 Clip</button>
-            </div>
-        </div>
-
-        <div class="stream-wrapper" id="streamPanel">
-            <div class="streamOuter">
-                <iframe id="stream-player" src="https://customer-gc5hjo8ti1eiebgs.cloudflarestream.com/b58b43ebaa1f57a6f55f861b9b366726/iframe" allow="autoplay; picture-in-picture;" allowfullscreen="true"></iframe>
+            <div class="stream-wrapper" id="streamPanel">
+                <div class="streamOuter">
+                    <iframe id="stream-player" src="https://customer-gc5hjo8ti1eiebgs.cloudflarestream.com/b58b43ebaa1f57a6f55f861b9b366726/iframe" allow="autoplay; picture-in-picture;" allowfullscreen="true"></iframe>
+                </div>
             </div>
         </div>
 
@@ -114,6 +113,13 @@
             <div class="panel-body">
                 <div id="redeemContent" class="redeems-grid"></div> 
             </div>
+        </div>
+        
+        <div class="site-footer">
+          <div class="site-footer-left">© <span id="footer-year">2026</span> Wolfethyst</div>
+          <div class="site-footer-links">
+            <a href="https://nexus.wolfethyst.tv/privacy" target="_blank">Privacy</a>
+          </div>
         </div>
 
     </div>
@@ -288,9 +294,7 @@
       });
     }
     
-    // Auto-Sync Title Bar Logic:
-    // This script ensures that when your app updates the "Now Playing" card (left),
-    // it automatically copies that text to the new Center Title Bar as well.
+    // Auto-Sync Title Bar Logic
     const titleObserver = new MutationObserver(() => {
         const title = document.getElementById('streamTitleLabel').innerText;
         const game = document.getElementById('streamGameLabel').innerText;
@@ -298,7 +302,6 @@
         document.getElementById('centerStreamGame').innerText = game;
     });
     
-    // Wait for elements to exist then observe
     setTimeout(() => {
         const target = document.getElementById('nowPlayingCard');
         if(target) {

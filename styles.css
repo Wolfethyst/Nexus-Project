@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS THEME v2 (Fixed)
+   NEXUS THEME v2 (Final Polish)
    ============================================================ */
 :root {
   --bg: radial-gradient(circle at 50% 0%, #3d0066, #0b0014 80%);
@@ -47,7 +47,6 @@ header {
 .nav-tab.active { background: var(--accent); color: #0b0014; box-shadow: 0 0 15px var(--accent-glow); }
 .nav-tab:hover:not(.active) { color: #fff; }
 
-/* Fixed User Area Layout */
 .user-area { display: flex; align-items: center; gap: 15px; }
 .user-info-text { display: flex; flex-direction: column; justify-content: center; }
 
@@ -57,7 +56,7 @@ header {
 }
 .crystals img { width: 14px; height: 14px; object-fit: contain; } 
 
-/* AVATAR - Restored V1 Dimensions */
+/* AVATAR */
 #avatarContainer { 
   min-width: 52px; min-height: 52px; display: flex; align-items: center; justify-content: center; 
 }
@@ -117,12 +116,16 @@ header {
 }
 .lbRow.gold { background: linear-gradient(90deg, rgba(255,215,0,0.15), transparent); border-left: 3px solid #ffd700; }
 
-/* FIX MASSIVE CRYSTALS IN LEADERBOARD */
+/* FIX MASSIVE CRYSTALS */
 #leaderboard img, .lbRow img {
-    width: 20px !important;
-    height: 20px !important;
-    object-fit: contain;
-    vertical-align: middle;
+    width: 20px !important; height: 20px !important; object-fit: contain; vertical-align: middle;
+}
+
+/* NEW WRAPPER FOR STREAM TITLE + VIDEO TO REMOVE GAP */
+.stream-block {
+    display: flex; flex-direction: column;
+    /* No gap here ensures title bar touches video */
+    width: 100%; flex-shrink: 0;
 }
 
 .stream-wrapper {
@@ -146,18 +149,10 @@ header {
 .redeemName { font-size: 12px; font-weight: bold; color: #fff; }
 .redeemCost { font-family: var(--font-head); font-size: 11px; color: var(--accent); background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 6px; }
 
-/* FIX MASSIVE CRYSTALS IN REDEEMS */
 .redeemCost img {
-    width: 14px !important;
-    height: 14px !important;
-    vertical-align: sub;
-    margin-right: 4px;
-    object-fit: contain;
+    width: 14px !important; height: 14px !important; vertical-align: sub; margin-right: 4px; object-fit: contain;
 }
-.redeemCard img {
-    max-width: 40px;
-    height: auto;
-}
+.redeemCard img { max-width: 40px; height: auto; }
 
 /* --- CHAT --- */
 .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
@@ -264,14 +259,13 @@ body.is-owner .adminOnly, body.is-mod .adminOnly { display: flex !important; }
 .stream-sub-meta { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--accent); margin-top: 4px; }
 .stream-game-tag { background: rgba(213, 123, 255, 0.1); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(213, 123, 255, 0.3); }
 
-/* Admin Area - Now sits on the right */
 .admin-controls-area {
     margin: 0; padding: 0; border: none;
     display: flex; align-items: center; gap: 8px;
 }
 
 /* ============================================================
-   VIDEO HUB & LIBRARY (Restored Strictly from V1)
+   VIDEO HUB & GAME HERO (Restored exactly from V1)
    ============================================================ */
 .video-hub-container {
     padding: 20px; height: 100%; overflow-y: auto;
@@ -443,3 +437,11 @@ body.is-owner .adminOnly, body.is-mod .adminOnly { display: flex !important; }
 }
 .vod-edit-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
 body.is-mod .vod-edit-btn { display: block; }
+
+/* --- FOOTER --- */
+.site-footer { 
+    flex-shrink: 0; margin-top: 10px; display: flex; justify-content: space-between; 
+    align-items: center; font-size: 12px; color: var(--text-muted); padding: 5px 0;
+}
+.site-footer-links a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+.site-footer-links a:hover { color: var(--accent); }
