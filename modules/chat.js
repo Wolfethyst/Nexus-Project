@@ -4,6 +4,8 @@ import { API, State, DECO_DURATIONS, apiPost, escapeHtml, getDisplayName, format
 let chatWs = null;
 let brainrotWords = [];
 let timeoutInterval = null;
+
+// Get elements immediately, but also verify them inside functions
 const dashboardChatInputEl = document.getElementById("dashboardChatInput");
 const dashboardChatFormEl = document.getElementById("dashboardChatForm");
 const chatPanelEl = document.getElementById("chatPanel");
@@ -35,23 +37,31 @@ export function checkBrainrot(text) {
 export function playSound(path) {
     if (!path) return;
 
-    // 1. If it's a full URL (http/https), use it directly
-    let finalUrl = path;
-    
-    // 2. If it's a relative path (e.g. "sounds/123.mp3"), construct the API URL
-    if (!path.startsWith("http")) {
-        // CRITICAL FIX: Do NOT encode the entire path, or slashes become %2F
-        // We assume the backend expects the raw path string
-        finalUrl = `${API}/redeems/sound/${path}`;
+    // 1. Force Decode: This turns "sounds%2F123.mp3" back into "sounds/123.mp3"
+    let cleanPath = decodeURIComponent(path);
+
+    // 2. Construct URL
+    let finalUrl = cleanPath;
+    if (!cleanPath.startsWith("http")) {
+        // Ensure we don't accidentally double-slash if API ends in /
+        const baseUrl = API.endsWith('/') ? API.slice(0, -1) : API;
+        // Do not re-encode cleanPath, or we get the %2F issue again
+        finalUrl = `${baseUrl}/redeems/sound/${cleanPath}`;
     }
 
     console.log("[Nexus] Playing Audio:", finalUrl);
 
+    // 3. Create and Play
     const audio = new Audio(finalUrl);
-    audio.volume = 0.6; // Adjust volume as needed
-    audio.play().catch(err => {
-        console.error("[Nexus] Audio Playback Failed:", err);
-    });
+    audio.volume = 0.6; 
+    
+    // Safety catch for autoplay blocks
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+        playPromise.catch(error => {
+            console.warn("[Nexus] Audio Playback Blocked/Failed:", error);
+        });
+    }
 }
 
 export function hideMessagesForUser(userId, durationMinutes) {
@@ -110,34 +120,47 @@ export async function applyActiveTimeouts() {
 }
 
 export function updateChatControls(isLoggedIn) {
-    if(!dashboardChatInputEl) return;
-    if(isLoggedIn) { dashboardChatInputEl.disabled = false; dashboardChatInputEl.placeholder = "Send a message..."; } 
-    else { dashboardChatInputEl.disabled = true; dashboardChatInputEl.placeholder = "Sign in to chat"; }
+    const input = document.getElementById("dashboardChatInput");
+    if(!input) return;
+    
+    if(isLoggedIn) { 
+        input.disabled = false; 
+        input.placeholder = "Send a message..."; 
+    } else { 
+        input.disabled = true; 
+        input.placeholder = "Sign in to chat"; 
+    }
 }
 
 export function lockChatInput(isLocked, placeholderText = "") {
-    if (!dashboardChatInputEl) return;
+    const input = document.getElementById("dashboardChatInput");
+    if (!input) return;
+    
     if (isLocked) {
-        dashboardChatInputEl.disabled = true;
-        dashboardChatInputEl.value = "";
-        dashboardChatInputEl.placeholder = placeholderText;
-        dashboardChatInputEl.classList.add("locked"); 
+        input.disabled = true;
+        input.value = "";
+        input.placeholder = placeholderText;
+        input.classList.add("locked"); 
     } else {
-        dashboardChatInputEl.disabled = false;
-        dashboardChatInputEl.placeholder = "Send a message...";
-        dashboardChatInputEl.classList.remove("locked");
+        input.disabled = false;
+        input.placeholder = "Send a message...";
+        input.classList.remove("locked");
     }
 }
 
 export function startTimeoutCountdown(expiresAt, reason, kind = "manual_timeout") {
-    if (!dashboardChatInputEl) return;
+    const input = document.getElementById("dashboardChatInput");
+    if (!input) return;
+    
     if (timeoutInterval) clearInterval(timeoutInterval);
     const initialDiff = expiresAt - Date.now();
+    
     if (initialDiff <= 0) {
         lockChatInput(false);
         if(timeoutInfoModalEl) timeoutInfoModalEl.classList.remove("open");
         return; 
     }
+    
     const updateTimer = () => {
         const now = Date.now();
         const diff = expiresAt - now;
@@ -149,10 +172,11 @@ export function startTimeoutCountdown(expiresAt, reason, kind = "manual_timeout"
         }
         const m = Math.max(0, Math.floor((diff / 1000 / 60) % 60));
         const s = Math.max(0, Math.floor((diff / 1000) % 60));
-        if(dashboardChatInputEl) dashboardChatInputEl.placeholder = `Timed out: ${m}m ${s}s remaining`;
+        if(input) input.placeholder = `Timed out: ${m}m ${s}s remaining`;
     };
+    
     updateTimer();
-    lockChatInput(true, dashboardChatInputEl.placeholder); 
+    lockChatInput(true, input.placeholder); 
     timeoutInterval = setInterval(updateTimer, 1000);
     const remainingMinutes = Math.ceil(initialDiff / 60000);
     showAutomodModal(kind, reason, remainingMinutes);
@@ -175,19 +199,21 @@ export function showAutomodModal(kind, reason, duration) {
 }
 
 export function replyToUser(username) {
-    if (!dashboardChatInputEl) return;
+    const input = document.getElementById("dashboardChatInput");
+    if (!input) return;
     const tag = `@${username} `;
-    if (!dashboardChatInputEl.value) {
-        dashboardChatInputEl.value = tag;
+    if (!input.value) {
+        input.value = tag;
     } else {
-        const prefix = dashboardChatInputEl.value.endsWith(" ") ? "" : " ";
-        dashboardChatInputEl.value += `${prefix}${tag}`;
+        const prefix = input.value.endsWith(" ") ? "" : " ";
+        input.value += `${prefix}${tag}`;
     }
-    dashboardChatInputEl.focus();
+    input.focus();
 }
 
 export function addSupportEventMessage(data) {
-    if (!chatPanelEl) return;
+    const panel = document.getElementById("chatPanel");
+    if (!panel) return;
     const el = document.createElement("div");
     el.className = "chatMsg support-event";
     el.innerHTML = `
@@ -197,42 +223,43 @@ export function addSupportEventMessage(data) {
         </div>
         ${data.message ? `<div style="font-style:italic; font-size:13px; margin-top:4px; color:#eee;">"${escapeHtml(data.message)}"</div>` : ""}
     `;
-    chatPanelEl.appendChild(el);
+    panel.appendChild(el);
     scrollChatToBottom();
 }
 
 // --- REDEEM MESSAGE & AUDIO HANDLER ---
 export function addRedeemMessage(data) {
-    console.log(" [Redeem Debug] Event Received:", data);
+    console.log("[Nexus] Redeem Event:", data);
 
     // 1. Play Audio (If present)
-    // We check both the top-level redeem object and the data payload
-    const soundPath = data.redeem.sound || data.redeem.soundUrl || data.soundUrl;
+    const soundPath = data.redeem?.sound || data.redeem?.soundUrl || data.soundUrl;
     if (soundPath) {
         playSound(soundPath);
     }
 
     // 2. Add Visual Message
-    if (!chatPanelEl) return;
+    const panel = document.getElementById("chatPanel");
+    if (!panel) return;
+    
     const el = document.createElement("div");
     el.className = "chatMsg redeem-event";
-    
-    // Custom styling for redeem cards
     el.style.borderLeft = "3px solid #d57bff";
     el.style.background = "rgba(181, 123, 255, 0.1)";
 
     const soundIcon = soundPath ? "🔊" : "🎁";
+    const displayName = data.user?.display || "User";
+    const redeemName = data.redeem?.name || "Reward";
 
     el.innerHTML = `
         <div style="font-size:20px; margin-bottom:4px; text-shadow:0 0 10px #d57bff;">${soundIcon}</div>
         <div style="font-weight:bold; color:#e0c2ff; font-family: 'Cinzel', serif; letter-spacing:1px;">
-            ${escapeHtml(data.user.display)} redeemed <br>
-            <span style="color:#fff; text-transform:uppercase;">${escapeHtml(data.redeem.name)}</span>
+            ${escapeHtml(displayName)} redeemed <br>
+            <span style="color:#fff; text-transform:uppercase;">${escapeHtml(redeemName)}</span>
         </div>
         ${data.input ? `<div style="font-style:italic; font-size:13px; margin-top:4px; color:#eee; border-left:2px solid rgba(255,255,255,0.3); padding-left:8px;">"${escapeHtml(data.input)}"</div>` : ""}
     `;
 
-    chatPanelEl.appendChild(el);
+    panel.appendChild(el);
     scrollChatToBottom();
 }
 
@@ -273,7 +300,9 @@ export function addSystemMessage(text, type = "info") {
 }
 
 export function addDashboardChatMessage(msg) {
-  if (!chatPanelEl) return;
+  const panel = document.getElementById("chatPanel");
+  if (!panel) return;
+  
   const rawUser = msg.user || "User"; 
   const source = (msg.platform || msg.source || "nexus").toLowerCase();
   
@@ -286,7 +315,13 @@ export function addDashboardChatMessage(msg) {
   const isMentioned = myName && text.toLowerCase().includes(`@${myName}`);
 
   let platformClass = "nexus"; let avatarSrc = "https://data.wolfethyst.tv/assets/nexus_icon"; 
-  if (source === "twitch") { platformClass = "twitch"; avatarSrc = "https://data.wolfethyst.tv/assets/twitch_icon"; } else if (source === "youtube") { platformClass = "youtube"; avatarSrc = "https://data.wolfethyst.tv/assets/youtube_icon"; } else { platformClass = "nexus"; if (msg.avatar) avatarSrc = msg.avatar; else avatarSrc = "https://data.wolfethyst.tv/assets/wolfe_crystal"; }
+  if (source === "twitch") { platformClass = "twitch"; avatarSrc = "https://data.wolfethyst.tv/assets/twitch_icon"; } 
+  else if (source === "youtube") { platformClass = "youtube"; avatarSrc = "https://data.wolfethyst.tv/assets/youtube_icon"; } 
+  else { 
+      platformClass = "nexus"; 
+      if (msg.avatar) avatarSrc = msg.avatar; 
+      else avatarSrc = "https://data.wolfethyst.tv/assets/wolfe_crystal"; 
+  }
   
   const msgDecoClass = msg.messageDecoration ? ` ${escapeHtml(msg.messageDecoration)}` : ""; 
   
@@ -307,7 +342,9 @@ export function addDashboardChatMessage(msg) {
       animStyle = `style="--anim-delay: -${offset}s"`; 
   }
 
-  el.setAttribute("data-msgid", msg.id || ""); if(msg.userId) el.setAttribute("data-userid", msg.userId); const nameStyle = msg.color ? `style="color:${msg.color}"` : "";
+  el.setAttribute("data-msgid", msg.id || ""); 
+  if(msg.userId) el.setAttribute("data-userid", msg.userId); 
+  const nameStyle = msg.color ? `style="color:${msg.color}"` : "";
   
   let badgeHtml = "";
   if (msg.badge) {
@@ -328,7 +365,8 @@ export function addDashboardChatMessage(msg) {
   el.querySelector(".chatUsername").onclick = () => replyToUser(rawUser);
   el.querySelector(".chatUsername").style.cursor = "pointer";
 
-  chatPanelEl.appendChild(el); scrollChatToBottom();
+  panel.appendChild(el); 
+  scrollChatToBottom();
 }
 
 export function connectDashboardChatWS() {
@@ -338,7 +376,6 @@ export function connectDashboardChatWS() {
       const data = JSON.parse(ev.data);
 
       if (data.type === "stream_update") {
-          // Assuming these IDs exist in the DOM or handled via Video module
           const titleInput = document.getElementById("streamTitleInput");
           const gameInput = document.getElementById("streamGameInput");
           const titleLabel = document.getElementById("streamTitleLabel"); 
@@ -356,14 +393,11 @@ export function connectDashboardChatWS() {
       if (data.type === "stream_live") {
           const tag = document.getElementById("liveStatusTag");
           if(tag) { tag.textContent = "LIVE"; tag.classList.remove("hidden"); tag.classList.add("live"); }
-          if (Notification.permission === "granted") {
-              new Notification("Wolfethyst is LIVE!", { body: `${data.game ? "[" + data.game + "] " : ""}${data.title || "Join the Nexus!"}`, icon: "https://data.wolfethyst.tv/assets/nexus_icon" });
-          }
       }
       
-      if (data.type === "timeout" || data.type === "ban" || (data.type === "system" && data.subtype === "automod_trigger")) {
+      if (data.type === "timeout" || data.type === "ban") {
           if (State.user && String(State.user.id) === String(data.userId)) {
-             const kind = data.kind || (data.type === "ban" ? "automod_ban" : "manual_timeout");
+             const kind = data.kind || "manual_timeout";
              const reason = data.reason || "Moderator Action";
              
              if (kind === "automod_ban" || data.type === "ban") {
@@ -379,58 +413,27 @@ export function connectDashboardChatWS() {
           if (data.type === "ban") removeMessagesForUser(data.userId);
       }
 
-      if (data.type === "unban") {
-          if (State.user && String(State.user.id) === String(data.userId)) {
-              lockChatInput(false);
-              if (timeoutInterval) clearInterval(timeoutInterval);
-              if(timeoutInfoModalEl) timeoutInfoModalEl.classList.remove("open");
-              showAutomodModal("lifted");
-          }
-      }
-
       if (data.type === "chat") addDashboardChatMessage(data.message);
+      if (data.type === "redeem") addRedeemMessage(data);
       
-      // --- REDEEM HANDLER ---
-      if (data.type === "redeem") {
-          addRedeemMessage(data);
-      }
-
       if (data.type === "user_update") { 
-          const msgs = document.querySelectorAll(`.chatMsg[data-userid="${data.userId}"]`); 
-          msgs.forEach(el => { 
-              if (data.decoration !== undefined) {
-                  const img = el.querySelector(".chatAvatarImg"); 
-                  if (img) img.className = `chatAvatarImg ${data.decoration || ""}`; 
-              }
-              if (data.messageDecoration !== undefined) {
-                  let platformClass = "nexus";
-                  if (el.classList.contains("twitch")) platformClass = "twitch";
-                  else if (el.classList.contains("youtube")) platformClass = "youtube";
-                  const isMentioned = el.classList.contains("mentioned") ? " mentioned" : "";
-                  const newDeco = data.messageDecoration ? ` ${escapeHtml(data.messageDecoration)}` : "";
-                  el.className = `chatMsg ${platformClass}${newDeco}${isMentioned}`;
-              }
-          }); 
-
           if (State.user && String(State.user.id) === String(data.userId)) {
-              if (data.decoration !== undefined) {
-                  State.user.decoration = data.decoration;
-                  const sidebarAvatar = document.querySelector("#userAvatar");
-                  if (sidebarAvatar) sidebarAvatar.className = `avatar ${data.decoration || ""}`;
-              }
-              if (data.messageDecoration !== undefined) {
-                  State.user.activeMessageDecoration = data.messageDecoration;
-              }
+              if (data.decoration !== undefined) State.user.decoration = data.decoration;
+              if (data.messageDecoration !== undefined) State.user.activeMessageDecoration = data.messageDecoration;
           }
       }
 
-      if (data.type === "message_deleted") { const el = document.querySelector(`.chatMsg[data-msgid="${data.id}"]`); if (el) el.remove(); }
-      if (data.type === "clear") { chatPanelEl.innerHTML = ""; }
-      if (data.type === "support_event") { addSupportEventMessage(data); }
+      if (data.type === "clear") { 
+          const panel = document.getElementById("chatPanel");
+          if(panel) panel.innerHTML = ""; 
+      }
       if (data.type === "history") { 
-          chatPanelEl.innerHTML = ""; 
-          data.messages.forEach(m => addDashboardChatMessage(m));
-          applyActiveTimeouts();
+          const panel = document.getElementById("chatPanel");
+          if(panel) {
+              panel.innerHTML = ""; 
+              data.messages.forEach(m => addDashboardChatMessage(m));
+              applyActiveTimeouts();
+          }
       }
 
     } catch(e) { console.error("WS Message Error", e); }
@@ -439,11 +442,26 @@ export function connectDashboardChatWS() {
   chatWs.onclose = () => setTimeout(connectDashboardChatWS, 3000);
 }
 
-if(dashboardChatFormEl) {
-    dashboardChatFormEl.addEventListener("submit", async (e) => {
-        e.preventDefault(); const text = dashboardChatInputEl.value.trim(); if(!text || !State.user) return;
+// --- INITIALIZATION ---
+// This ensures the listener is attached even if imported dynamically
+const form = document.getElementById("dashboardChatForm");
+if(form) {
+    // Remove old listeners to prevent duplicates if hot-reloaded
+    const newForm = form.cloneNode(true);
+    form.parentNode.replaceChild(newForm, form);
+    
+    newForm.addEventListener("submit", async (e) => {
+        e.preventDefault(); 
+        const input = document.getElementById("dashboardChatInput");
+        const text = input.value.trim(); 
         
-        // --- OPTIMISTIC UI UPDATE (Fixes "Messages not showing") ---
+        if(!text) return;
+        if(!State.user) {
+            alert("You must be logged in to chat.");
+            return;
+        }
+        
+        // OPTIMISTIC UI
         const fakeMsg = {
             user: getDisplayName(State.user),
             text: text,
@@ -454,16 +472,63 @@ if(dashboardChatFormEl) {
             color: State.user.nameColor || "#ffffff"
         };
         addDashboardChatMessage(fakeMsg);
-        // -----------------------------------------------------------
 
-        dashboardChatInputEl.value = "";
-        const { res, data } = await apiPost("/nexus/chat/send", { text });
+        input.value = "";
         
-        if (res.status === 403 && data && data.blocked) {
-            if(data.kind === "automod_ban") { lockChatInput(true, "You are permanently banned."); showAutomodModal(data.kind, data.reason); } 
-            else { 
-                startTimeoutCountdown(Date.now() + 5*60000, data.reason, data.kind); 
+        try {
+            const { res, data } = await apiPost("/nexus/chat/send", { text });
+            if (res.status === 403 && data && data.blocked) {
+                if(data.kind === "automod_ban") { 
+                    lockChatInput(true, "You are permanently banned."); 
+                    showAutomodModal(data.kind, data.reason); 
+                } else { 
+                    startTimeoutCountdown(Date.now() + 5*60000, data.reason, data.kind); 
+                }
             }
+        } catch(err) {
+            console.error("Chat send failed", err);
         }
+    });
+}
+
+// --- TTS REDEEM HANDLER (Moved from store.js/app.js to ensure scope) ---
+const ttsForm = document.getElementById("ttsRedeemForm");
+if(ttsForm) {
+    const newTtsForm = ttsForm.cloneNode(true);
+    ttsForm.parentNode.replaceChild(newTtsForm, ttsForm);
+
+    newTtsForm.addEventListener("submit", async (ev) => { 
+        ev.preventDefault(); 
+        
+        // Dynamically get the ID from the global state/window since we are in a module
+        // We need store.js to have exported this, OR we need to fetch it. 
+        // For now, let's assume the user logic from store.js populated `window.ttsRedeemId` if possible, 
+        // OR we can just try to find it in the DOM if we stored it there.
+        
+        // Hack: Check if we can get the ID from the store module via an exported getter?
+        // Simpler: Let's just import handleRedeemClick from store.js
+        const { handleRedeemClick, getTtsRedeemId } = await import('./store.js');
+        const ttsId = getTtsRedeemId ? getTtsRedeemId() : null;
+
+        if (!ttsId) {
+            alert("TTS Redeem ID not found. Please wait for redeems to load.");
+            return;
+        }
+
+        const input = document.getElementById("ttsRedeemInput");
+        const btn = document.getElementById("ttsRedeemButton");
+        const text = input.value.trim(); 
+        
+        if (text) { 
+            if(btn) btn.classList.add("loading"); // Optional visual feedback
+            
+            const success = await handleRedeemClick(ttsId, null, text); 
+            
+            if (success) { 
+                input.value = ""; 
+                // We do NOT change the button text anymore per user request
+            }
+            if(btn) btn.classList.remove("loading");
+        } 
     });
 }
