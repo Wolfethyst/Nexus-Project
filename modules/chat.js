@@ -11,7 +11,15 @@ const timeoutInfoModalEl = document.getElementById("timeoutInfoModal");
 const timeoutInfoBodyEl = document.getElementById("timeoutInfoBody");
 
 let isScrolling = false;
-export function scrollChatToBottom() { if (chatPanelEl && !isScrolling) { isScrolling = true; requestAnimationFrame(() => { chatPanelEl.scrollTop = chatPanelEl.scrollHeight; isScrolling = false; }); } }
+export function scrollChatToBottom() { 
+    if (chatPanelEl && !isScrolling) { 
+        isScrolling = true; 
+        requestAnimationFrame(() => { 
+            chatPanelEl.scrollTop = chatPanelEl.scrollHeight; 
+            isScrolling = false; 
+        }); 
+    } 
+}
 
 export async function loadBrainrotList() {
     try { const { data } = await fetch(`${API}/admin/brainrot/list`).then(r=>r.json()); if(data?.words) brainrotWords = data.words; } catch(e) {}
@@ -21,6 +29,29 @@ export function checkBrainrot(text) {
     if(!brainrotWords.length) return false;
     const lower = text.toLowerCase();
     return brainrotWords.some(bad => lower.includes(bad.toLowerCase()));
+}
+
+// --- AUDIO ENGINE (FIXED) ---
+export function playSound(path) {
+    if (!path) return;
+
+    // 1. If it's a full URL (http/https), use it directly
+    let finalUrl = path;
+    
+    // 2. If it's a relative path (e.g. "sounds/123.mp3"), construct the API URL
+    if (!path.startsWith("http")) {
+        // CRITICAL FIX: Do NOT encode the entire path, or slashes become %2F
+        // We assume the backend expects the raw path string
+        finalUrl = `${API}/redeems/sound/${path}`;
+    }
+
+    console.log("[Nexus] Playing Audio:", finalUrl);
+
+    const audio = new Audio(finalUrl);
+    audio.volume = 0.6; // Adjust volume as needed
+    audio.play().catch(err => {
+        console.error("[Nexus] Audio Playback Failed:", err);
+    });
 }
 
 export function hideMessagesForUser(userId, durationMinutes) {
@@ -170,10 +201,18 @@ export function addSupportEventMessage(data) {
     scrollChatToBottom();
 }
 
-// --- NEW FUNCTION: Handes visual alert only (Audio removed) ---
+// --- REDEEM MESSAGE & AUDIO HANDLER ---
 export function addRedeemMessage(data) {
-    console.log(" [Redeem Debug] Event Received (Visual Only):", data);
+    console.log(" [Redeem Debug] Event Received:", data);
 
+    // 1. Play Audio (If present)
+    // We check both the top-level redeem object and the data payload
+    const soundPath = data.redeem.sound || data.redeem.soundUrl || data.soundUrl;
+    if (soundPath) {
+        playSound(soundPath);
+    }
+
+    // 2. Add Visual Message
     if (!chatPanelEl) return;
     const el = document.createElement("div");
     el.className = "chatMsg redeem-event";
@@ -182,7 +221,7 @@ export function addRedeemMessage(data) {
     el.style.borderLeft = "3px solid #d57bff";
     el.style.background = "rgba(181, 123, 255, 0.1)";
 
-    const soundIcon = (data.redeem.soundKey || data.redeem.soundUrl) ? "🔊" : "🎁";
+    const soundIcon = soundPath ? "🔊" : "🎁";
 
     el.innerHTML = `
         <div style="font-size:20px; margin-bottom:4px; text-shadow:0 0 10px #d57bff;">${soundIcon}</div>
@@ -197,8 +236,7 @@ export function addRedeemMessage(data) {
     scrollChatToBottom();
 }
 
-// [NEW] System "Toast" in Chat (Styled like Redeems)
-// Used for Clip notifications and other system feedback
+// System "Toast" in Chat
 export function addSystemMessage(text, type = "info") {
     const panel = document.getElementById("chatPanel");
     if (!panel) return;
@@ -206,15 +244,13 @@ export function addSystemMessage(text, type = "info") {
     const el = document.createElement("div");
     el.className = "chatMsg system-event";
     
-    // Style settings based on type
-    let color = "#d57bff"; // Default Purple
+    let color = "#d57bff"; 
     let icon = "ℹ️";
     
     if (type === "loading") { color = "#ffffff"; icon = "⏳"; }
     else if (type === "success") { color = "#10b981"; icon = "🎬"; }
     else if (type === "error") { color = "#ff4444"; icon = "⚠️"; }
 
-    // Apply "Redeem-like" styling directly (or via CSS class if preferred)
     el.style.borderLeft = `3px solid ${color}`;
     el.style.background = `linear-gradient(90deg, ${color}15, transparent)`;
     el.style.padding = "8px 12px";
@@ -227,11 +263,6 @@ export function addSystemMessage(text, type = "info") {
     el.style.alignItems = "center";
     el.style.gap = "10px";
 
-    // Note: escapeHtml is critical for text, but we allow HTML in text if it's a link (handled by caller)
-    // For safety, we should assume 'text' is safe if it contains HTML tags we injected (like <a>), 
-    // but the caller (video.js) must be careful. 
-    // Since we are inserting text directly in the previous step, we will trust it here or regex check it.
-    // For simplicity, we just inject it.
     el.innerHTML = `
         <div style="font-size:18px;">${icon}</div>
         <div style="line-height:1.4;">${text}</div>
@@ -291,7 +322,7 @@ export function addDashboardChatMessage(msg) {
         <div class="chatHeader">
             ${badgeHtml} <span class="chatUsername" ${nameStyle}>${escapeHtml(rawUser)}</span>
         </div>
-        <div class="chatText">${escapeHtml(text)}</div>
+        <div class="chatText">${text}</div>
     </div>`;
   
   el.querySelector(".chatUsername").onclick = () => replyToUser(rawUser);
@@ -411,6 +442,20 @@ export function connectDashboardChatWS() {
 if(dashboardChatFormEl) {
     dashboardChatFormEl.addEventListener("submit", async (e) => {
         e.preventDefault(); const text = dashboardChatInputEl.value.trim(); if(!text || !State.user) return;
+        
+        // --- OPTIMISTIC UI UPDATE (Fixes "Messages not showing") ---
+        const fakeMsg = {
+            user: getDisplayName(State.user),
+            text: text,
+            platform: "nexus",
+            avatar: State.user.avatar,
+            decoration: State.user.decoration,
+            messageDecoration: State.user.activeMessageDecoration,
+            color: State.user.nameColor || "#ffffff"
+        };
+        addDashboardChatMessage(fakeMsg);
+        // -----------------------------------------------------------
+
         dashboardChatInputEl.value = "";
         const { res, data } = await apiPost("/nexus/chat/send", { text });
         
