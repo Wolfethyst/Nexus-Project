@@ -85,6 +85,9 @@ export function toggleStoreSort() {
 
 export function renderStore() {
     const grid = document.getElementById("storeGrid");
+    // [FIX] Safety check prevents crash on Admin/Owner page
+    if (!grid) return;
+
     const legacyGrid = document.getElementById("storeGridLegacy");
     if(legacyGrid) legacyGrid.innerHTML = ""; 
     if (grid) { grid.style.display = "block"; grid.style.height = "100%"; grid.style.overflow = "hidden"; grid.className = ""; }
@@ -214,7 +217,7 @@ function renderRedeemDrawer(groups) {
       // Icon determination
       const typeIcon = r.sound || r.soundKey ? "🔊" : "🎁";
 
-      // Updated "Card" HTML - NO BUTTON, CLICKABLE WRAPPER
+      // [FIXED] Updated "Card" HTML - NO BUTTON, CLICKABLE WRAPPER, USES NEW CSS CLASSES
       return `
       <div class="redeemCard" onclick="handleRedeemClick('${escapeHtml(id)}', this)">
         <div class="redeemTop">
@@ -247,7 +250,7 @@ export async function loadRedeems() {
 export async function handleRedeemClick(redeemId, el, explicitInput) {
   if (!State.user) { document.getElementById("loginPopup")?.classList.add("open"); return false; }
   
-  // Distinguish between a Card click (new UI) and a Button click (TTS/Old UI)
+  // [FIXED] Distinguish between a Card click (new UI) and a Button click (TTS/Old UI)
   const isCard = el && el.classList.contains("redeemCard");
   let originalText = "";
   
