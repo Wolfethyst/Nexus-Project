@@ -86,17 +86,29 @@
 
     <div class="col-center live-view">
         
+        <div class="stream-info-bar">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <h2 id="centerStreamTitle" class="stream-main-title">Stream Title Loading...</h2>
+                    <div class="stream-sub-meta">
+                        <span id="centerStreamGame" class="stream-game-tag">Game Name</span>
+                        <span style="color:#ff4b4b;">● Live</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="adminOnly admin-controls-area">
+                <input id="streamTitleInput" type="text" placeholder="Update Title..." class="panelInput" style="flex:1;">
+                <input id="streamGameInput" type="text" placeholder="Game" class="panelInput" style="width:150px;">
+                <button id="streamTitleSaveBtn" class="panelSmallBtn">Save</button>
+                <button id="clipBtn" class="panelSmallBtn">🎬 Clip</button>
+            </div>
+        </div>
+
         <div class="stream-wrapper" id="streamPanel">
             <div class="streamOuter">
                 <iframe id="stream-player" src="https://customer-gc5hjo8ti1eiebgs.cloudflarestream.com/b58b43ebaa1f57a6f55f861b9b366726/iframe" allow="autoplay; picture-in-picture;" allowfullscreen="true"></iframe>
             </div>
-        </div>
-
-        <div class="adminOnly" style="background:rgba(0,0,0,0.5); padding:10px; border-radius:8px; display:flex; gap:10px;">
-            <input id="streamTitleInput" type="text" placeholder="Title" class="panelInput" style="flex:1;">
-            <input id="streamGameInput" type="text" placeholder="Game" class="panelInput" style="width:120px;">
-            <button id="streamTitleSaveBtn" class="panelSmallBtn">Save</button>
-            <button id="clipBtn" class="panelSmallBtn">🎬 Clip</button>
         </div>
 
         <div class="panel" style="flex:1; min-height: 200px;">
@@ -108,24 +120,7 @@
                 <div id="redeemContent" class="redeems-grid"></div> 
             </div>
         </div>
-    </div>
 
-    <div id="marketplacePanel" class="panel glass-panel hidden" style="position:absolute; inset:80px 20px 20px 20px; z-index:100;">
-        <div class="market-header">
-            <div class="market-tabs-group">
-                <button class="market-tab active" id="tabStoreBtn" onclick="switchMarketTab('store')">Store</button>
-                <button class="market-tab" id="tabInvBtn" onclick="switchMarketTab('inventory')">Inventory</button>
-                <button class="market-tab" onclick="toggleStoreView()">Close ✕</button>
-            </div>
-            <div class="market-controls-right">
-                <button id="storeSortBtn" class="panelSmallBtn" style="margin-right:8px; min-width:80px;" onclick="toggleStoreSort()">Price ⬆</button>
-                <div class="market-search"><input id="storeSearchInput" type="text" placeholder="Search..." /></div>
-            </div>
-        </div>
-        <div class="panel-body">
-            <div id="storeGrid" class="store-grid-layout"></div>
-            <div id="storeGridLegacy" style="display:none;"></div>
-        </div>
     </div>
 
     <div class="col-video video-view hidden">
