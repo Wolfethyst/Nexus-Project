@@ -87,19 +87,17 @@
     <div class="col-center live-view">
         
         <div class="stream-info-bar">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <div>
-                    <h2 id="centerStreamTitle" class="stream-main-title">Stream Title Loading...</h2>
-                    <div class="stream-sub-meta">
-                        <span id="centerStreamGame" class="stream-game-tag">Game Name</span>
-                        <span style="color:#ff4b4b;">● Live</span>
-                    </div>
+            <div style="flex: 1; min-width: 0;">
+                <h2 id="centerStreamTitle" class="stream-main-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Stream Title Loading...</h2>
+                <div class="stream-sub-meta">
+                    <span id="centerStreamGame" class="stream-game-tag">Game Name</span>
+                    <span style="color:#ff4b4b; font-weight:bold;">● Live</span>
                 </div>
             </div>
 
             <div class="adminOnly admin-controls-area">
-                <input id="streamTitleInput" type="text" placeholder="Update Title..." class="panelInput" style="flex:1;">
-                <input id="streamGameInput" type="text" placeholder="Game" class="panelInput" style="width:150px;">
+                <input id="streamTitleInput" type="text" placeholder="Title..." class="panelInput" style="width: 200px;">
+                <input id="streamGameInput" type="text" placeholder="Game..." class="panelInput" style="width: 120px;">
                 <button id="streamTitleSaveBtn" class="panelSmallBtn">Save</button>
                 <button id="clipBtn" class="panelSmallBtn">🎬 Clip</button>
             </div>
