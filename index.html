@@ -56,6 +56,24 @@
     </div>
   </header>
 
+  <div id="loginPopup"></div>
+  <div id="userMenu">
+      <div id="nexusProfileSection"></div>
+      <hr style="border-color:rgba(255,255,255,0.1);">
+      <div class="userMenuRow" id="openSettingsBtn">
+        <span class="menuIcon">⚙️</span>
+        <span>Settings</span>
+      </div>
+      <div class="userMenuRow" id="enableNotifsBtn">
+        <span class="menuIcon">🔔</span>
+        <span id="notifBtnText">Enable Notifications</span>
+      </div>
+      <hr style="border-color:rgba(255,255,255,0.1);">
+      <div id="userMenuPlatforms"></div>
+      <hr style="border-color:rgba(255,255,255,0.1);">
+      <div id="userMenuButtons"></div>
+  </div>
+
   <div class="main-grid">
 
     <div class="col-left live-view">
@@ -113,13 +131,6 @@
             <div class="panel-body">
                 <div id="redeemContent" class="redeems-grid"></div> 
             </div>
-        </div>
-        
-        <div class="site-footer">
-          <div class="site-footer-left">© <span id="footer-year">2026</span> Wolfethyst</div>
-          <div class="site-footer-links">
-            <a href="https://nexus.wolfethyst.tv/privacy" target="_blank">Privacy</a>
-          </div>
         </div>
 
     </div>
@@ -215,12 +226,18 @@
                 
                 <div class="support-actions">
                     <button id="openTipModalBtn" class="support-btn btn-tip">💎 Tip</button>
-                    <button id="openSubModalBtn" class="support-btn btn-sub">⭐ Subscribe</button>
                 </div>
             </div>
         </div>
     </div>
 
+  </div>
+
+  <div class="site-footer">
+    <div class="site-footer-left">© <span id="footer-year">2026</span> Wolfethyst</div>
+    <div class="site-footer-links">
+        <a href="https://nexus.wolfethyst.tv/privacy" target="_blank">Privacy</a>
+    </div>
   </div>
 
   <div id="settingsModal" class="requestModal">
