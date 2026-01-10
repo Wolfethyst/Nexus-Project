@@ -529,3 +529,97 @@ body.is-mod .vod-edit-btn { display: block; }
 }
 .site-footer-links a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
 .site-footer-links a:hover { color: var(--accent); }
+
+/* ============================================================
+   ADMIN & CONFIRMATION MODALS (Add to bottom of styles.css)
+   ============================================================ */
+
+/* Generic Modal Wrapper */
+.requestModal {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.requestModal.open { opacity: 1; pointer-events: auto; }
+
+/* The Window inside the Modal */
+.requestModalWindow {
+    background: radial-gradient(circle at top, #2a103c, #0b0014);
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 50px rgba(130, 0, 255, 0.2);
+    padding: 24px; border-radius: 16px; width: 420px; max-width: 90%;
+    display: flex; flex-direction: column; gap: 15px; color: #fff;
+}
+
+.requestModalWindow h3 {
+    margin: 0 0 10px 0; font-family: var(--font-head); color: var(--accent);
+    border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;
+    text-align: center;
+}
+
+.requestModalButtons {
+    display: flex; gap: 10px; justify-content: center; margin-top: 10px;
+}
+
+/* --- THE CONFIRMATION MODAL SPECIFICALLY --- */
+#confirmModal {
+    position: fixed; inset: 0; z-index: 100000;
+    background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+}
+#confirmModal.open { opacity: 1; pointer-events: auto; }
+
+.confirm-window {
+    background: radial-gradient(circle at top, #2a103c, #0b0014);
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 40px rgba(140, 0, 200, 0.6);
+    border-radius: 12px; padding: 25px; width: 90%; max-width: 400px;
+    text-align: center; transform: scale(0.9);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#confirmModal.open .confirm-window { transform: scale(1); }
+
+.confirm-title {
+    font-family: "Cinzel", serif; font-size: 22px; color: var(--accent);
+    margin-bottom: 15px; text-shadow: 0 0 10px rgba(213, 123, 255, 0.4);
+}
+.confirm-message {
+    font-family: "Marcellus", serif; font-size: 16px; color: #fff;
+    margin-bottom: 25px; line-height: 1.5;
+}
+.confirm-actions { display: flex; gap: 15px; justify-content: center; }
+
+.confirm-btn {
+    padding: 10px 24px; border-radius: 8px;
+    font-family: "Cinzel", serif; font-size: 14px; cursor: pointer;
+    transition: 0.2s; border: 1px solid transparent;
+}
+.confirm-btn.confirm-yes {
+    background: var(--accent); color: #000; font-weight: bold;
+    box-shadow: 0 0 15px rgba(213, 123, 255, 0.4);
+}
+.confirm-btn.confirm-yes:hover { background: #fff; }
+.confirm-btn.confirm-no {
+    background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #ccc;
+}
+.confirm-btn.confirm-no:hover { border-color: #fff; color: #fff; }
+
+/* --- CONTEXT MENU (Right Click) --- */
+.context-menu {
+    position: absolute; display: none; z-index: 10000;
+    background: rgba(10, 0, 20, 0.95); border: 1px solid var(--accent);
+    box-shadow: 0 0 15px rgba(0,0,0,0.8); border-radius: 6px;
+    min-width: 140px; backdrop-filter: blur(5px); overflow: hidden;
+}
+.ctx-header {
+    padding: 8px 12px; background: rgba(255,255,255,0.1); font-size: 11px;
+    color: var(--text-muted); text-transform: uppercase;
+    border-bottom: 1px solid rgba(255,255,255,0.1); pointer-events: none;
+}
+.ctx-item {
+    padding: 8px 12px; font-size: 13px; color: #fff; cursor: pointer;
+    transition: background 0.1s;
+}
+.ctx-item:hover { background: var(--accent); color: #000; }
