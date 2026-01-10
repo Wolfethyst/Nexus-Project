@@ -113,6 +113,10 @@
     .list-item span { opacity: 0.7; }
     .list-actions { display: flex; gap: 5px; }
 
+    /* --- FILE CONTROLS --- */
+    .file-controls { display: flex; gap: 5px; margin-top: 5px; }
+    .btn-small { padding: 5px 10px; font-size: 10px; }
+
   </style>
 </head>
 <body>
@@ -165,13 +169,11 @@
                 <button id="add-game-btn" class="btn">Add to Library</button>
             </div>
         </div>
-        
         <div id="games-list"></div>
     </div>
 
     <div id="tab-content" class="view-section">
         <h2>Video Manager</h2>
-        
         <div class="card" style="margin-bottom: 20px; border-left: 4px solid var(--success);">
             <label>YouTube Auto-Sync</label>
             <div class="form-row" style="align-items: center;">
@@ -181,11 +183,10 @@
                 <button id="force-sync-btn" class="btn success">🔄 Sync Now</button>
             </div>
         </div>
-
         <div class="card">
             <label>Add Manual Video (YouTube)</label>
             <div class="form-row">
-                <input id="vid-id" placeholder="YouTube ID (e.g. dQw4w9WgXcQ)" style="flex:1;">
+                <input id="vid-id" placeholder="YouTube ID" style="flex:1;">
                 <input id="vid-title" placeholder="Video Title" style="flex:2;">
             </div>
             <div class="form-row" style="margin-top:10px;">
@@ -205,7 +206,6 @@
             <div class="card">
                 <h2>Timed Messages</h2>
                 <div id="auto-msg-list" style="height:300px; overflow-y:auto; margin-bottom:15px; border:1px solid var(--card-border); border-radius:8px; padding:5px;"></div>
-                
                 <input type="hidden" id="auto-msg-id">
                 <label>Message</label>
                 <textarea id="auto-msg-text" rows="2"></textarea>
@@ -225,7 +225,7 @@
 
             <div class="card">
                 <h2>Channel Redeems</h2>
-                <div id="redeem-list" style="height:300px; overflow-y:auto; margin-bottom:15px; border:1px solid var(--card-border); border-radius:8px; padding:5px;"></div>
+                <div id="redeem-list" style="height:250px; overflow-y:auto; margin-bottom:15px; border:1px solid var(--card-border); border-radius:8px; padding:5px;"></div>
                 
                 <input type="hidden" id="redeem-id">
                 <div class="form-row">
@@ -233,11 +233,17 @@
                     <div style="flex:1;"><label>Cost</label><input id="redeem-cost" type="number"></div>
                 </div>
 
-                <label>Sound File</label>
+                <label>Sound File (R2 Bucket)</label>
                 <div class="form-row">
-                    <input id="redeem-soundKey" placeholder="sounds/file.mp3" style="flex:2;">
-                    <button id="upload-sound-trigger" class="btn secondary" style="flex:1;">📂 Upload</button>
+                    <input id="redeem-soundKey" placeholder="filename.mp3" list="r2-files-list" style="flex:2;">
+                    <datalist id="r2-files-list"></datalist>
                     <input type="file" id="sound-upload-input" accept="audio/*" style="display:none;">
+                </div>
+                
+                <div class="file-controls">
+                    <button id="upload-sound-trigger" class="btn secondary btn-small">📂 Upload</button>
+                    <button class="btn secondary btn-small" onclick="scanR2Files()">🔄 Scan Bucket</button>
+                    <button class="btn success btn-small" onclick="testAudio()">▶ Test Play</button>
                 </div>
 
                 <div class="form-row" style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
@@ -265,9 +271,6 @@
                     </select>
                     <button id="store-save-btn" class="btn">Add Item</button>
                 </div>
-                <p style="font-size:11px; color:#aaa; margin-top:10px;">
-                    Advanced styling (CSS/Images) requires manual editing in the old panel for now.
-                </p>
             </div>
             <div class="card">
                 <label>Subscription Config</label>
@@ -296,7 +299,7 @@
                     <input id="tala-nameColor" placeholder="#hex">
                 </div>
             </div>
-            <label>System Prompt (Behavior)</label>
+            <label>System Prompt</label>
             <textarea id="tala-behavior" rows="10"></textarea>
             <button id="tala-save-btn" class="btn" style="margin-top:15px; width:100%;">Save Intelligence</button>
         </div>
@@ -324,11 +327,10 @@
         credentials: "include",
         headers: { "Content-Type": "application/json", ...(options.headers || {}) }
       };
-      // Don't auto-json body if it is FormData
       if (options.body && !(options.body instanceof FormData)) {
           init.body = JSON.stringify(options.body);
       } else if (options.body instanceof FormData) {
-          delete init.headers["Content-Type"]; // Browser sets boundary
+          delete init.headers["Content-Type"];
           init.body = options.body;
       }
       
@@ -351,7 +353,38 @@
         } catch(e) { console.error(e); }
     })();
 
-    // --- UPLOAD HANDLER ---
+    // --- R2 UPLOAD, SCAN, & PLAY ---
+    
+    // 1. Scan
+    window.scanR2Files = async () => {
+        try {
+            const { files } = await apiFetch("/admin/files/list");
+            const datalist = document.getElementById("r2-files-list");
+            datalist.innerHTML = "";
+            if (files && files.length) {
+                files.forEach(file => {
+                    const opt = document.createElement("option");
+                    opt.value = file;
+                    datalist.appendChild(opt);
+                });
+                alert(`Found ${files.length} files in Bucket.`);
+            } else {
+                alert("No files found or bucket not connected.");
+            }
+        } catch(e) { alert("Scan Error: " + e.message); }
+    };
+
+    // 2. Play Test
+    window.testAudio = () => {
+        const filename = document.getElementById("redeem-soundKey").value.trim();
+        if(!filename) return alert("Select a file first.");
+        // We ensure we decode/encode properly to match router logic
+        const url = `${API_BASE}/redeems/sound/${encodeURIComponent(filename)}`;
+        const audio = new Audio(url);
+        audio.play().catch(e => alert("Play error: " + e.message));
+    };
+
+    // 3. Upload Logic
     const uploadInput = document.getElementById("sound-upload-input");
     const uploadBtn = document.getElementById("upload-sound-trigger");
     
@@ -366,6 +399,7 @@
         fd.append("file", file);
         
         try {
+            // Note: This endpoint must exist in your router.js!
             const data = await apiFetch("/admin/upload/sound", { method: "POST", body: fd });
             const key = data.key || data.filename || data.url;
             if(key) {
@@ -380,6 +414,63 @@
             uploadBtn.innerText = "Error";
             setTimeout(() => uploadBtn.innerText = "📂 Upload", 2000);
         }
+    };
+
+    // --- REDEEMS ---
+    async function loadRedeems() {
+        try {
+            // Updated to use the correct listing endpoint
+            const data = await apiFetch("/nexus/redeems"); 
+            const list = document.getElementById("redeem-list");
+            list.innerHTML = "";
+            (data.redeems || []).forEach(r => {
+                const d = document.createElement("div");
+                d.className = "list-item";
+                d.innerHTML = `<strong>${r.name}</strong> <span>${r.cost}</span>`;
+                d.onclick = () => {
+                    document.getElementById("redeem-id").value = r.id;
+                    document.getElementById("redeem-name").value = r.name;
+                    document.getElementById("redeem-cost").value = r.cost;
+                    document.getElementById("redeem-soundKey").value = r.sound || r.soundKey || ""; 
+                    document.getElementById("delete-redeem-btn").style.display = "block";
+                };
+                list.appendChild(d);
+            });
+        } catch(e) {}
+    }
+    
+    document.getElementById("clear-redeem-btn").onclick = () => {
+        document.getElementById("redeem-id").value = "";
+        document.getElementById("redeem-name").value = "";
+        document.getElementById("redeem-cost").value = "";
+        document.getElementById("redeem-soundKey").value = "";
+        document.getElementById("delete-redeem-btn").style.display = "none";
+    };
+
+    document.getElementById("save-redeem-btn").onclick = async () => {
+        const item = {
+            id: document.getElementById("redeem-id").value || undefined,
+            name: document.getElementById("redeem-name").value,
+            cost: parseInt(document.getElementById("redeem-cost").value),
+            type: "redeem", 
+            soundKey: document.getElementById("redeem-soundKey").value,
+            category: "Featured", enabled: true
+        };
+        try {
+            // Using /store/save because it handles DB inserts for all item types
+            await apiFetch("/store/save", { method:"POST", body: { item } });
+            alert("Redeem Saved!");
+            loadRedeems();
+            document.getElementById("clear-redeem-btn").click();
+        } catch(e) { alert("Save Error: " + e.message); }
+    };
+
+    document.getElementById("delete-redeem-btn").onclick = async () => {
+        if(!confirm("Delete?")) return;
+        // Note: You might need to update router.js to handle /store/delete if /nexus/redeems/delete isn't there
+        await apiFetch("/nexus/redeems/delete", { method:"POST", body: { id: document.getElementById("redeem-id").value } });
+        loadRedeems();
+        document.getElementById("clear-redeem-btn").click();
     };
 
     // --- STREAM ---
@@ -413,7 +504,6 @@
             const data = await apiFetch("/played");
             container.innerHTML = "";
             const games = data.games || [];
-            
             games.forEach(g => {
                 const el = document.createElement("div");
                 el.className = "game-item";
@@ -431,7 +521,6 @@
             });
         } catch(e) { container.innerHTML = "Error loading games."; }
     }
-
     document.getElementById("add-game-btn").onclick = async () => {
         const name = document.getElementById("new-game-name").value;
         if(!name) return;
@@ -441,7 +530,6 @@
             loadGames();
         } catch(e) { alert(e.message); }
     };
-
     window.updateGameCover = async (name, btn) => {
         const input = btn.parentElement.previousElementSibling.querySelector(".cover-input");
         const newCover = input.value;
@@ -452,49 +540,29 @@
             setTimeout(() => btn.innerText = "Save Art", 2000);
             const img = btn.closest(".game-item").querySelector(".game-thumb");
             if(res.cover) img.src = res.cover;
-        } catch(e) { 
-            alert(e.message); 
-            btn.innerText = "Error";
-        }
+        } catch(e) { alert(e.message); btn.innerText = "Error"; }
     };
 
     // --- VIDEO ---
-    
-    // [NEW] SYNC LOGIC
     document.getElementById("force-sync-btn").onclick = async () => {
         const btn = document.getElementById("force-sync-btn");
         const originalText = btn.innerText;
-        
         btn.innerText = "Syncing...";
         btn.disabled = true;
-        
         try {
             const res = await apiFetch("/admin/sync/youtube", { method: "POST" });
-            
-            if (res.ok) {
-                alert(`Sync Complete!\nFound ${res.count} new videos.`);
-                if (res.logs && res.logs.length > 0) {
-                    console.log("Imported:", res.logs);
-                }
-            } else {
-                alert("Sync Error: " + (res.error || "Unknown error"));
-            }
-        } catch(e) { 
-            alert("Network Error"); 
-            console.error(e);
-        }
-        
+            if (res.ok) alert(`Sync Complete!\nFound ${res.count} new videos.`);
+            else alert("Sync Error: " + (res.error || "Unknown"));
+        } catch(e) { alert("Network Error"); }
         btn.innerText = originalText;
         btn.disabled = false;
     };
-
     document.getElementById("add-video-btn").onclick = async () => {
         const id = document.getElementById("vid-id").value;
         const title = document.getElementById("vid-title").value;
         const game = document.getElementById("vid-game").value;
         const type = document.getElementById("vid-type").value;
         if(!id || !title) return alert("ID and Title required");
-        
         try {
             await apiFetch("/streams/manual-add", { method:"POST", body: { youtubeId:id, title, game, type } });
             alert("Video Added");
@@ -503,7 +571,7 @@
         } catch(e) { alert(e.message); }
     };
 
-    // --- ENGAGEMENT (AUTO MESSAGES) ---
+    // --- ENGAGEMENT (AUTO MSGS) ---
     async function loadRecurringMessages() {
         try {
             const data = await apiFetch("/admin/recurring/list"); 
@@ -545,56 +613,6 @@
         await apiFetch("/admin/recurring/delete", { method:"POST", body: { id: document.getElementById("auto-msg-id").value } });
         loadRecurringMessages();
         document.getElementById("clear-auto-msg-btn").click();
-    };
-
-    // --- REDEEMS ---
-    async function loadRedeems() {
-        try {
-            const data = await apiFetch("/nexus/redeems/config");
-            const list = document.getElementById("redeem-list");
-            list.innerHTML = "";
-            (data.redeems || []).forEach(r => {
-                const d = document.createElement("div");
-                d.className = "list-item";
-                d.innerHTML = `<strong>${r.name}</strong> <span>${r.cost}</span>`;
-                d.onclick = () => {
-                    document.getElementById("redeem-id").value = r.id;
-                    document.getElementById("redeem-name").value = r.name;
-                    document.getElementById("redeem-cost").value = r.cost;
-                    document.getElementById("redeem-soundKey").value = r.soundKey || "";
-                    document.getElementById("delete-redeem-btn").style.display = "block";
-                };
-                list.appendChild(d);
-            });
-        } catch(e) {}
-    }
-    
-    document.getElementById("clear-redeem-btn").onclick = () => {
-        document.getElementById("redeem-id").value = "";
-        document.getElementById("redeem-name").value = "";
-        document.getElementById("redeem-cost").value = "";
-        document.getElementById("redeem-soundKey").value = "";
-        document.getElementById("delete-redeem-btn").style.display = "none";
-    };
-
-    document.getElementById("save-redeem-btn").onclick = async () => {
-        const redeem = {
-            id: document.getElementById("redeem-id").value || undefined,
-            name: document.getElementById("redeem-name").value,
-            cost: document.getElementById("redeem-cost").value,
-            soundKey: document.getElementById("redeem-soundKey").value,
-            category: "Featured", enabled: true
-        };
-        await apiFetch("/nexus/redeems/save", { method:"POST", body: { redeem } });
-        loadRedeems();
-        document.getElementById("clear-redeem-btn").click();
-        alert("Redeem Saved");
-    };
-    document.getElementById("delete-redeem-btn").onclick = async () => {
-        if(!confirm("Delete?")) return;
-        await apiFetch("/nexus/redeems/delete", { method:"POST", body: { id: document.getElementById("redeem-id").value } });
-        loadRedeems();
-        document.getElementById("clear-redeem-btn").click();
     };
 
     // --- INTELLIGENCE ---
