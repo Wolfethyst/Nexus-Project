@@ -551,20 +551,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 return; 
             }
 
-            // 1. Notify "Creating..."
             addSystemMessage("Clip is being created and will be available shortly...", "loading");
             clipBtn.disabled = true;
 
             try {
                 const { res, data } = await apiPost("/clips/create", { windowSeconds: 30 });
                 
-                if (res.ok && data.url) {
-                    // [FIX] "Clean it up and make it clickable"
-                    // We render an HTML link inside the success toast
-                    addSystemMessage(`Clip Ready! <a href="${data.url}" target="_blank" style="color:#fff; text-decoration:underline; font-weight:bold;">Click to Watch</a>`, "success");
+                if (res.ok && data.id) {
+                    // [FIX] Construct the "Watch Page" link instead of the file link
+                    const watchLink = `${window.location.origin}/?clip=${data.id}`;
                     
-                    // Still copy to clipboard for convenience
-                    navigator.clipboard.writeText(data.url).catch(() => {});
+                    addSystemMessage(`Clip Ready! <a href="${watchLink}" target="_blank" style="color:#fff; text-decoration:underline; font-weight:bold;">Click to Watch</a>`, "success");
+                    
+                    // Copy the WATCH link to clipboard
+                    navigator.clipboard.writeText(watchLink).catch(() => {});
                 } else {
                     addSystemMessage(data.error || "Failed to create clip.", "error");
                 }
