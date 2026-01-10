@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS THEME v2 (Complete & Fixed)
+   NEXUS THEME v2 (Refined & Fixed)
    ============================================================ */
 :root {
   --bg: radial-gradient(circle at 50% 0%, #3d0066, #0b0014 80%);
@@ -100,7 +100,7 @@ header {
     position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 2/3; 
     border: 1px solid var(--panel-border); box-shadow: 0 0 20px rgba(0,0,0,0.5); flex-shrink: 0;
 }
-.game-cover { width: 100%; height: 100%; object-fit: cover; }
+.game-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
 .game-info-overlay {
     position: absolute; inset: 0; background: linear-gradient(to top, #0b0014 10%, transparent 60%);
     display: flex; flex-direction: column; justify-content: flex-end; padding: 15px;
@@ -116,43 +116,77 @@ header {
 }
 .lbRow.gold { background: linear-gradient(90deg, rgba(255,215,0,0.15), transparent); border-left: 3px solid #ffd700; }
 
-/* FIX MASSIVE CRYSTALS */
 #leaderboard img, .lbRow img {
     width: 20px !important; height: 20px !important; object-fit: contain; vertical-align: middle;
 }
 
-/* NEW WRAPPER FOR STREAM TITLE + VIDEO TO REMOVE GAP */
+/* --- STREAM BLOCK (Merged Layout) --- */
 .stream-block {
-    display: flex; flex-direction: column;
-    /* No gap here ensures title bar touches video */
-    width: 100%; flex-shrink: 0;
+    display: flex; flex-direction: column; width: 100%; flex-shrink: 0;
+    border-radius: 12px; border: 1px solid var(--panel-border);
+    overflow: hidden; background: var(--panel-bg);
+}
+
+.stream-info-bar {
+    background: rgba(0,0,0,0.3); 
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 10px 15px; 
+    display: flex; flex-direction: row; 
+    justify-content: space-between; align-items: center;
+    backdrop-filter: blur(10px);
+}
+
+.stream-main-title { font-size: 16px; font-weight: 700; color: #fff; margin: 0; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+.stream-sub-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--accent); margin-top: 2px; }
+.stream-game-tag { background: rgba(213, 123, 255, 0.1); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(213, 123, 255, 0.3); }
+
+.admin-controls-area {
+    margin: 0; padding: 0; border: none; display: flex; align-items: center; gap: 8px;
 }
 
 .stream-wrapper {
     width: 100%; aspect-ratio: 16/9; background: #000;
-    /* Remove top border radius so it connects to header */
-    border-radius: 0 0 12px 12px;
-    border: 1px solid var(--panel-border); box-shadow: 0 0 40px rgba(140,0,200,0.15);
-    overflow: hidden; flex-shrink: 0;
-    border-top: none;
 }
 .streamOuter, iframe { width: 100%; height: 100%; border: none; }
 
-/* Redeems Grid */
-.redeems-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-.redeemCard {
-    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px; padding: 12px; cursor: pointer; transition: 0.2s; text-align: center;
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
+/* NEW INTERACTION DECK (Redeems + TTS attached to video bottom) */
+.stream-interactions {
+    background: rgba(0,0,0,0.4);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding: 10px;
+    display: flex; gap: 15px;
+    max-height: 140px;
 }
-.redeemCard:hover { background: rgba(213, 123, 255, 0.08); border-color: var(--accent); transform: translateY(-3px); }
-.redeemName { font-size: 12px; font-weight: bold; color: #fff; }
-.redeemCost { font-family: var(--font-head); font-size: 11px; color: var(--accent); background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 6px; }
 
-.redeemCost img {
-    width: 14px !important; height: 14px !important; vertical-align: sub; margin-right: 4px; object-fit: contain;
+.interaction-section-title {
+    font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; font-weight: bold;
 }
-.redeemCard img { max-width: 40px; height: auto; }
+
+/* TTS Area */
+.tts-area {
+    width: 200px; flex-shrink: 0; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px;
+    display: flex; flex-direction: column;
+}
+.tts-input-row { display: flex; gap: 5px; }
+#ttsInput { flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: #fff; padding: 5px; font-size: 12px; }
+#ttsSendBtn { background: var(--accent); color: #000; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; padding: 0 10px; }
+
+/* Redeems Strip */
+.redeems-strip {
+    flex: 1; display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden;
+    scrollbar-width: thin; scrollbar-color: var(--accent) rgba(0,0,0,0.3);
+    align-items: center;
+}
+.redeemCard {
+    min-width: 110px; height: 70px; flex-shrink: 0;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px; padding: 8px; cursor: pointer; transition: 0.2s;
+    display: flex; flex-direction: column; justify-content: space-between;
+}
+.redeemCard:hover { border-color: var(--accent); background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+.redeemName { font-size: 11px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.redeemCost { font-family: var(--font-head); font-size: 10px; color: var(--accent); }
+.redeemCost img { width: 12px !important; height: 12px !important; vertical-align: sub; }
 
 /* --- CHAT --- */
 .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
@@ -237,31 +271,6 @@ body.is-owner .adminOnly, body.is-mod .adminOnly { display: flex !important; }
 .game-info-cover { width: 80px; height: 110px; object-fit: cover; border-radius: 6px; }
 .game-info-text { font-size: 13px; line-height: 1.4; color: var(--text-muted); }
 
-/* --- STREAM INFO BAR --- */
-.stream-info-bar {
-    background: var(--panel-bg); 
-    border: 1px solid var(--panel-border);
-    border-bottom: none;
-    border-radius: 12px 12px 0 0; /* Top corners rounded */
-    padding: 12px 20px; 
-    display: flex; 
-    flex-direction: row; /* Horizontal layout */
-    justify-content: space-between; /* Push title left, controls right */
-    align-items: center; /* Vertical centering */
-    backdrop-filter: blur(10px);
-    z-index: 2; position: relative;
-    gap: 20px;
-}
-
-.stream-main-title { font-size: 18px; font-weight: 700; color: #fff; margin: 0; text-shadow: 0 0 10px rgba(0,0,0,0.5); line-height: 1.2; }
-.stream-sub-meta { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--accent); margin-top: 4px; }
-.stream-game-tag { background: rgba(213, 123, 255, 0.1); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(213, 123, 255, 0.3); }
-
-.admin-controls-area {
-    margin: 0; padding: 0; border: none;
-    display: flex; align-items: center; gap: 8px;
-}
-
 /* ============================================================
    USER MENU & POPUPS (Restored from V1)
    ============================================================ */
@@ -269,7 +278,7 @@ body.is-owner .adminOnly, body.is-mod .adminOnly { display: flex !important; }
   position: absolute; top: 50px; left: 0; width: 260px;
   background: rgba(15, 0, 25, 0.98); border: 1px solid var(--accent);
   border-radius: 12px; padding: 15px; box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px); display: none; flex-direction: column; gap: 10px; z-index: 6000;
+  backdrop-filter: blur(10px); display: none; flex-direction: column; gap: 10px;
 }
 #loginPopup.open { display: flex; }
 .loginOption {
@@ -314,7 +323,9 @@ body.is-owner .adminOnly, body.is-mod .adminOnly { display: flex !important; }
 #nexusProfileSaveBtn:hover { background: var(--accent); }
 .userMenuRow { display: flex; align-items: center; gap: 10px; padding: 8px 0; cursor: pointer; transition: color 0.2s; color: #fff; }
 .userMenuRow:hover { color: var(--accent); }
-.menuIcon { width: 18px; height: 18px; object-fit: contain; }
+
+/* --- FIX FOR GIANT ICONS --- */
+.menuIcon { width: 18px !important; height: 18px !important; object-fit: contain; font-size:18px; }
 
 /* CHAT OVERLAY & TIPS */
 .chat-overlay {
