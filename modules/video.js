@@ -347,7 +347,7 @@ export function playVideo(item, type) {
 
     if (item.url) {
         mainVideoPlayer.style.display = 'block';
-        if (Hls.isSupported() && item.url.endsWith('.m3u8')) {
+        if (typeof Hls !== 'undefined' && Hls.isSupported() && item.url.endsWith('.m3u8')) {
             const hls = new Hls(); hls.loadSource(item.url); hls.attachMedia(mainVideoPlayer);
         } else { mainVideoPlayer.src = item.url; }
         mainVideoPlayer.play().catch(e => console.log("Autoplay blocked", e));
@@ -416,7 +416,7 @@ window.refreshGameMetadata = async function(gameName) {
 
     try {
         const { data } = await apiPost('/played/refresh-metadata', { name: gameName });
-        if (data && data.success) {
+        if (data && data.ok) {
             alert(`Updated!\n\nDeveloper: ${data.data.developer}\nRelease: ${data.data.release_date}`);
             const game = allPlayedGames.find(g => g.name === gameName);
             if(game) {
@@ -442,32 +442,27 @@ export async function promptRenameGame() {
     if(!oldName) return;
     const newName = prompt(`Rename folder "${oldName}" to:`, oldName);
     if (!newName || newName === oldName) return;
-    if (!confirm(`This will update all videos in "${oldName}" to "${newName}".\n\nProceed?`)) return;
+    if (!confirm(`This will move all videos from "${oldName}" to "${newName}" and rename the folder permanently.\n\nProceed?`)) return;
 
-    let fullList = [];
+    const btn = document.querySelector(".panelSmallBtn[title='Rename']");
+    const originalText = btn ? btn.innerText : "";
+    if(btn) btn.innerText = "Moving...";
+
     try {
-         const encoded = encodeURIComponent(oldName);
-         const { data } = await apiGet(`/streams/list?game=${encoded}&limit=500`);
-         fullList = data.streams || [];
-    } catch(e) {}
-
-    if (fullList.length === 0) { alert("No videos found to move."); return; }
-
-    let successCount = 0;
-    for (const v of fullList) {
-        try {
-            await apiPost('/streams/update', { id: v.id, title: v.title, game: newName, youtubeId: v.youtube_id, isExclusive: v.is_exclusive });
-            successCount++;
-        } catch(e) { console.error("Failed to move", v.title, e); }
+        const { res, data } = await apiPost('/played/rename', { oldName, newName });
+        if (res.ok) {
+            alert(`Success! Moved ${data.count} videos.`);
+            await loadVideoData(); 
+            openGameDetails(newName);
+        } else {
+            alert("Error: " + (data.error || "Move failed"));
+        }
+    } catch(e) {
+        console.error(e);
+        alert("Network error during move.");
+    } finally {
+        if(btn) btn.innerText = originalText;
     }
-    const newGameExists = allPlayedGames.find(g => g.name.toLowerCase() === newName.toLowerCase());
-    if (!newGameExists) { allPlayedGames.push({ name: newName, cover: fullList[0].thumbnail_url || PLACEHOLDER_IMG, isVirtual: true }); }
-    const oldIdx = allPlayedGames.findIndex(g => g.name.toLowerCase() === oldName.toLowerCase());
-    if (oldIdx > -1) allPlayedGames.splice(oldIdx, 1);
-    allPlayedGames.sort((a,b) => a.name.localeCompare(b.name));
-    alert(`Successfully moved ${successCount} videos!`);
-    loadVods(); 
-    openGameDetails(newName);
 }
 
 export async function promptChangeCover() {
@@ -501,9 +496,12 @@ export async function promptDeleteGame() {
     try {
         const { res } = await apiPost('/played/delete', { index: game.__index });
         if (res.ok) {
+            const localArrayIndex = allPlayedGames.indexOf(game);
+            if (localArrayIndex > -1) allPlayedGames.splice(localArrayIndex, 1);
+            allPlayedGames.forEach(g => { if (g.__index > game.__index) g.__index -= 1; });
             alert("Folder deleted!");
-            await loadGames();
-            openHubHome();
+            openHubHome();   
+            renderHubGames(); 
         } else { alert("Failed to delete."); }
     } catch(e) { alert("Error deleting folder."); }
 }
@@ -551,6 +549,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return; 
             }
 
+            // 1. Notify "Creating..."
             addSystemMessage("Clip is being created and will be available shortly...", "loading");
             clipBtn.disabled = true;
 
@@ -558,12 +557,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 const { res, data } = await apiPost("/clips/create", { windowSeconds: 30 });
                 
                 if (res.ok && data.id) {
-                    // [FIX] Construct the "Watch Page" link instead of the file link
+                    // Success!
+                    // We DO NOT add a "Clip Ready" message here locally. 
+                    // The server now broadcasts it via the Chat Room so both the Dock and Dashboard see it.
+                    
+                    // We can still copy the link silently for convenience
                     const watchLink = `${window.location.origin}/?clip=${data.id}`;
-                    
-                    addSystemMessage(`Clip Ready! <a href="${watchLink}" target="_blank" style="color:#fff; text-decoration:underline; font-weight:bold;">Click to Watch</a>`, "success");
-                    
-                    // Copy the WATCH link to clipboard
                     navigator.clipboard.writeText(watchLink).catch(() => {});
                 } else {
                     addSystemMessage(data.error || "Failed to create clip.", "error");
