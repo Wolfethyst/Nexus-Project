@@ -17,12 +17,10 @@ let currentTipMethod = "card";
 
 // --- LEADERBOARD (FIXED) ---
 export async function loadLeaderboard() {
-  // [FIX] Use the dedicated DB endpoint instead of parsing /userdata
   const { res, data } = await apiGet("/leaderboard");
   
   if (!res.ok || !data.leaderboard) return;
 
-  // Render the rows directly from the SQL result
   const lbEl = document.getElementById("leaderboard");
   if (!lbEl) return;
   
@@ -35,19 +33,14 @@ export async function loadLeaderboard() {
       return `<div class="lbRow ${rankClass}"><div class="lbPos">${i+1}</div><div class="lbName">${escapeHtml(u.displayName)}</div><div class="lbRight"><span>${formatCompact(u.points)}</span><img class="lbCrystal" src="https://data.wolfethyst.tv/assets/wolfe_crystal"></div></div>`; 
   }).join("");
 
-  // Update local user points if they are logged in
   if (State.user) {
-      // 1. If I am the owner, FORCE Infinite
       if (State.isOwner) {
           State.points = INFINITE_POINTS;
-      } 
-      // 2. Otherwise try to find me in the leaderboard list
-      else {
+      } else {
           const meInLb = data.leaderboard.find(u => String(u.id) === String(State.user.id));
           if (meInLb) State.points = meInLb.points;
       }
 
-      // Update Header Text
       const displayPoints = State.points >= INFINITE_POINTS ? "∞" : State.points.toLocaleString(); 
       const headerPoints = document.getElementById("headerPoints");
       const chatPoints = document.getElementById("chatPointsText");
@@ -74,7 +67,7 @@ function injectDynamicStoreStyles(items) {
     styleBlock.textContent = allCss;
 }
 
-export async function loadStore() { await loadLeaderboard(); const { res, data } = await apiGet("/store/list"); if(res.ok) { storeItems = data.items || []; injectDynamicStoreStyles(storeItems); renderStore(); } }
+export async function loadStore() { await loadLeaderboard(); const { res, data } = await apiGet("/store/list"); if(res.ok) { storeItems = data.data || []; injectDynamicStoreStyles(storeItems); renderStore(); } }
 
 export function switchMarketTab(tab) {
     currentMarketTab = tab;
@@ -198,35 +191,114 @@ export async function equipItem(itemId) {
     } else { alert(data.error); }
 }
 
-// --- REDEEMS ---
+// --- REDEEMS LOGIC (UPDATED UI) ---
 function normalizeRedeemList(raw) { if (Array.isArray(raw.redeems)) return [{ label: null, redeems: raw.redeems }]; if (Array.isArray(raw.groups)) return raw.groups; return []; }
+
 function renderRedeemDrawer(groups) {
   const redeemContentEl = document.getElementById("redeemContent");
   if (!redeemContentEl) return; 
   ttsRedeemId = null; nexusRedeems = [];
   const ttsCostLabelEl = document.getElementById("ttsCostLabel");
+  
   const html = groups.map(group => {
     const list = Array.isArray(group.redeems) ? group.redeems : [];
     return list.map(r => {
-      const id = String(r.id || r.key); const name = r.label || r.name; const cost = r.cost || r.price || 0; nexusRedeems.push({ ...r, __id: id });
+      const id = String(r.id || r.key); 
+      const name = r.label || r.name; 
+      const cost = r.cost || r.price || 0; 
+      nexusRedeems.push({ ...r, __id: id });
+      
+      // Filter out TTS for special input box
       if (id.toLowerCase().includes("tts")) { ttsRedeemId = id; ttsRedeemCost = cost; return ""; }
-      return `<div class="redeemCard"><div class="redeemMain"><div class="redeemName">${escapeHtml(name)}</div><div class="redeemDescription">${escapeHtml(r.description || "")}</div></div><div class="redeemMeta"><div class="redeemCost">${cost}<img src="https://data.wolfethyst.tv/assets/wolfe_crystal"></div><button class="panelSmallBtn redeemUseBtn" onclick="handleRedeemClick('${escapeHtml(id)}', this)">Use</button></div></div>`;
+
+      // Icon determination
+      const typeIcon = r.sound || r.soundKey ? "🔊" : "🎁";
+
+      // Updated "Card" HTML - NO BUTTON, CLICKABLE WRAPPER
+      return `
+      <div class="redeemCard" onclick="handleRedeemClick('${escapeHtml(id)}', this)">
+        <div class="redeemTop">
+            <div class="redeemName">${escapeHtml(name)}</div>
+            <div class="redeemIcon">${typeIcon}</div>
+        </div>
+        <div class="redeemDescription">${escapeHtml(r.description || "")}</div>
+        <div class="redeemMeta">
+            <div class="redeemCost">${cost} <img src="https://data.wolfethyst.tv/assets/wolfe_crystal"></div>
+        </div>
+      </div>`;
     }).join("");
   }).join("");
-  redeemContentEl.innerHTML = html || "No redeems available."; 
+
+  redeemContentEl.innerHTML = html || `<div style="grid-column:1/-1;text-align:center;color:#666;font-size:12px;font-style:italic;">No redeems available.</div>`; 
   if (ttsCostLabelEl && ttsRedeemCost != null) { ttsCostLabelEl.textContent = `${ttsRedeemCost} `; }
 }
 
 export async function loadRedeems() { 
     const redeemContentEl = document.getElementById("redeemContent");
     if (!redeemContentEl) return; 
-    try { const { res, data } = await apiGet("/nexus/redeems"); if (!res.ok) { redeemContentEl.innerHTML = "Unable to load redeems."; return; } const groups = normalizeRedeemList(data); renderRedeemDrawer(groups); } catch (err) { redeemContentEl.innerHTML = "Failed to load redeems."; } 
+    try { 
+        const { res, data } = await apiGet("/nexus/redeems"); 
+        if (!res.ok) { redeemContentEl.innerHTML = "Unable to load redeems."; return; } 
+        const groups = normalizeRedeemList(data); 
+        renderRedeemDrawer(groups); 
+    } catch (err) { redeemContentEl.innerHTML = "Failed to load redeems."; } 
 }
 
-export async function handleRedeemClick(redeemId, buttonEl, explicitInput) {
+export async function handleRedeemClick(redeemId, el, explicitInput) {
   if (!State.user) { document.getElementById("loginPopup")?.classList.add("open"); return false; }
-  const originalText = buttonEl ? buttonEl.textContent : ""; if (buttonEl) buttonEl.textContent = "Using...";
-  try { const { res, data } = await apiPost("/nexus/redeems/redeem", { redeemId, input: explicitInput }); if (!res.ok) { alert(data?.error || "Failed."); if (buttonEl) buttonEl.textContent = originalText; return false; } else { if (buttonEl) { buttonEl.textContent = "Used!"; setTimeout(() => buttonEl.textContent = originalText, 1500); } loadLeaderboard(); return true; } } catch (e) { alert("Error."); if (buttonEl) buttonEl.textContent = originalText; return false; }
+  
+  // Distinguish between a Card click (new UI) and a Button click (TTS/Old UI)
+  const isCard = el && el.classList.contains("redeemCard");
+  let originalText = "";
+  
+  if (el) {
+      if (isCard) {
+          el.classList.add("loading");
+      } else {
+          originalText = el.textContent;
+          el.textContent = "Using...";
+          el.disabled = true;
+      }
+  }
+  
+  try { 
+      const { res, data } = await apiPost("/nexus/redeems/redeem", { redeemId, input: explicitInput }); 
+      
+      if (el) {
+          if (isCard) el.classList.remove("loading");
+          else {
+              el.textContent = originalText;
+              el.disabled = false;
+          }
+      }
+
+      if (!res.ok) { 
+          alert(data?.error || "Failed."); 
+          return false; 
+      } else { 
+          if (el && isCard) {
+              // Trigger visual success flash
+              el.classList.add("success");
+              setTimeout(() => el.classList.remove("success"), 600);
+          } else if (el) {
+               // Fallback for button logic
+               el.textContent = "Used!";
+               setTimeout(() => el.textContent = originalText, 1500);
+          }
+          loadLeaderboard(); 
+          return true; 
+      } 
+  } catch (e) { 
+      alert("Error processing redeem."); 
+      if (el) {
+          if (isCard) el.classList.remove("loading");
+          else {
+              el.textContent = originalText;
+              el.disabled = false;
+          }
+      }
+      return false; 
+  }
 }
 
 // Redeem UI Listeners
