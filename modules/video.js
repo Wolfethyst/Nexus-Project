@@ -25,11 +25,38 @@ function getThumbUrl(item, type) {
 }
 
 // --- DATA LOADING ---
+
 export async function loadVideoData() {
-    await loadGames();
-    renderHubGames(); // Instant render to prevent blank screen
-    await loadStreamTitle();
-    await Promise.all([loadClips(), loadVods()]);
+    const params = new URLSearchParams(window.location.search);
+    const directClipId = params.get("clip");
+    const directVodId = params.get("vod");
+
+    if (directClipId) {
+        // Fetch JUST this clip first
+        try {
+            const { data } = await apiGet(`/clips/meta?id=${directClipId}`);
+            if (data && data.ok && data.clip) {
+                // Play immediately (don't wait for games/vods)
+                playVideo(data.clip, 'clip'); 
+            }
+        } catch(e) { console.error("Fast load failed", e); }
+    } 
+    else if (directVodId) {
+    }
+
+    const heavyLifting = Promise.all([
+        loadGames().then(() => renderHubGames()), // Render folders as soon as they arrive
+        loadStreamTitle(),
+        loadClips(),
+        loadVods().then(() => {
+
+            if (directVodId && vodsData.length > 0) {
+                handleVideoClick(directVodId, 'vod');
+            }
+        })
+    ]);
+
+    await heavyLifting;
 }
 
 async function loadGames() {
