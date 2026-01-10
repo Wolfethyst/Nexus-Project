@@ -127,11 +127,11 @@
 <script>
 /** ================= CONFIG ================== **/
 const WS_URL          = "wss://data.wolfethyst.tv/nexus/chat/stream";
-const API_BASE        = "https://data.wolfethyst.tv"; // Matches your config.js
+const API_BASE        = "https://data.wolfethyst.tv"; 
 
 const USE_TYPEWRITER        = true;
 const TYPE_SPEED_MS         = 18;
-const OVERLAY_HIDE_DELAY_MS = 3000; // Increased duration so you can see it
+const OVERLAY_HIDE_DELAY_MS = 3000; 
 
 /** ============== ELEMENTS =================== **/
 const overlayRoot = document.getElementById("overlayRoot");
@@ -206,7 +206,6 @@ function playBase64Audio(base64Data) {
     });
 }
 
-// [FIXED] Updated to match chat.js logic
 async function playAlertSound(sound) {
   if (!audioEnabled) {
       console.warn("[Nexus] Audio disabled - Click the overlay to enable!");
@@ -223,8 +222,8 @@ async function playAlertSound(sound) {
     if (key.includes("http")) {
       url = key;
     } else {
-      // Use the API endpoint that chat.js uses to ensure compatibility
-      url = `${API_BASE}/redeems/sound/${encodeURIComponent(key)}`;
+      // FIX: Do NOT encodeURIComponent the key if it contains path structure
+      url = `${API_BASE}/redeems/sound/${key}`;
     }
   }
 
@@ -235,7 +234,6 @@ async function playAlertSound(sound) {
     const audio = new Audio(url);
     if (sound.volume != null) audio.volume = clamp01(sound.volume);
     
-    // We return the promise so we can wait for it if needed
     await audio.play().catch(e => console.warn("[Nexus] Playback Failed (Autoplay blocked?):", e));
   } catch (err) { console.error("Audio Error", err); }
 }
@@ -247,7 +245,6 @@ function sendTtsCommand(text, voiceId) {
     chatWs.send(JSON.stringify({ type: "tts_command", text, voiceId: null }));
 }
 
-// We treat regular redeems as items in the queue now too, so they display text
 function enqueueEvent(item) {
     talaQueue.push(item);
     if (!processingQueue) processQueue();
@@ -313,7 +310,7 @@ function connectWebSocket() {
     // Log everything for debugging
     if (data.type === "redeem") console.log("[Nexus Debug] Redeem Event:", data);
     
-    // -- TTS AUDIO DATA (Server responding to tts_command) --
+    // -- TTS AUDIO DATA --
     if (data.type === "tts_play_data" && data.audioData) {
         playBase64Audio(data.audioData).then(() => {
             if (resolveCurrentAudio) { resolveCurrentAudio(); resolveCurrentAudio = null; }
@@ -328,7 +325,6 @@ function connectWebSocket() {
       const r = data.redeem;
       const soundKey = r.soundKey || r.sound || data.sound;
       
-      // Determine if this is a TTS redeem or a standard one
       const key = r.key || r.id || "";
       const isTTS = (key && key.includes("tts")) || key === "nexus_tts";
 
