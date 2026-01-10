@@ -243,7 +243,13 @@ export function addSystemMessage(text, type = "info") {
 
 export function addDashboardChatMessage(msg) {
   if (!chatPanelEl) return;
-  const rawUser = msg.user || "User"; const text = msg.text || ""; const source = (msg.platform || msg.source || "nexus").toLowerCase();
+  const rawUser = msg.user || "User"; 
+  const source = (msg.platform || msg.source || "nexus").toLowerCase();
+  
+  let text = msg.text || "";
+  if (msg.originPlatform !== "system") {
+      text = escapeHtml(text);
+  }
   
   const myName = State.user ? getDisplayName(State.user).toLowerCase() : "";
   const isMentioned = myName && text.toLowerCase().includes(`@${myName}`);
