@@ -33,12 +33,10 @@
   </div>
 
   <header>
-    <div class="user-area" id="loginArea">
-        <div class="avatar-frame" id="avatarContainer">
-             <img id="userAvatarImg" src="https://data.wolfethyst.tv/assets/nexus_icon" alt="User">
-        </div>
+    <div class="user-area">
+        <div id="avatarContainer"></div>
         <div class="user-info-text">
-            <div class="username-display" id="headerDisplayName">Guest</div>
+            <div id="loginArea"></div>
             <div class="crystals">
                 <img src="https://data.wolfethyst.tv/assets/wolfe_crystal" width="14">
                 <span id="headerPoints">0</span>
@@ -80,9 +78,7 @@
                 </div>
         </div>
 
-        <div id="playedPanel" style="display:none;">
-            <div id="gamesPlayed"></div>
-        </div>
+        <div id="playedPanel" style="display:none;"><div id="gamesPlayed"></div></div>
     </div>
 
     <div class="col-center live-view">
@@ -150,13 +146,15 @@
             <div id="hub-home-view" class="video-hub-container">
                 <div style="padding:15px; border-bottom:1px solid var(--panel-border);">
                     <h2 style="margin:0; font-family:'Cinzel';">Library</h2>
+                    <input id="hubSearchInput" type="text" placeholder="Find a game..." 
+                           style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.2); padding:6px 12px; border-radius:20px; color:#fff; font-family:'Marcellus'; margin-top:10px; width:100%;">
                 </div>
                 <div id="hubGamesGrid" class="hub-games-grid" style="padding:20px;"></div>
             </div>
             <div id="hub-details-view" class="video-hub-container hidden" style="display:flex; flex-direction:column; height:100%;">
                 <div class="game-hero">
                     <div class="game-hero-bg" id="heroBg"></div>
-                    <button class="hub-back-btn" onclick="openHubHome()">← Back</button>
+                    <button class="hub-back-btn" onclick="openHubHome()">← Library</button>
                     <div class="game-hero-content">
                         <img id="heroCover" class="game-hero-cover" src="">
                         <div class="game-hero-main">
@@ -169,6 +167,14 @@
                                 <img src="https://store.steampowered.com/favicon.ico" style="width:14px;height:14px;">
                                 View on Steam
                             </a>
+                        </div>
+                        <div class="game-hero-details">
+                            <div id="heroDescription" class="game-desc-text">No description available.</div>
+                            <div class="game-meta-grid">
+                                <div class="game-meta-item"><span class="meta-label">Developer</span><span id="heroDev" class="meta-value">--</span></div>
+                                <div class="game-meta-item"><span class="meta-label">Publisher</span><span id="heroPub" class="meta-value">--</span></div>
+                                <div class="game-meta-item"><span class="meta-label">Release</span><span id="heroRelease" class="meta-value">--</span></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -282,6 +288,24 @@
       });
     }
     
+    // Auto-Sync Title Bar Logic:
+    // This script ensures that when your app updates the "Now Playing" card (left),
+    // it automatically copies that text to the new Center Title Bar as well.
+    const titleObserver = new MutationObserver(() => {
+        const title = document.getElementById('streamTitleLabel').innerText;
+        const game = document.getElementById('streamGameLabel').innerText;
+        document.getElementById('centerStreamTitle').innerText = title;
+        document.getElementById('centerStreamGame').innerText = game;
+    });
+    
+    // Wait for elements to exist then observe
+    setTimeout(() => {
+        const target = document.getElementById('nowPlayingCard');
+        if(target) {
+            titleObserver.observe(target, { subtree: true, characterData: true, childList: true });
+        }
+    }, 1000);
+
     // View Switcher Logic
     window.toggleMainView = (mode) => {
         document.querySelectorAll('.live-view').forEach(el => el.classList.toggle('hidden', mode !== 'live'));
