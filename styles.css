@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS THEME v2 (Final Polish - Menu Fixed)
+   NEXUS THEME v2 (Final Polish - Menu & VODs Fixed)
    ============================================================ */
 :root {
   --bg: radial-gradient(circle at 50% 0%, #3d0066, #0b0014 80%);
@@ -78,7 +78,14 @@ header {
 
 .col-left, .col-center, .col-right { display: flex; flex-direction: column; gap: 20px; overflow: hidden; min-height: 0; }
 .col-center { height: 100%; } 
-.col-video { grid-column: 1 / 3; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
+
+/* FIXED: Added height: 100% to fix broken VODs tab */
+.col-video { 
+    grid-column: 1 / 3; 
+    display: flex; flex-direction: column; gap: 20px; 
+    overflow: hidden; 
+    height: 100%; 
+}
 
 /* --- PANELS --- */
 .panel {
@@ -121,7 +128,7 @@ header {
     width: 20px !important; height: 20px !important; object-fit: contain; vertical-align: middle;
 }
 
-/* --- STREAM BLOCK --- */
+/* --- STREAM BLOCK (Merged Layout) --- */
 .stream-block {
     display: flex; flex-direction: column; width: 100%; flex-shrink: 0;
     border-radius: 12px; border: 1px solid var(--panel-border);
@@ -165,46 +172,50 @@ header {
 }
 
 .tts-area {
-    width: 320px; flex-shrink: 0; 
+    width: 300px; flex-shrink: 0; 
     border-right: 1px solid rgba(255,255,255,0.1); 
     padding-right: 20px;
     display: flex; flex-direction: column;
 }
 
-.tts-input-row { display: flex; gap: 8px; margin-bottom: 8px; width: 100%; }
+#ttsRedeemForm {
+    display: flex; flex-direction: column; gap: 8px;
+}
 
 #ttsRedeemInput { 
-    flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); 
+    width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); 
     border-radius: 6px; color: #fff; padding: 10px 12px; font-size: 14px;    
-    height: 45px; font-family: "Marcellus", serif; resize: none; line-height: 1.4;
+    height: 60px; font-family: "Marcellus", serif; resize: none; line-height: 1.4;
+    box-sizing: border-box;
 }
 #ttsRedeemInput:focus { border-color: var(--accent); outline: none; }
 
-#ttsRedeemButton { 
-    background: var(--accent); 
-    color: #000; 
-    border: none; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-weight: bold; 
-    width: 45px;       /* Fixed width to match height */
-    height: 45px;      /* Fixed height */
-    font-size: 20px;   /* Larger arrow icon */
-    padding: 0;        /* Remove side padding */
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    transition: 0.2s; 
-    flex-shrink: 0;    /* Prevents it from getting squished */
-}
-#ttsRedeemButton:hover { 
-    background: #fff; 
-    box-shadow: 0 0 10px var(--accent);
+/* BOTTOM ROW (COST + BUTTON) */
+.tts-bottom-row {
+    display: flex; justify-content: space-between; align-items: center;
 }
 
 .tts-cost-line {
-    font-family: var(--font-head); font-size: 14px; font-weight: bold;
+    font-family: var(--font-head); font-size: 13px; font-weight: bold;
     color: var(--text-muted); display: flex; align-items: center; gap: 6px;
+}
+
+/* FIXED: Button always shows Arrow, ignores "Sent!" text */
+#ttsRedeemButton { 
+    background: var(--accent); color: #000; border: none; 
+    border-radius: 6px; cursor: pointer; font-weight: bold; 
+    width: 32px; height: 32px; /* Small square button */
+    padding: 0; 
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.2s;
+    font-size: 0 !important; /* HIDE TEXT */
+}
+#ttsRedeemButton:hover { background: #fff; box-shadow: 0 0 8px var(--accent); }
+
+#ttsRedeemButton::after {
+    content: "➜";
+    font-size: 16px;
+    display: block;
 }
 
 .redeems-wrapper {
@@ -361,8 +372,9 @@ body.is-owner .adminOnly, body.is-mod .adminOnly { display: flex !important; }
 .userMenuRow { display: flex; align-items: center; gap: 10px; padding: 8px 0; cursor: pointer; transition: color 0.2s; color: #fff; }
 .userMenuRow:hover { color: var(--accent); }
 
-/* STRICT ICON SIZING FOR MENU */
 .menuIcon { width: 18px !important; height: 18px !important; object-fit: contain; font-size:18px; }
+
+/* FIXED: Platform Icons Sizing */
 #userMenuPlatforms img { width: 20px !important; height: 20px !important; object-fit: contain; }
 #userMenuPlatforms div { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 13px; }
 

@@ -124,15 +124,18 @@
 
             <div class="stream-interactions">
                 <div class="tts-area">
-    <div class="interaction-section-title">Text-To-Speech</div>
-    <form id="ttsRedeemForm" class="tts-input-row" onsubmit="event.preventDefault();">
-        <textarea id="ttsRedeemInput" placeholder="Type message..." maxlength="150"></textarea>
-        <button type="submit" id="ttsRedeemButton">➜</button>
-    </form>
-    <div class="tts-cost-line">
-        Cost: <span style="color:var(--accent);">250</span> <img src="https://data.wolfethyst.tv/assets/wolfe_crystal" width="14" style="vertical-align:middle;">
-    </div>
-</div>
+                    <div class="interaction-section-title">Text-To-Speech</div>
+                    <form id="ttsRedeemForm" onsubmit="event.preventDefault();">
+                        <textarea id="ttsRedeemInput" placeholder="Type message..." maxlength="150"></textarea>
+                        
+                        <div class="tts-bottom-row">
+                            <div class="tts-cost-line">
+                                Cost: <span style="color:var(--accent);">250</span> <img src="https://data.wolfethyst.tv/assets/wolfe_crystal" width="14" style="vertical-align:middle;">
+                            </div>
+                            <button type="submit" id="ttsRedeemButton">➜</button>
+                        </div>
+                    </form>
+                </div>
 
                 <div class="redeems-wrapper">
                     <div class="interaction-section-title">Quick Redeems</div>
@@ -142,6 +145,80 @@
             </div>
         </div>
         
+    </div>
+
+    <div class="col-video video-view hidden">
+        <div id="videoStage" class="panel video-player-section hidden" style="margin-bottom: 20px;">
+            <div class="video-container">
+                <video id="main-video-player" controls crossorigin="anonymous" style="width:100%; height:100%; object-fit:contain;"></video>
+            </div>
+            <div class="meta-panel">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <span id="meta-tag" class="meta-tag">Clip</span>
+                        <h2 id="meta-title" class="meta-title">Title</h2>
+                        <div id="meta-date" class="meta-date">Date</div>
+                    </div>
+                    <div class="actions">
+                        <select id="videoQualitySelect" class="panelSmallBtn" style="background:rgba(0,0,0,0.5); display:none;">
+                            <option value="-1">Auto</option>
+                        </select>
+                        <button id="btn-share" class="panelSmallBtn" onclick="shareActiveVideo()">Share</button>
+                        <a id="btn-download" href="#" class="panelSmallBtn" download>Download</a>
+                        <button class="panelSmallBtn" onclick="closeVideoStage()">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+            <div id="hub-home-view" class="video-hub-container">
+                <div style="padding:15px; border-bottom:1px solid var(--panel-border);">
+                    <h2 style="margin:0; font-family:'Cinzel';">Library</h2>
+                    <input id="hubSearchInput" type="text" placeholder="Find a game..." 
+                           style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.2); padding:6px 12px; border-radius:20px; color:#fff; font-family:'Marcellus'; margin-top:10px; width:100%;">
+                </div>
+                <div id="hubGamesGrid" class="hub-games-grid" style="padding:20px;"></div>
+            </div>
+            <div id="hub-details-view" class="video-hub-container hidden" style="display:flex; flex-direction:column; height:100%;">
+                <div class="game-hero">
+                    <div class="game-hero-bg" id="heroBg"></div>
+                    <button class="hub-back-btn" onclick="openHubHome()">← Library</button>
+                    <div class="game-hero-content">
+                        <img id="heroCover" class="game-hero-cover" src="">
+                        <div class="game-hero-main">
+                            <h1 id="heroTitle" class="game-hero-title">Game</h1>
+                            <div class="game-hero-stats">
+                                <span class="game-hero-stat">📼 <span id="heroVodCount">0</span> VODs</span>
+                                <span class="game-hero-stat">🎬 <span id="heroClipCount">0</span> Clips</span>
+                            </div>
+                            <a id="heroSteamBtn" class="game-steam-btn hidden" href="#" target="_blank">
+                                <img src="https://store.steampowered.com/favicon.ico" style="width:14px;height:14px;">
+                                View on Steam
+                            </a>
+                        </div>
+                        <div class="game-hero-details">
+                            <div id="heroDescription" class="game-desc-text">No description available.</div>
+                            <div class="game-meta-grid">
+                                <div class="game-meta-item"><span class="meta-label">Developer</span><span id="heroDev" class="meta-value">--</span></div>
+                                <div class="game-meta-item"><span class="meta-label">Publisher</span><span id="heroPub" class="meta-value">--</span></div>
+                                <div class="game-meta-item"><span class="meta-label">Release</span><span id="heroRelease" class="meta-value">--</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hub-tabs">
+                    <button class="hub-tab active" onclick="switchHubTab('vods')">Broadcasts</button>
+                    <button class="hub-tab" onclick="switchHubTab('videos')">Videos</button>
+                    <button class="hub-tab" onclick="switchHubTab('clips')">Clips</button>
+                </div>
+                <div class="hub-scroll-wrapper" style="flex:1; overflow-y:auto; padding:20px;">
+                    <div id="hub-content-vods" class="video-grid"></div>
+                    <div id="hub-content-videos" class="video-grid hidden"></div>
+                    <div id="hub-content-clips" class="video-grid hidden"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="col-right">
