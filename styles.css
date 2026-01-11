@@ -72,10 +72,6 @@ header {
 
 /* --- GRID LAYOUT --- */
 .main-grid {
-    flex: 1; display: grid; grid-template-columns: 320px 1fr 380px;
-    grid-template-rows: minmax(0, 1fr);
-    gap: 20px; padding: 20px; overflow: hidden;
-}
 
 .col-left, .col-center, .col-right { display: flex; flex-direction: column; gap: 20px; overflow: hidden; min-height: 0; }
 .col-center { height: 100%; } 
@@ -83,9 +79,18 @@ header {
 /* FIXED: Added height: 100% to fix broken VODs tab */
 .col-video { 
     grid-column: 1 / 3; 
-    display: flex; flex-direction: column; gap: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px; 
     overflow: hidden; 
-    height: 100%; 
+    height: 100%; /* Force it to touch the bottom */
+    min-height: 0; /* Critical for scrolling to work inside flex items */
+}
+
+/* Force the panel inside to fill the column */
+.col-video .panel {
+    height: 100%;
+    flex: 1;
 }
 
 /* --- PANELS --- */
