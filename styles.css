@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS THEME v2 (Restored & Fixed)
+   NEXUS THEME v2 (restored & Fixed)
    ============================================================ */
 :root {
   --bg: radial-gradient(circle at 50% 0%, #3d0066, #0b0014 80%);
@@ -70,27 +70,44 @@ header {
 
 .username-display { font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(213, 123, 255, 0.5); }
 
-/* --- GRID LAYOUT --- */
+/* ============================================================
+   LAYOUT ENGINE (RESTORED & FIXED)
+   ============================================================ */
+
+/* 1. Main Grid Definition - Keeps Live View Safe */
 .main-grid {
     flex: 1; 
     display: grid; 
     grid-template-columns: 320px 1fr 380px; 
+    /* We do NOT force grid-rows here to avoid crushing the live view */
     gap: 20px; 
     padding: 20px; 
     overflow: hidden; 
-    height: calc(100vh - 64px); 
+    height: calc(100vh - 64px); /* Ensure it fills the screen */
 }
 
+/* 2. Column Basics - Ensure they fill height */
 .col-left, .col-center, .col-right { 
     display: flex; 
     flex-direction: column; 
     gap: 20px; 
     overflow: hidden; 
-    height: 100%; 
+    height: 100%; /* Touch bottom */
     min-height: 0;
 }
 
-/* --- PANELS --- */
+/* 3. The Video Column (VODs) - This is where we apply the fix */
+.col-video { 
+    grid-column: 1 / 3; /* Spans Left + Center */
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px; 
+    overflow: hidden; 
+    height: 100%; /* Force full height */
+    min-height: 0;
+}
+
+/* 4. PANELS: Flex-Grow to fill the column */
 .panel {
     background: var(--panel-bg); 
     border: 1px solid var(--panel-border);
@@ -100,36 +117,51 @@ header {
     flex-direction: column; 
     overflow: hidden; 
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    
+    /* THE FIX: Allow panel to grow to fill empty space */
     flex: 1; 
     min-height: 0; 
+}
+
+/* 5. SPECIFIC FIX FOR VOD LIBRARY */
+/* This ensures the library content stretches to fill the panel */
+.video-hub-container {
+    flex: 1;            /* Grow to fill panel */
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden;   /* Contain scrolling */
+    min-height: 0;      /* Prevent collapse */
+    height: 100%;       /* Redundancy for safety */
+}
+
+/* 6. Header & Search - Fixed at Top */
+.hub-header {
+    flex-shrink: 0; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--panel-border);
+    background: rgba(0, 0, 0, 0.2); 
+}
+
+/* 7. Scroll Areas - Take remaining space */
+.hub-scroll-area, 
+.hub-scroll-wrapper,
+.panel-body,
+.chat-messages {
+    flex: 1; 
+    overflow-y: auto; 
+    min-height: 0;
+    scrollbar-width: thin; 
+    scrollbar-color: var(--accent) rgba(0,0,0,0.3);
 }
 
 .panel-header {
     padding: 12px 16px; background: rgba(255,255,255,0.03);
     border-bottom: 1px solid var(--panel-border); font-size: 13px; font-weight: 700;
     color: var(--bright-1); display: flex; justify-content: space-between; align-items: center;
-    flex-shrink: 0; 
-}
-.panel-body {
-    padding: 15px; overflow-y: auto; flex: 1;
-    scrollbar-width: thin; scrollbar-color: var(--accent) rgba(0,0,0,0.3);
-}
-
-/* --- VOD SPECIFIC CONTAINERS --- */
-.video-hub-container {
-    flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; height: 100%;
-}
-
-.hub-header {
-    flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
-    padding: 15px 20px; border-bottom: 1px solid var(--panel-border); background: rgba(0, 0, 0, 0.2); 
-}
-
-.hub-scroll-area, 
-.hub-scroll-wrapper,
-.chat-messages {
-    flex: 1; overflow-y: auto; min-height: 0;
-    scrollbar-width: thin; scrollbar-color: var(--accent) rgba(0,0,0,0.3);
+    flex-shrink: 0; /* Ensure header never squishes */
 }
 
 /* --- CARDS & WIDGETS --- */
@@ -967,57 +999,3 @@ body.is-mod .vod-edit-btn { display: block; }
     color: #ccc;
 }
 .confirm-btn.confirm-no:hover { border-color: #fff; color: #fff; }
-
-/* ============================================================
-   VOD LAYOUT EXTENSIONS (NEW STUFF)
-   ============================================================ */
-
-/* NEW: The specific columns for VODS */
-.col-vod-left {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    overflow: hidden;
-    height: 100%;
-    min-height: 0;
-    grid-column: 1 / 2; /* Always sits in the first slot */
-}
-
-.col-vod-main {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    overflow: hidden;
-    height: 100%;
-    min-height: 0;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smooth resize */
-}
-
-/* VOD MODES */
-/* Library Mode: Main Column spans Left + Center slots */
-.col-vod-main.mode-library {
-    grid-column: 1 / 3; 
-}
-
-/* Player Mode: Main Column shrinks to Center slot only */
-.col-vod-main.mode-player {
-    grid-column: 2 / 3; 
-}
-
-/* CONTEXT MENU (Adding missing style to be safe) */
-.context-menu {
-    position: absolute; display: none; z-index: 10000;
-    background: rgba(10, 0, 20, 0.95); border: 1px solid var(--accent);
-    box-shadow: 0 0 15px rgba(0,0,0,0.8); border-radius: 6px;
-    min-width: 140px; backdrop-filter: blur(5px); overflow: hidden;
-}
-.ctx-header {
-    padding: 8px 12px; background: rgba(255,255,255,0.1); font-size: 11px;
-    color: var(--text-muted); text-transform: uppercase;
-    border-bottom: 1px solid rgba(255,255,255,0.1); pointer-events: none;
-}
-.ctx-item {
-    padding: 8px 12px; font-size: 13px; color: #fff; cursor: pointer;
-    transition: background 0.1s;
-}
-.ctx-item:hover { background: var(--accent); color: #000; }

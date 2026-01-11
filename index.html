@@ -47,7 +47,6 @@
     <div class="nav-tabs">
         <button id="viewBtnLive" class="nav-tab active" onclick="toggleMainView('live')">LIVE</button>
         <button id="viewBtnVideo" class="nav-tab" onclick="toggleMainView('video')">VODS</button>
-        <button id="viewBtnStore" class="nav-tab" onclick="toggleStoreView()">STORE</button>
     </div>
 
     <div class="brand">
@@ -78,24 +77,27 @@
 
     <div class="col-left live-view">
         <div class="now-playing-card compact" id="nowPlayingCard">
-            <img id="gameCoverImage" 
-                 src="https://images.igdb.com/igdb/image/upload/t_cover_big/co85cg.jpg" 
-                 class="game-cover" 
-                 onerror="this.src='https://data.wolfethyst.tv/assets/nexus_icon.png'">
-            
-            <div class="game-info-overlay">
-                <div class="game-label">Current Session</div>
-                <div class="game-title" id="streamGameLabel">Loading...</div>
-                <div class="game-meta" id="streamTitleLabel">Stream Title</div>
-                <div style="margin-top: 6px; font-size: 11px; font-weight:bold; color: var(--accent); display:flex; align-items:center; gap:6px;">
-                    <span id="liveStatusCardText">● Offline</span>
-                </div>
-            </div>
-
-            <div class="adminOnly" style="position:absolute; top:10px; right:10px;">
-                <button onclick="document.getElementById('streamTitleInput').focus()" class="panelSmallBtn" style="padding:4px 8px; opacity:0.6;">✎</button>
-            </div>
+    <img id="gameCoverImage" 
+         src="https://images.igdb.com/igdb/image/upload/t_cover_big/co85cg.jpg" 
+         class="game-cover" 
+         onerror="this.src='https://data.wolfethyst.tv/assets/nexus_icon.png'">
+    
+    <div class="game-info-overlay">
+        <div class="game-label">Current Session</div>
+        
+        <div class="game-title" id="streamGameLabel">Loading...</div>
+        
+        <div class="game-meta" id="streamTitleLabel">Stream Title</div>
+        
+        <div style="margin-top: 6px; font-size: 11px; font-weight:bold; color: var(--accent); display:flex; align-items:center; gap:6px;">
+            <span id="liveStatusCardText">● Offline</span>
         </div>
+    </div>
+
+    <div class="adminOnly" style="position:absolute; top:10px; right:10px;">
+        <button onclick="document.getElementById('streamTitleInput').focus()" class="panelSmallBtn" style="padding:4px 8px; opacity:0.6;">✎</button>
+    </div>
+</div>
 
         <div class="panel" id="leaderboardPanel" style="flex:1;">
             <div class="panel-header">All-Time Top Crystals</div>
@@ -103,14 +105,6 @@
         </div>
         <div id="playedPanel" style="display:none;"><div id="gamesPlayed"></div></div>
     </div>
-
-    <div id="vodLeftCol" class="col-vod-left video-view hidden">
-        <div class="panel">
-            <div class="panel-header">Episodes</div>
-            <div id="vodListTarget" style="flex:1; overflow:hidden; display:flex; flex-direction:column;"></div>
-        </div>
-    </div>
-
 
     <div class="col-center">
         
@@ -143,6 +137,7 @@
                     <div class="interaction-section-title">Text-To-Speech</div>
                     <form id="ttsRedeemForm" onsubmit="event.preventDefault();">
                         <textarea id="ttsRedeemInput" placeholder="Type message..." maxlength="150"></textarea>
+                        
                         <div class="tts-bottom-row">
                             <div class="tts-cost-line">
                                 Cost: <span style="color:var(--accent);">250</span> <img src="https://data.wolfethyst.tv/assets/wolfe_crystal" width="14" style="vertical-align:middle;">
@@ -154,13 +149,14 @@
 
                 <div class="redeems-wrapper">
                     <div class="interaction-section-title">Quick Redeems</div>
-                    <div id="redeemContent" class="redeems-strip"></div>
+                    <div id="redeemContent" class="redeems-strip">
+                        </div>
                 </div>
             </div>
         </div>
 
         <div id="marketplacePanel" class="panel hidden" style="height:100%; border:none; background:transparent;">
-             <div class="panel-header" style="background:rgba(0,0,0,0.5); border-radius:12px 12px 0 0;">
+            <div class="panel-header" style="background:rgba(0,0,0,0.5); border-radius:12px 12px 0 0;">
                 <div style="display:flex; gap:10px;">
                     <button id="tabStoreBtn" class="nav-tab active" onclick="window.switchMarketTab('store')">Shop</button>
                     <button id="tabInvBtn" class="nav-tab" onclick="window.switchMarketTab('inventory')">Inventory</button>
@@ -174,21 +170,21 @@
             <div id="storeGridLegacy" style="display:none;"></div>
         </div>
         
-    </div> 
-    <div id="vodMainCol" class="col-vod-main video-view hidden mode-library">
-        
-        <div id="videoStage" class="panel video-player-section hidden" style="margin-bottom: 20px; flex-shrink:0;">
-            <div class="video-container" style="background:#000; aspect-ratio:16/9;">
+    </div>
+
+    <div class="col-video video-view hidden">
+        <div id="videoStage" class="panel video-player-section hidden" style="margin-bottom: 20px;">
+            <div class="video-container">
                 <video id="main-video-player" controls crossorigin="anonymous" style="width:100%; height:100%; object-fit:contain;"></video>
             </div>
-            <div class="meta-panel" style="padding:15px;">
+            <div class="meta-panel">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <span id="meta-tag" class="meta-tag" style="color:var(--accent); font-size:11px; font-weight:bold;">CLIP</span>
-                        <h2 id="meta-title" class="meta-title" style="margin:5px 0; color:#fff;">Title</h2>
-                        <div id="meta-date" class="meta-date" style="color:#888; font-size:12px;">Date</div>
+                        <span id="meta-tag" class="meta-tag">Clip</span>
+                        <h2 id="meta-title" class="meta-title">Title</h2>
+                        <div id="meta-date" class="meta-date">Date</div>
                     </div>
-                    <div class="actions" style="display:flex; gap:10px;">
+                    <div class="actions">
                         <select id="videoQualitySelect" class="panelSmallBtn" style="background:rgba(0,0,0,0.5); display:none;">
                             <option value="-1">Auto</option>
                         </select>
@@ -201,19 +197,17 @@
         </div>
 
         <div class="panel" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
-            
             <div id="hub-home-view" class="video-hub-container">
-                <div class="hub-header">
-                    <h2 class="hub-title">Library</h2>
-                    <input id="hubSearchInput" type="text" placeholder="Find a game..." class="hub-search-input">
-                </div>
-                <div class="hub-scroll-area">
-                    <div id="hubGamesGrid" class="hub-games-grid"></div>
-                </div>
-            </div>
+    <div class="hub-header">
+        <h2 class="hub-title">Library</h2>
+        <input id="hubSearchInput" type="text" placeholder="Find a game..." class="hub-search-input">
+    </div>
 
+    <div class="hub-scroll-area">
+        <div id="hubGamesGrid" class="hub-games-grid"></div>
+    </div>
+</div>
             <div id="hub-details-view" class="video-hub-container hidden" style="display:flex; flex-direction:column; height:100%;">
-                
                 <div class="game-hero">
                     <div class="game-hero-bg" id="heroBg"></div>
                     <button class="hub-back-btn" onclick="openHubHome()">← Library</button>
@@ -240,20 +234,17 @@
                         </div>
                     </div>
                 </div>
-
-                <div id="vodListBlock" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
-                    <div class="hub-tabs">
-                        <button class="hub-tab active" onclick="switchHubTab('vods')">Broadcasts</button>
-                        <button class="hub-tab" onclick="switchHubTab('videos')">Videos</button>
-                        <button class="hub-tab" onclick="switchHubTab('clips')">Clips</button>
-                    </div>
-                    <div class="hub-scroll-wrapper" style="flex:1; overflow-y:auto; padding:20px;">
-                        <div id="hub-content-vods" class="video-grid"></div>
-                        <div id="hub-content-videos" class="video-grid hidden"></div>
-                        <div id="hub-content-clips" class="video-grid hidden"></div>
-                    </div>
+                <div class="hub-tabs">
+                    <button class="hub-tab active" onclick="switchHubTab('vods')">Broadcasts</button>
+                    <button class="hub-tab" onclick="switchHubTab('videos')">Videos</button>
+                    <button class="hub-tab" onclick="switchHubTab('clips')">Clips</button>
                 </div>
+                <div class="hub-scroll-wrapper" style="flex:1; overflow-y:auto; padding:20px;">
+                    <div id="hub-content-vods" class="video-grid"></div>
+                    <div id="hub-content-videos" class="video-grid hidden"></div>
+                    <div id="hub-content-clips" class="video-grid hidden"></div>
                 </div>
+            </div>
         </div>
     </div>
 
@@ -270,6 +261,7 @@
                 <form id="dashboardChatForm" style="width:100%;">
                     <input id="dashboardChatInput" type="text" class="chat-input" placeholder="Send a message..." autocomplete="off">
                 </form>
+                
                 <div class="support-actions">
                     <button id="openTipModalBtn" class="support-btn btn-tip">💎 Tip</button>
                 </div>
@@ -277,7 +269,9 @@
         </div>
     </div>
 
-  </div> <div class="site-footer">
+  </div>
+
+  <div class="site-footer">
     <div class="site-footer-left">© <span id="footer-year">2026</span> Wolfethyst</div>
     <div class="site-footer-links">
         <a href="https://nexus.wolfethyst.tv/privacy" target="_blank">Privacy</a>
@@ -508,84 +502,9 @@
         if (liveBtn) liveBtn.classList.toggle('active', mode === 'live');
         if (videoBtn) videoBtn.classList.toggle('active', mode === 'video');
         if (storeBtn) storeBtn.classList.remove('active');
-
-        // Reset VOD Layout if leaving video tab
-        if(mode !== 'video') {
-            closeVideoStage(); // Ensure we reset to library mode
-        }
     };
 
-    window.toggleStoreView = () => {
-        document.querySelectorAll('.live-view').forEach(el => el.classList.add('hidden'));
-        document.querySelectorAll('.video-view').forEach(el => el.classList.add('hidden'));
-        document.getElementById('viewBtnLive').classList.remove('active');
-        document.getElementById('viewBtnVideo').classList.remove('active');
-
-        const panel = document.getElementById('marketplacePanel');
-        panel.classList.remove('hidden');
-        document.getElementById('viewBtnStore').classList.add('active');
-        
-        if(window.NexusStore && window.NexusStore.loadStore) {
-            window.NexusStore.loadStore();
-        }
-    };
-
-    // 2. VOD PLAYER LOGIC (The Teleporter)
-    
-    // Called when a user clicks a video card
-    // You must update your app.js to call this function!
-    window.openVideoStageLogic = () => {
-        const leftCol = document.getElementById('vodLeftCol');
-        const mainCol = document.getElementById('vodMainCol');
-        const listBlock = document.getElementById('vodListBlock');
-        const listTarget = document.getElementById('vodListTarget');
-        const playerStage = document.getElementById('videoStage');
-        const heroSection = document.querySelector('.game-hero');
-
-        // A. Switch Grid Mode
-        mainCol.classList.remove('mode-library');
-        mainCol.classList.add('mode-player');
-        leftCol.classList.remove('hidden');
-
-        // B. Teleport List to Left Column
-        if(listBlock && listTarget) {
-            listTarget.appendChild(listBlock);
-        }
-
-        // C. Show Player, Hide Hero
-        playerStage.classList.remove('hidden');
-        if(heroSection) heroSection.style.display = 'none'; // Hide big hero image
-    };
-
-    // Called when user clicks "Close" on player or "Back to Library"
-    window.closeVideoStage = () => {
-        const leftCol = document.getElementById('vodLeftCol');
-        const mainCol = document.getElementById('vodMainCol');
-        const listBlock = document.getElementById('vodListBlock');
-        const detailsView = document.getElementById('hub-details-view'); // Original Home
-        const playerStage = document.getElementById('videoStage');
-        const heroSection = document.querySelector('.game-hero');
-
-        // A. Switch Grid Mode
-        mainCol.classList.remove('mode-player');
-        mainCol.classList.add('mode-library');
-        leftCol.classList.add('hidden');
-
-        // B. Teleport List BACK to Main Panel
-        if(listBlock && detailsView) {
-            detailsView.appendChild(listBlock);
-        }
-
-        // C. Hide Player, Show Hero
-        playerStage.classList.add('hidden');
-        if(heroSection) heroSection.style.display = 'flex';
-        
-        // Stop video
-        const vid = document.getElementById('main-video-player');
-        if(vid) { vid.pause(); vid.src = ""; }
-    };
-
-    // Initial Load
+    // Initialize
     toggleMainView('live');
   </script>
 </body>
