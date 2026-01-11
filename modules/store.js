@@ -29,9 +29,16 @@ export async function loadLeaderboard() {
   }).join("");
 
   if (State.user) {
-      const displayPoints = State.isOwner ? "∞" : State.points.toLocaleString(); 
+      if (State.isOwner) {
+          State.points = INFINITE_POINTS;
+      } else {
+          const meInLb = data.leaderboard.find(u => String(u.id) === String(State.user.id));
+          if (meInLb) State.points = meInLb.points;
+      }
+      const displayPoints = State.points >= INFINITE_POINTS ? "∞" : State.points.toLocaleString(); 
       const headerPoints = document.getElementById("headerPoints");
       const chatPoints = document.getElementById("chatPointsText");
+      
       if(headerPoints) headerPoints.textContent = `${displayPoints} Crystals`; 
       if(chatPoints) chatPoints.textContent = formatCompact(State.points); 
   }
@@ -43,7 +50,15 @@ function injectDynamicStoreStyles(items) {
     if (!styleBlock) {
         styleBlock = document.createElement("style"); styleBlock.id = "dynamic-store-css"; document.head.appendChild(styleBlock);
     }
-    styleBlock.textContent = items.map(item => item.customCss ? `/* ${item.name} */\n${item.customCss.includes("{") ? item.customCss : `.chatMsg.${item.cssClass} { ${item.customCss} }`}\n` : "").join("\n");
+    let allCss = "";
+    items.forEach(item => { 
+        if (item.customCss) {
+            let css = item.customCss.trim();
+            if (!css.includes("{")) { css = `.chatMsg.${item.cssClass} { ${css} }`; }
+            allCss += `/* ${item.name} */\n${css}\n\n`; 
+        }
+    });
+    styleBlock.textContent = allCss;
 }
 
 export async function loadStore() { 

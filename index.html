@@ -96,9 +96,9 @@
         <div id="playedPanel" style="display:none;"><div id="gamesPlayed"></div></div>
     </div>
 
-    <div class="col-center live-view">
+    <div class="col-center">
         
-        <div class="stream-block">
+        <div class="stream-block live-view">
             <div class="stream-info-bar">
                 <div style="flex: 1; min-width: 0;">
                     <h2 id="centerStreamTitle" class="stream-main-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Stream Title Loading...</h2>
@@ -143,6 +143,21 @@
                         </div>
                 </div>
             </div>
+        </div>
+
+        <div id="marketplacePanel" class="panel hidden" style="height:100%; border:none; background:transparent;">
+            <div class="panel-header" style="background:rgba(0,0,0,0.5); border-radius:12px 12px 0 0;">
+                <div style="display:flex; gap:10px;">
+                    <button id="tabStoreBtn" class="nav-tab active" onclick="window.switchMarketTab('store')">Shop</button>
+                    <button id="tabInvBtn" class="nav-tab" onclick="window.switchMarketTab('inventory')">Inventory</button>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <input id="storeSearchInput" type="text" placeholder="Search..." class="panelInput" style="padding:4px 8px;">
+                    <button id="storeSortBtn" class="panelSmallBtn" onclick="window.toggleStoreSort()">Price ⬆</button>
+                </div>
+            </div>
+            <div id="storeGrid" class="panel-body" style="background:rgba(20,5,30,0.8); backdrop-filter:blur(10px); border:1px solid var(--panel-border); border-top:none; border-radius:0 0 12px 12px;"></div>
+            <div id="storeGridLegacy" style="display:none;"></div>
         </div>
         
     </div>
@@ -440,7 +455,6 @@
       });
     }
     
-    // Auto-Sync Title Bar Logic
     const titleObserver = new MutationObserver(() => {
         const title = document.getElementById('streamTitleLabel').innerText;
         const game = document.getElementById('streamGameLabel').innerText;
@@ -455,7 +469,7 @@
         }
     }, 1000);
 
-    // View Switcher Logic
+    // FIXED: View Switcher now handles the Store
     window.toggleMainView = (mode) => {
         document.querySelectorAll('.live-view').forEach(el => el.classList.toggle('hidden', mode !== 'live'));
         document.querySelectorAll('.video-view').forEach(el => el.classList.toggle('hidden', mode !== 'video'));
@@ -467,18 +481,22 @@
     };
 
     window.toggleStoreView = () => {
+        // Hide others first
+        document.querySelectorAll('.live-view').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.video-view').forEach(el => el.classList.add('hidden'));
+        document.getElementById('viewBtnLive').classList.remove('active');
+        document.getElementById('viewBtnVideo').classList.remove('active');
+
         const panel = document.getElementById('marketplacePanel');
-        const isActive = !panel.classList.contains('hidden');
-        if(isActive) {
-            panel.classList.add('hidden');
-            document.getElementById('viewBtnStore').classList.remove('active');
-        } else {
-            panel.classList.remove('hidden');
-            document.getElementById('viewBtnStore').classList.add('active');
+        panel.classList.remove('hidden');
+        document.getElementById('viewBtnStore').classList.add('active');
+        
+        // Trigger load
+        if(window.NexusStore && window.NexusStore.loadStore) {
+            window.NexusStore.loadStore();
         }
     };
     
-    // Chat & Audio Patch: Ensures feedback even if app.js is slow
     const chatForm = document.getElementById('dashboardChatForm');
     const chatInput = document.getElementById('dashboardChatInput');
     const chatPanel = document.getElementById('chatPanel');
@@ -487,8 +505,6 @@
         e.preventDefault();
         const msg = chatInput.value.trim();
         if(!msg) return;
-        
-        // Visual feedback immediately
         const div = document.createElement('div');
         div.className = 'chatMsg nexus';
         div.innerHTML = `
@@ -502,7 +518,6 @@
         chatInput.value = '';
     });
 
-    // Initial State
     toggleMainView('live');
   </script>
 </body>
