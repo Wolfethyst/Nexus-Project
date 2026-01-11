@@ -116,30 +116,43 @@ async function loadVods() {
     } catch(e) { console.error("VODs load error", e); }
 }
 
+// src/modules/video.js
+
 export async function loadStreamTitle() {
-  try {
-    const { res, data } = await apiGet("/stream/now"); 
-    if (!res.ok || !data) return;
-    const title = data.title || "Untitled Stream";
-    const game = data.game || data.gameName || "";
-
-    const titleInput = document.getElementById("streamTitleInput"); 
-    const gameInput = document.getElementById("streamGameInput");
-    if (titleInput && document.activeElement !== titleInput) titleInput.value = title;
-    if (gameInput && document.activeElement !== gameInput) gameInput.value = game;
-
-    const titleLabel = document.getElementById("streamTitleLabel");
-    const gameLabel = document.getElementById("streamGameLabel");
-    if (titleLabel) titleLabel.textContent = title;
-    if (gameLabel) gameLabel.textContent = game ? `Playing: ${game}` : "";
+    const { data } = await apiGet("/stream/now");
     
-    const tag = document.getElementById("liveStatusTag");
-    if(tag) {
-        if(data.live) { tag.textContent = "LIVE"; tag.classList.add("live"); tag.classList.remove("hidden"); } 
-        else { tag.textContent = "OFFLINE"; tag.classList.remove("live"); tag.classList.remove("hidden"); }
+    const titleInput = document.getElementById("streamTitleInput");
+    const gameInput = document.getElementById("streamGameInput");
+    const titleLabel = document.getElementById("streamTitleLabel"); 
+    const gameLabel = document.getElementById("streamGameLabel"); 
+    
+    // [UPDATED] Target the text inside the new Compact Card
+    const statusText = document.getElementById("liveStatusCardText");
+
+    if (data) {
+        if(titleInput) titleInput.value = data.title || "";
+        if(gameInput) gameInput.value = data.game || "";
+        
+        if(titleLabel) titleLabel.textContent = data.title || "Stream Title";
+        if(gameLabel) gameLabel.textContent = data.game || "Just Chatting"; // Now shows inside card title
+
+        // Update the Compact Card Status
+        if (data.live) {
+            if(statusText) {
+                statusText.textContent = "● Live";
+                statusText.style.color = "#72ffb0"; // Bright Green
+                statusText.style.textShadow = "0 0 8px rgba(114, 255, 176, 0.5)";
+            }
+        } else {
+             if(statusText) {
+                statusText.textContent = "● Offline";
+                statusText.style.color = "var(--text-muted)";
+                statusText.style.textShadow = "none";
+            }
+        }
+
+        if (data.game) updatePlayedGamesList(data.game);
     }
-    if (game) updatePlayedGamesList(game); 
-  } catch (err) { }
 }
 
 // --- HUB LOGIC ---
