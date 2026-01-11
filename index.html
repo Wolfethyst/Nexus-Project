@@ -501,21 +501,27 @@
     const chatInput = document.getElementById('dashboardChatInput');
     const chatPanel = document.getElementById('chatPanel');
 
-    chatForm.addEventListener('submit', (e) => {
+    chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const msg = chatInput.value.trim();
         if(!msg) return;
-        const div = document.createElement('div');
-        div.className = 'chatMsg nexus';
-        div.innerHTML = `
-            <div class="chatAvatarCol"><img class="chatAvatarImg" src="https://data.wolfethyst.tv/assets/nexus_icon"></div>
-            <div class="chatContentCol">
-                <div class="chatHeader"><span class="chatUsername">You</span></div>
-                <div class="chatText">${msg}</div>
-            </div>`;
-        chatPanel.appendChild(div);
-        chatPanel.scrollTop = chatPanel.scrollHeight;
+
+        // 1. Clear input immediately for better UX
         chatInput.value = '';
+
+        // 2. Send to server (Server will broadcast it back to display it)
+        try {
+            await fetch('/nexus/chat/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: msg })
+            });
+        } catch (err) {
+            console.error("Chat send error:", err);
+            // Optional: Alert user if send failed
+        }
+        
+        // DELETED: The lines that manually created <div> and appended it.
     });
 
     toggleMainView('live');

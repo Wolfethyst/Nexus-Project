@@ -5,7 +5,7 @@ let chatWs = null;
 let brainrotWords = [];
 let timeoutInterval = null;
 
-// Get elements immediately, but also verify them inside functions
+// Get elements immediately
 const dashboardChatInputEl = document.getElementById("dashboardChatInput");
 const dashboardChatFormEl = document.getElementById("dashboardChatForm");
 const chatPanelEl = document.getElementById("chatPanel");
@@ -33,25 +33,21 @@ export function checkBrainrot(text) {
     return brainrotWords.some(bad => lower.includes(bad.toLowerCase()));
 }
 
-// --- AUDIO ENGINE (FIXED) ---
+// --- AUDIO ENGINE ---
 export function playSound(path) {
     if (!path) return;
 
-    // 1. Force Decode: This turns "sounds%2F123.mp3" back into "sounds/123.mp3"
+    // 1. Force Decode
     let cleanPath = decodeURIComponent(path);
 
     // 2. Construct URL
     let finalUrl = cleanPath;
     if (!cleanPath.startsWith("http")) {
-        // Ensure we don't accidentally double-slash if API ends in /
         const baseUrl = API.endsWith('/') ? API.slice(0, -1) : API;
-        // Do not re-encode cleanPath, or we get the %2F issue again
         finalUrl = `${baseUrl}/redeems/sound/${cleanPath}`;
     }
 
-    console.log("[Nexus] Playing Audio:", finalUrl);
-
-    // 3. Create and Play
+    // 3. Play
     const audio = new Audio(finalUrl);
     audio.volume = 0.6; 
     
@@ -64,6 +60,7 @@ export function playSound(path) {
     }
 }
 
+// --- MODERATION HELPERS ---
 export function hideMessagesForUser(userId, durationMinutes) {
     const msgs = document.querySelectorAll(`.chatMsg[data-userid="${userId}"]`);
     if(!msgs.length) return;
@@ -153,13 +150,6 @@ export function startTimeoutCountdown(expiresAt, reason, kind = "manual_timeout"
     if (!input) return;
     
     if (timeoutInterval) clearInterval(timeoutInterval);
-    const initialDiff = expiresAt - Date.now();
-    
-    if (initialDiff <= 0) {
-        lockChatInput(false);
-        if(timeoutInfoModalEl) timeoutInfoModalEl.classList.remove("open");
-        return; 
-    }
     
     const updateTimer = () => {
         const now = Date.now();
@@ -178,7 +168,7 @@ export function startTimeoutCountdown(expiresAt, reason, kind = "manual_timeout"
     updateTimer();
     lockChatInput(true, input.placeholder); 
     timeoutInterval = setInterval(updateTimer, 1000);
-    const remainingMinutes = Math.ceil(initialDiff / 60000);
+    const remainingMinutes = Math.ceil((expiresAt - Date.now()) / 60000);
     showAutomodModal(kind, reason, remainingMinutes);
 }
 
@@ -211,6 +201,8 @@ export function replyToUser(username) {
     input.focus();
 }
 
+// --- MESSAGE RENDERERS ---
+
 export function addSupportEventMessage(data) {
     const panel = document.getElementById("chatPanel");
     if (!panel) return;
@@ -227,7 +219,6 @@ export function addSupportEventMessage(data) {
     scrollChatToBottom();
 }
 
-// --- REDEEM MESSAGE & AUDIO HANDLER ---
 export function addRedeemMessage(data) {
     console.log("[Nexus] Redeem Event:", data);
 
@@ -263,7 +254,6 @@ export function addRedeemMessage(data) {
     scrollChatToBottom();
 }
 
-// System "Toast" in Chat
 export function addSystemMessage(text, type = "info") {
     const panel = document.getElementById("chatPanel");
     if (!panel) return;
@@ -314,13 +304,13 @@ export function addDashboardChatMessage(msg) {
   const myName = State.user ? getDisplayName(State.user).toLowerCase() : "";
   const isMentioned = myName && text.toLowerCase().includes(`@${myName}`);
 
-  let platformClass = "nexus"; let avatarSrc = "https://data.wolfethyst.tv/assets/nexus_icon"; 
+  let platformClass = "nexus"; let avatarSrc = "https://data.wolfethyst.tv/assets/nexus_icon.png"; 
   if (source === "twitch") { platformClass = "twitch"; avatarSrc = "https://data.wolfethyst.tv/assets/twitch_icon"; } 
   else if (source === "youtube") { platformClass = "youtube"; avatarSrc = "https://data.wolfethyst.tv/assets/youtube_icon"; } 
   else { 
       platformClass = "nexus"; 
       if (msg.avatar) avatarSrc = msg.avatar; 
-      else avatarSrc = "https://data.wolfethyst.tv/assets/wolfe_crystal"; 
+      else avatarSrc = "https://data.wolfethyst.tv/assets/wolfe_crystal.png"; 
   }
   
   const msgDecoClass = msg.messageDecoration ? ` ${escapeHtml(msg.messageDecoration)}` : ""; 
@@ -342,6 +332,7 @@ export function addDashboardChatMessage(msg) {
       animStyle = `style="--anim-delay: -${offset}s"`; 
   }
 
+  // ATTACH ID FOR DELETION
   el.setAttribute("data-msgid", msg.id || ""); 
   if(msg.userId) el.setAttribute("data-userid", msg.userId); 
   const nameStyle = msg.color ? `style="color:${msg.color}"` : "";
@@ -413,8 +404,20 @@ export function connectDashboardChatWS() {
           if (data.type === "ban") removeMessagesForUser(data.userId);
       }
 
+      // --- [FIX] Added missing handlers for Delete and Clear ---
+      if (data.type === "message_deleted" || data.type === "delete_message") {
+          const target = document.querySelector(`.chatMsg[data-msgid="${data.id}"]`);
+          if (target) target.remove();
+      }
+
+      if (data.type === "clear") { 
+          const panel = document.getElementById("chatPanel");
+          if(panel) panel.innerHTML = ""; 
+      }
+
       if (data.type === "chat") addDashboardChatMessage(data.message);
       if (data.type === "redeem") addRedeemMessage(data);
+      if (data.type === "support") addSupportEventMessage(data); // In case support events come through
       
       if (data.type === "user_update") { 
           if (State.user && String(State.user.id) === String(data.userId)) {
@@ -423,10 +426,6 @@ export function connectDashboardChatWS() {
           }
       }
 
-      if (data.type === "clear") { 
-          const panel = document.getElementById("chatPanel");
-          if(panel) panel.innerHTML = ""; 
-      }
       if (data.type === "history") { 
           const panel = document.getElementById("chatPanel");
           if(panel) {
@@ -443,10 +442,9 @@ export function connectDashboardChatWS() {
 }
 
 // --- INITIALIZATION ---
-// This ensures the listener is attached even if imported dynamically
 const form = document.getElementById("dashboardChatForm");
 if(form) {
-    // Remove old listeners to prevent duplicates if hot-reloaded
+    // Replace element to remove any old listeners from index.html or previous loads
     const newForm = form.cloneNode(true);
     form.parentNode.replaceChild(newForm, form);
     
@@ -461,18 +459,9 @@ if(form) {
             return;
         }
         
-        // OPTIMISTIC UI
-        const fakeMsg = {
-            user: getDisplayName(State.user),
-            text: text,
-            platform: "nexus",
-            avatar: State.user.avatar,
-            decoration: State.user.decoration,
-            messageDecoration: State.user.activeMessageDecoration,
-            color: State.user.nameColor || "#ffffff"
-        };
-        addDashboardChatMessage(fakeMsg);
-
+        // [FIX] Removed Optimistic UI (Manually adding message)
+        // We now wait for the server to echo it back via WebSocket
+        
         input.value = "";
         
         try {
@@ -491,7 +480,7 @@ if(form) {
     });
 }
 
-// --- TTS REDEEM HANDLER (Moved from store.js/app.js to ensure scope) ---
+// --- TTS REDEEM HANDLER ---
 const ttsForm = document.getElementById("ttsRedeemForm");
 if(ttsForm) {
     const newTtsForm = ttsForm.cloneNode(true);
@@ -500,15 +489,15 @@ if(ttsForm) {
     newTtsForm.addEventListener("submit", async (ev) => { 
         ev.preventDefault(); 
         
-        // Dynamically get the ID from the global state/window since we are in a module
-        // We need store.js to have exported this, OR we need to fetch it. 
-        // For now, let's assume the user logic from store.js populated `window.ttsRedeemId` if possible, 
-        // OR we can just try to find it in the DOM if we stored it there.
-        
-        // Hack: Check if we can get the ID from the store module via an exported getter?
-        // Simpler: Let's just import handleRedeemClick from store.js
         const { handleRedeemClick, getTtsRedeemId } = await import('./store.js');
-        const ttsId = getTtsRedeemId ? getTtsRedeemId() : null;
+        // If your store logic saves the ID somewhere globally or we can fetch it:
+        // For now, let's assume store.js handles the lookup or we skip if unknown.
+        // A common pattern is `window.ttsRedeemId` if set by store.js
+        
+        // IMPORTANT: If you don't have this export in store.js yet, ensure you add it 
+        // or expose `window.ttsRedeemId` in `store.js` when redeems load.
+        // As a fallback, I'll check the window object if the import fails to find the getter.
+        const ttsId = (getTtsRedeemId && getTtsRedeemId()) || window.ttsRedeemId;
 
         if (!ttsId) {
             alert("TTS Redeem ID not found. Please wait for redeems to load.");
@@ -520,13 +509,12 @@ if(ttsForm) {
         const text = input.value.trim(); 
         
         if (text) { 
-            if(btn) btn.classList.add("loading"); // Optional visual feedback
+            if(btn) btn.classList.add("loading"); 
             
             const success = await handleRedeemClick(ttsId, null, text); 
             
             if (success) { 
                 input.value = ""; 
-                // We do NOT change the button text anymore per user request
             }
             if(btn) btn.classList.remove("loading");
         } 
