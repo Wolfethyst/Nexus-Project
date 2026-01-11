@@ -47,18 +47,38 @@ export async function loadVideoData() {
     }
 
     // 3. Load the rest of the site content in the background
+    const params = new URLSearchParams(window.location.search);
+    const directClipId = params.get("clip");
+    const directVodId = params.get("vod");
+
+    if (directClipId) {
+        try {
+            const { data } = await apiGet(`/clips/meta?id=${directClipId}`);
+            if (data && data.ok && data.clip) { playVideo(data.clip, 'clip'); }
+        } catch(e) { console.error("Fast load failed", e); }
+    } 
+
     const heavyLifting = Promise.all([
-        loadGames().then(() => renderHubGames()), // Render folders ASAP
+        loadGames().then(() => {
+            // Re-apply current game cover if we know it
+            if (currentGameName) updatePlayedGamesList(currentGameName);
+            else renderHubGames();
+        }),
         loadStreamTitle(),
         loadClips(),
         loadVods().then(() => {
-            if (directVodId && vodsData.length > 0) {
-                handleVideoClick(directVodId, 'vod');
-            }
+            if (directVodId && vodsData.length > 0) handleVideoClick(directVodId, 'vod');
         })
     ]);
 
     await heavyLifting;
+
+    // --- [NEW] HIDE LOADER WHEN DONE ---
+    const loader = document.getElementById("appLoader");
+    if(loader) {
+        // Small delay to ensure images paint
+        setTimeout(() => loader.classList.add("hidden"), 500); 
+    }
 }
 
 async function loadGames() {
