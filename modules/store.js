@@ -71,8 +71,8 @@ export async function loadStore() { await loadLeaderboard(); const { res, data }
 
 export function switchMarketTab(tab) {
     currentMarketTab = tab;
-    document.getElementById("tabStoreBtn").classList.toggle("active", tab === "store");
-    document.getElementById("tabInvBtn").classList.toggle("active", tab === "inventory");
+    document.getElementById("tabStoreBtn")?.classList.toggle("active", tab === "store");
+    document.getElementById("tabInvBtn")?.classList.toggle("active", tab === "inventory");
     renderStore();
 }
 
@@ -85,12 +85,13 @@ export function toggleStoreSort() {
 
 export function renderStore() {
     const grid = document.getElementById("storeGrid");
-    // [FIX] Safety check prevents crash on Admin/Owner page
-    if (!grid) return;
+    
+    // [CRITICAL FIX] If grid is missing (e.g. on Owner/Admin page), stop execution to prevent crash
+    if (!grid) return; 
 
     const legacyGrid = document.getElementById("storeGridLegacy");
     if(legacyGrid) legacyGrid.innerHTML = ""; 
-    if (grid) { grid.style.display = "block"; grid.style.height = "100%"; grid.style.overflow = "hidden"; grid.className = ""; }
+    grid.style.display = "block"; grid.style.height = "100%"; grid.style.overflow = "hidden"; grid.className = "";
 
     storeItems.sort((a, b) => {
         let valA = a.cost === -1 ? 9999999 : a.cost;
@@ -217,7 +218,7 @@ function renderRedeemDrawer(groups) {
       // Icon determination
       const typeIcon = r.sound || r.soundKey ? "🔊" : "🎁";
 
-      // [FIXED] Updated "Card" HTML - NO BUTTON, CLICKABLE WRAPPER, USES NEW CSS CLASSES
+      // Updated "Card" HTML - NO BUTTON, CLICKABLE WRAPPER
       return `
       <div class="redeemCard" onclick="handleRedeemClick('${escapeHtml(id)}', this)">
         <div class="redeemTop">
@@ -250,7 +251,7 @@ export async function loadRedeems() {
 export async function handleRedeemClick(redeemId, el, explicitInput) {
   if (!State.user) { document.getElementById("loginPopup")?.classList.add("open"); return false; }
   
-  // [FIXED] Distinguish between a Card click (new UI) and a Button click (TTS/Old UI)
+  // Distinguish between a Card click (new UI) and a Button click (TTS/Old UI)
   const isCard = el && el.classList.contains("redeemCard");
   let originalText = "";
   
