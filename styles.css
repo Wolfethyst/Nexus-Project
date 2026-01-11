@@ -71,57 +71,59 @@ header {
 .username-display { font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(213, 123, 255, 0.5); }
 
 /* --- GRID LAYOUT (Strict Top Alignment) --- */
+/* 1. Main Grid: Calculate exact height so it CANNOT shrink */
 .main-grid {
-    /* 1. Force Grid to fill the screen */
+    /* "Screen Height" minus "Header Height" = Exact Remaining Space */
     height: calc(100vh - 64px) !important; 
+    
     display: grid; 
     grid-template-columns: 320px 1fr 380px;
-    grid-template-rows: 1fr;
     
-    /* 2. CRITICAL: Force items to stretch from the TOP down */
-    align-items: stretch !important; 
-    align-content: start !important;
+    /* Force the row to fill that calculated height exactly */
+    grid-template-rows: 100% !important; 
     
     gap: 20px; 
     padding: 20px; 
     overflow: hidden;
+    
+    /* Ensure items stretch to fill the vertical space */
+    align-items: stretch !important;
 }
 
-/* 3. Force all columns to fill that height */
+/* 2. Columns: Force them to fill the grid cell */
 .col-left, .col-center, .col-right { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 20px; 
-    overflow: hidden; 
-    height: 100% !important; /* Touch bottom */
-    justify-content: flex-start !important; /* Anchor to TOP */
-}
-
-/* Video Column Specifics */
-.col-video { 
-    grid-column: 1 / 3; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 20px; 
-    overflow: hidden; 
-    height: 100% !important; /* Force full height */
-    min-height: 0;
-    justify-content: flex-start !important; /* Anchor to TOP */
-}
-
-/* Force the panel inside to fill the column */
-.col-video .panel {
-    flex: 1;
     height: 100% !important;
     display: flex; 
-    flex-direction: column;
+    flex-direction: column; 
+    overflow: hidden;
 }
 
-/* Ensure the Hub Container fills the Panel */
-.video-hub-container {
-    height: 100%;
+/* 3. Video Column: Same logic */
+.col-video { 
+    grid-column: 1 / 3; 
+    height: 100% !important;
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden;
+}
+
+/* 4. Panels: Force them to expand to fill the column */
+.panel, 
+.col-video .panel, 
+#chatPanelWrapper {
+    flex: 1;                 /* Grow to fill flex container */
+    height: 100% !important; /* Force height match */
     display: flex; 
     flex-direction: column;
+    min-height: 0;           /* Allow internal scrolling */
+}
+
+/* 5. Scroll Areas: Only these should scroll, not the panel */
+.panel-body, 
+.chat-messages,
+.hub-scroll-area {
+    flex: 1;
+    overflow-y: auto;
 }
 
 /* --- PANELS --- */
