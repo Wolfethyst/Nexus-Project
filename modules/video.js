@@ -24,7 +24,6 @@ function getThumbUrl(item, type) {
     return PLACEHOLDER_IMG;
 }
 
-// --- DATA LOADING ---
 // [UPDATED] Prioritized Loading Sequence
 export async function loadVideoData() {
     // 1. Check if the user is visiting a specific link (Direct Play)
@@ -42,22 +41,8 @@ export async function loadVideoData() {
             }
         } catch(e) { console.error("Fast load failed", e); }
     } 
-    else if (directVodId) {
-        // VODs still rely on the main list for now, but we check immediately after list loads
-    }
 
     // 3. Load the rest of the site content in the background
-    const params = new URLSearchParams(window.location.search);
-    const directClipId = params.get("clip");
-    const directVodId = params.get("vod");
-
-    if (directClipId) {
-        try {
-            const { data } = await apiGet(`/clips/meta?id=${directClipId}`);
-            if (data && data.ok && data.clip) { playVideo(data.clip, 'clip'); }
-        } catch(e) { console.error("Fast load failed", e); }
-    } 
-
     const heavyLifting = Promise.all([
         loadGames().then(() => {
             // Re-apply current game cover if we know it
@@ -67,7 +52,10 @@ export async function loadVideoData() {
         loadStreamTitle(),
         loadClips(),
         loadVods().then(() => {
-            if (directVodId && vodsData.length > 0) handleVideoClick(directVodId, 'vod');
+            // Handle Direct VOD link (only possible after VOD list loads)
+            if (directVodId && vodsData.length > 0) {
+                handleVideoClick(directVodId, 'vod');
+            }
         })
     ]);
 
