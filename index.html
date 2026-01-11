@@ -496,33 +496,6 @@
             window.NexusStore.loadStore();
         }
     };
-    
-    const chatForm = document.getElementById('dashboardChatForm');
-    const chatInput = document.getElementById('dashboardChatInput');
-    const chatPanel = document.getElementById('chatPanel');
-
-    chatForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const msg = chatInput.value.trim();
-        if(!msg) return;
-
-        // 1. Clear input immediately for better UX
-        chatInput.value = '';
-
-        // 2. Send to server (Server will broadcast it back to display it)
-        try {
-            await fetch('/nexus/chat/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: msg })
-            });
-        } catch (err) {
-            console.error("Chat send error:", err);
-            // Optional: Alert user if send failed
-        }
-        
-        // DELETED: The lines that manually created <div> and appended it.
-    });
 
     toggleMainView('live');
   </script>
