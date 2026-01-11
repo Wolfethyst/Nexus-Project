@@ -77,17 +77,28 @@
   <div class="main-grid">
 
     <div class="col-left live-view">
-        <div class="now-playing-card" id="nowPlayingCard">
-            <img id="gameCoverImage" src="https://images.igdb.com/igdb/image/upload/t_cover_big/co85cg.jpg" class="game-cover" onerror="this.src='https://data.wolfethyst.tv/assets/nexus_icon'">
-            <div class="game-info-overlay">
-                <div class="game-label">Current Session</div>
-                <div class="game-title" id="streamGameLabel">Loading...</div>
-                <div class="game-meta" id="streamTitleLabel">Stream Title</div>
-            </div>
-            <div class="adminOnly" style="position:absolute; top:10px; right:10px; display:flex; gap:5px;">
-                <button onclick="document.getElementById('streamTitleInput').focus()" class="panelSmallBtn">✎</button>
-            </div>
+        <div class="now-playing-card compact" id="nowPlayingCard">
+    <img id="gameCoverImage" 
+         src="https://images.igdb.com/igdb/image/upload/t_cover_big/co85cg.jpg" 
+         class="game-cover" 
+         onerror="this.src='https://data.wolfethyst.tv/assets/nexus_icon.png'">
+    
+    <div class="game-info-overlay">
+        <div class="game-label">Current Session</div>
+        
+        <div class="game-title" id="streamGameLabel">Loading...</div>
+        
+        <div class="game-meta" id="streamTitleLabel">Stream Title</div>
+        
+        <div style="margin-top: 6px; font-size: 11px; font-weight:bold; color: var(--accent); display:flex; align-items:center; gap:6px;">
+            <span id="liveStatusCardText">● Offline</span>
         </div>
+    </div>
+
+    <div class="adminOnly" style="position:absolute; top:10px; right:10px;">
+        <button onclick="document.getElementById('streamTitleInput').focus()" class="panelSmallBtn" style="padding:4px 8px; opacity:0.6;">✎</button>
+    </div>
+</div>
 
         <div class="panel" id="leaderboardPanel" style="flex:1;">
             <div class="panel-header">All-Time Top Crystals</div>
