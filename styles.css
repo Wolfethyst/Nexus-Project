@@ -71,81 +71,86 @@ header {
 .username-display { font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(213, 123, 255, 0.5); }
 
 /* ============================================================
-   GRID LAYOUT: FLEX-GROW FIX (Prevents Shrinking & Floating)
+   ABSOLUTE LAYOUT LOCK (The "Floor-to-Ceiling" Fix)
    ============================================================ */
 
-/* 1. Main Grid: Fixed viewport height */
+/* 1. Body: Stop the page from growing beyond the screen */
+body {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 2. Main Grid: The container is EXACTLY the screen minus header */
 .main-grid {
-    height: calc(100vh - 64px); /* Exact height of content area */
+    height: calc(100vh - 64px) !important;
     display: grid; 
     grid-template-columns: 320px 1fr 380px;
-    grid-template-rows: 1fr; /* Force row to fill height */
+    grid-template-rows: 100% !important; /* Force row to fill container */
     gap: 20px; 
     padding: 20px; 
     overflow: hidden;
-    
-    /* Critical: Stretch columns to full height */
-    align-items: stretch; 
+    align-items: stretch !important; /* Force columns to touch bottom */
 }
 
-/* 2. Columns: Flex containers that force children to grow */
+/* 3. Columns: Force them to fill the Grid Row */
 .col-left, .col-center, .col-right { 
+    height: 100% !important;
     display: flex; 
     flex-direction: column; 
-    gap: 20px; 
-    overflow: hidden; 
-    height: 100%; /* Touch bottom */
+    overflow: hidden;
+    justify-content: flex-start !important; /* Force content to TOP */
 }
 
-/* 3. Video Column: Must be flex to hold the panel */
+/* 4. Video Column Specifics */
 .col-video { 
     grid-column: 1 / 3; 
+    height: 100% !important;
     display: flex; 
     flex-direction: column; 
-    gap: 20px; 
-    overflow: hidden; 
-    height: 100%;
+    overflow: hidden;
 }
 
-/* 4. PANELS: THE KEY FIX 
-   Instead of height:100%, we use flex:1. 
-   This forces the panel to GROW to fill the column. */
+/* 5. PANELS: Force them to fill the Column */
+/* This targets the Library (Video) Panel and Chat Panel */
 .panel, 
 .col-video .panel, 
-#chatPanelWrapper,
-.stream-block {
-    flex: 1; /* GROW to fill space (Stretches Up & Down) */
+#chatPanelWrapper {
+    height: 100% !important; /* This is the key "Lock" */
+    width: 100%;
     display: flex; 
     flex-direction: column;
-    min-height: 0; /* Prevents scroll locking */
-    height: auto;  /* Let flex dictate height */
+    box-sizing: border-box;
 }
 
-/* 5. Library Container: Ensure it fills the panel */
+/* 6. INTERNAL CONTAINERS: Ensure internal wrappers extend fully */
+/* This fixes the "Disappearing Library" issue */
 .video-hub-container {
-    flex: 1; /* GROW to fill the panel */
+    height: 100% !important;
+    width: 100%;
     display: flex; 
     flex-direction: column;
-    height: 100%;
+}
+
+/* 7. SCROLL AREAS: These take the remaining space */
+/* Everything above this is locked. ONLY these scroll. */
+.panel-body, 
+.chat-messages, 
+.hub-scroll-area,
+.hub-scroll-wrapper {
+    flex: 1; /* Grow to fill the locked height */
+    overflow-y: auto;
     min-height: 0;
 }
 
-/* --- PANELS --- */
-.panel {
-    background: var(--panel-bg); border: 1px solid var(--panel-border);
-    border-radius: 12px; backdrop-filter: blur(10px); display: flex;
-    flex-direction: column; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+/* 8. Panel Header: Never shrinks */
+.panel-header, 
+.hub-header,
+.game-hero, 
+.hub-tabs {
+    flex-shrink: 0;
 }
-.panel-header {
-    padding: 12px 16px; background: rgba(255,255,255,0.03);
-    border-bottom: 1px solid var(--panel-border); font-size: 13px; font-weight: 700;
-    color: var(--bright-1); display: flex; justify-content: space-between; align-items: center;
-}
-.panel-body {
-    padding: 15px; overflow-y: auto; flex: 1;
-    scrollbar-width: thin; scrollbar-color: var(--accent) rgba(0,0,0,0.3);
-}
-
 /* --- CARDS & WIDGETS --- */
 .now-playing-card {
     position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 2/3; 
