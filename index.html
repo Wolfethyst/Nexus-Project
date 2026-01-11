@@ -47,7 +47,6 @@
     <div class="nav-tabs">
         <button id="viewBtnLive" class="nav-tab active" onclick="toggleMainView('live')">LIVE</button>
         <button id="viewBtnVideo" class="nav-tab" onclick="toggleMainView('video')">VODS</button>
-        <button id="viewBtnStore" class="nav-tab" onclick="toggleStoreView()">STORE</button>
     </div>
 
     <div class="brand">
@@ -467,6 +466,7 @@
       });
     }
     
+    // Observer for Stream Title Updates
     const titleObserver = new MutationObserver(() => {
         const title = document.getElementById('streamTitleLabel').innerText;
         const game = document.getElementById('streamGameLabel').innerText;
@@ -481,34 +481,24 @@
         }
     }, 1000);
 
-    // FIXED: View Switcher now handles the Store
+    // [UPDATED] View Switcher (Store Removed)
     window.toggleMainView = (mode) => {
+        // Toggle visibility of sections
         document.querySelectorAll('.live-view').forEach(el => el.classList.toggle('hidden', mode !== 'live'));
         document.querySelectorAll('.video-view').forEach(el => el.classList.toggle('hidden', mode !== 'video'));
-        document.getElementById('marketplacePanel').classList.add('hidden');
         
+        // Ensure marketplace panel stays hidden
+        const marketPanel = document.getElementById('marketplacePanel');
+        if (marketPanel) marketPanel.classList.add('hidden');
+        
+        // Update Button States
         document.getElementById('viewBtnLive').classList.toggle('active', mode === 'live');
         document.getElementById('viewBtnVideo').classList.toggle('active', mode === 'video');
-        document.getElementById('viewBtnStore').classList.remove('active');
-    };
-
-    window.toggleStoreView = () => {
-        // Hide others first
-        document.querySelectorAll('.live-view').forEach(el => el.classList.add('hidden'));
-        document.querySelectorAll('.video-view').forEach(el => el.classList.add('hidden'));
-        document.getElementById('viewBtnLive').classList.remove('active');
-        document.getElementById('viewBtnVideo').classList.remove('active');
-
-        const panel = document.getElementById('marketplacePanel');
-        panel.classList.remove('hidden');
-        document.getElementById('viewBtnStore').classList.add('active');
         
-        // Trigger load
-        if(window.NexusStore && window.NexusStore.loadStore) {
-            window.NexusStore.loadStore();
-        }
+        // Note: Store button logic removed to prevent errors
     };
 
+    // Initialize Default View
     toggleMainView('live');
   </script>
 </body>
