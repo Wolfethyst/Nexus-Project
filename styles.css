@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS THEME v2 (Restored & Fixed + VOD Layout Engine)
+   NEXUS THEME v2 (Restored & Fixed)
    ============================================================ */
 :root {
   --bg: radial-gradient(circle at 50% 0%, #3d0066, #0b0014 80%);
@@ -70,70 +70,27 @@ header {
 
 .username-display { font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(213, 123, 255, 0.5); }
 
-/* ============================================================
-   LAYOUT ENGINE (RESTORED & FIXED + VOD LOGIC)
-   ============================================================ */
-
-/* 1. Main Grid Definition - Keeps Live View Safe */
+/* --- GRID LAYOUT --- */
 .main-grid {
     flex: 1; 
     display: grid; 
     grid-template-columns: 320px 1fr 380px; 
-    /* We do NOT force grid-rows here to avoid crushing the live view */
     gap: 20px; 
     padding: 20px; 
     overflow: hidden; 
-    height: calc(100vh - 64px); /* Ensure it fills the screen */
+    height: calc(100vh - 64px); 
 }
 
-/* 2. Column Basics - Ensure they fill height */
 .col-left, .col-center, .col-right { 
     display: flex; 
     flex-direction: column; 
     gap: 20px; 
     overflow: hidden; 
-    height: 100%; /* Touch bottom */
+    height: 100%; 
     min-height: 0;
 }
 
-/* 3. The Video Column (Legacy/Wrapper) - Modified for VOD Split */
-/* We split this into col-vod-left and col-vod-main below */
-
-/* --- NEW VOD COLUMNS --- */
-/* Left Column for Episode List */
-.col-vod-left {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    overflow: hidden;
-    height: 100%;
-    min-height: 0;
-    grid-column: 1 / 2; /* Always first slot */
-}
-
-/* Main Column for Player/Library */
-.col-vod-main {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    overflow: hidden;
-    height: 100%;
-    min-height: 0;
-    transition: all 0.3s ease; /* Smooth resize */
-}
-
-/* VOD MODES */
-/* Library Mode: Spans Left + Center */
-.col-vod-main.mode-library {
-    grid-column: 1 / 3; 
-}
-
-/* Player Mode: Shrinks to Center */
-.col-vod-main.mode-player {
-    grid-column: 2 / 3; 
-}
-
-/* 4. PANELS: Flex-Grow to fill the column */
+/* --- PANELS --- */
 .panel {
     background: var(--panel-bg); 
     border: 1px solid var(--panel-border);
@@ -143,122 +100,39 @@ header {
     flex-direction: column; 
     overflow: hidden; 
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    
-    /* THE FIX: Allow panel to grow to fill empty space */
     flex: 1; 
     min-height: 0; 
-}
-
-/* 5. SPECIFIC FIX FOR VOD LIBRARY */
-/* This ensures the library content stretches to fill the panel */
-.video-hub-container {
-    flex: 1;            /* Grow to fill panel */
-    display: flex; 
-    flex-direction: column; 
-    overflow: hidden;   /* Contain scrolling */
-    min-height: 0;      /* Prevent collapse */
-    height: 100%;       /* Redundancy for safety */
-}
-
-/* 6. Header & Search - Fixed at Top */
-.hub-header {
-    flex-shrink: 0; 
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--panel-border);
-    background: rgba(0, 0, 0, 0.2); 
-}
-
-/* 7. Scroll Areas - Take remaining space */
-.hub-scroll-area, 
-.hub-scroll-wrapper,
-.panel-body,
-.chat-messages {
-    flex: 1; 
-    overflow-y: auto; 
-    min-height: 0;
-    scrollbar-width: thin; 
-    scrollbar-color: var(--accent) rgba(0,0,0,0.3);
 }
 
 .panel-header {
     padding: 12px 16px; background: rgba(255,255,255,0.03);
     border-bottom: 1px solid var(--panel-border); font-size: 13px; font-weight: 700;
     color: var(--bright-1); display: flex; justify-content: space-between; align-items: center;
-    flex-shrink: 0; /* Ensure header never squishes */
+    flex-shrink: 0; 
+}
+.panel-body {
+    padding: 15px; overflow-y: auto; flex: 1;
+    scrollbar-width: thin; scrollbar-color: var(--accent) rgba(0,0,0,0.3);
+}
+
+/* --- VOD SPECIFIC CONTAINERS --- */
+.video-hub-container {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; height: 100%;
+}
+
+.hub-header {
+    flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 20px; border-bottom: 1px solid var(--panel-border); background: rgba(0, 0, 0, 0.2); 
+}
+
+.hub-scroll-area, 
+.hub-scroll-wrapper,
+.chat-messages {
+    flex: 1; overflow-y: auto; min-height: 0;
+    scrollbar-width: thin; scrollbar-color: var(--accent) rgba(0,0,0,0.3);
 }
 
 /* --- CARDS & WIDGETS --- */
-.now-playing-card.compact {
-    aspect-ratio: auto;
-    height: 140px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 10px;
-    gap: 15px;
-    background: linear-gradient(90deg, rgba(20,5,30,0.9), rgba(40,0,60,0.6));
-    border: 1px solid var(--panel-border);
-    border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.now-playing-card.compact .game-cover {
-    width: 90px;
-    height: 100%;
-    border-radius: 6px;
-    object-fit: cover;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    border: 1px solid rgba(255,255,255,0.1);
-    flex-shrink: 0; /* Prevents image from squishing */
-}
-
-.now-playing-card.compact .game-info-overlay {
-    position: static; /* Remove absolute positioning */
-    background: none;
-    padding: 0;
-    justify-content: center;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 0; /* Critical for text truncation */
-}
-
-/* Typography Overrides for Compact Mode */
-.now-playing-card.compact .game-label {
-    text-shadow: none;
-    margin-bottom: 2px;
-}
-
-.now-playing-card.compact .game-title {
-    font-size: 18px; 
-    line-height: 1.2;
-    margin-bottom: 4px;
-    text-shadow: none;
-    
-    /* Handle Long Titles */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.now-playing-card.compact .game-meta {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-shadow: none;
-    
-    /* Handle Long Stream Titles */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* --- CARDS & WIDGETS (Original) --- */
 .now-playing-card {
     position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 2/3; 
     border: 1px solid var(--panel-border); box-shadow: 0 0 20px rgba(0,0,0,0.5); flex-shrink: 0;
@@ -543,7 +417,130 @@ body.is-owner .adminOnly, body.is-mod .adminOnly { display: flex !important; }
     .col-left { display: none; }
 }
 
-/* --- HUB / LIBRARY / GAME INFO --- */
+/* ============================================================
+   MODALS & POPUPS
+   ============================================================ */
+.requestModal {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.requestModal.open { opacity: 1; pointer-events: auto; }
+
+.requestModalWindow {
+    background: radial-gradient(circle at top, #2a103c, #0b0014);
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 50px rgba(130, 0, 255, 0.2);
+    padding: 24px; border-radius: 16px; width: 420px; max-width: 90%;
+    display: flex; flex-direction: column; gap: 15px; color: #fff;
+}
+
+.requestModalWindow h3 {
+    margin: 0 0 10px 0; font-family: var(--font-head); color: var(--accent);
+    border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;
+    text-align: center;
+}
+
+.requestModalButtons {
+    display: flex; gap: 10px; justify-content: center; margin-top: 10px;
+}
+
+/* Game Info Modal Specifics */
+.game-info-body { display: flex; gap: 15px; margin-bottom: 10px; }
+.game-info-cover { width: 80px; height: 110px; object-fit: cover; border-radius: 6px; }
+.game-info-text { font-size: 13px; line-height: 1.4; color: var(--text-muted); }
+
+/* ============================================================
+   USER MENU & POPUPS (FIXED)
+   ============================================================ */
+#loginPopup {
+  position: absolute; top: 50px; left: 0; width: 260px;
+  background: rgba(15, 0, 25, 0.98); border: 1px solid var(--accent);
+  border-radius: 12px; padding: 15px; box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px); display: none; flex-direction: column; gap: 10px;
+}
+#loginPopup.open { display: flex; }
+.loginOption {
+  display: flex; align-items: center; gap: 12px; padding: 10px;
+  background: rgba(255, 255, 255, 0.05); border-radius: 8px; cursor: pointer;
+  transition: 0.2s; font-size: 14px; color: #fff;
+}
+.loginOption:hover { background: rgba(255, 255, 255, 0.1); border: 1px solid var(--accent); }
+.loginOption img { width: 24px; height: 24px; object-fit: contain; }
+
+#userMenu {
+  display: none; position: absolute; top: 90px; left: 40px; width: 280px;
+  background: rgba(15, 0, 25, 0.98); padding: 20px; border-radius: 14px;
+  border: 1px solid rgba(255, 150, 255, 0.3); z-index: 6000;
+  box-shadow: 0 0 30px rgba(140, 40, 220, 0.6), 0 0 10px rgba(255, 255, 255, 0.1) inset;
+  backdrop-filter: blur(12px);
+}
+#userMenu h3 {
+  margin: 0 0 12px 0; font-size: 16px; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 8px;
+}
+
+/* User Menu Inputs - Theming Fix */
+#userMenu input[type="text"] {
+  width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 4px; 
+  border: 1px solid rgba(255, 150, 255, 0.3); background: rgba(0, 0, 0, 0.6); 
+  color: #fff; font-family: "Marcellus", serif; font-size: 14px; outline: none;
+  margin-bottom: 10px;
+}
+#userMenu input[type="text"]:focus { border-color: var(--accent); }
+
+#userMenu label {
+    font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; display: block;
+}
+
+#nexusProfileSaveBtn {
+  width: 100%; margin-top: 4px; margin-bottom: 16px;
+  background: rgba(60, 20, 90, 0.8); border: 1px solid var(--accent); color: #fff;
+  padding: 8px; border-radius: 999px; cursor: pointer; font-family: "Cinzel", serif;
+}
+#nexusProfileSaveBtn:hover { background: var(--accent); color:#000; }
+
+.userMenuRow { display: flex; align-items: center; gap: 10px; padding: 8px 0; cursor: pointer; transition: color 0.2s; color: #fff; }
+.userMenuRow:hover { color: var(--accent); }
+
+.menuIcon { width: 18px !important; height: 18px !important; object-fit: contain; font-size:18px; }
+
+/* FIXED: Platform Icons Sizing */
+#userMenuPlatforms img { width: 20px !important; height: 20px !important; object-fit: contain; }
+#userMenuPlatforms div { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 13px; }
+
+/* CHAT OVERLAY & TIPS */
+.chat-overlay {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(3px); z-index: 7000;
+    display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+}
+.chat-overlay.open { opacity: 1; pointer-events: auto; }
+
+.chat-card {
+    width: 90%; max-width: 340px; background: rgba(15, 5, 25, 0.98); border: 1px solid var(--accent);
+    border-radius: 12px; padding: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column;
+    height: auto; max-height: 90%; overflow-y: auto;
+}
+.chat-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.chat-card-header h3 { margin: 0; font-family: 'Cinzel', serif; color: var(--accent); font-size: 16px; text-shadow: 0 0 10px rgba(213, 123, 255, 0.3); }
+.modal-close-btn-embedded { background: none; border: none; color: #888; font-size: 20px; cursor: pointer; padding: 0; line-height: 1; }
+.modal-close-btn-embedded:hover { color: #fff; }
+
+.tip-input-group { display: flex; gap: 8px; margin-bottom: 10px; }
+.tip-preset {
+    flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+    color: #fff; padding: 8px 0; border-radius: 6px; cursor: pointer; font-family: "Marcellus"; font-size: 13px; transition: 0.2s;
+}
+.tip-preset:hover { border-color: var(--accent); background: rgba(255,255,255,0.1); }
+.tip-preset.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: bold; }
+.tip-custom-input { width: 80px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; padding: 8px; text-align: center; font-family: "Marcellus"; }
+.cta-button {
+    background: var(--accent); color: #000; border: none; padding: 8px 20px; border-radius: 20px;
+    font-weight: bold; font-family: 'Cinzel', serif; cursor: pointer; width: 100%;
+    box-shadow: 0 0 15px rgba(213, 123, 255, 0.3); transition: 0.2s;
+}
+.cta-button:hover { background: #fff; box-shadow: 0 0 20px rgba(213, 123, 255, 0.6); }
+
 .hub-title {
     margin: 0;
     font-family: 'Cinzel', serif;
@@ -734,6 +731,155 @@ body.is-owner .adminOnly, body.is-mod .adminOnly { display: flex !important; }
 .vod-edit-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
 body.is-mod .vod-edit-btn { display: block; }
 
+/* --- FOOTER --- */
+.site-footer { 
+    flex-shrink: 0; padding: 10px 24px; display: flex; justify-content: space-between; 
+    align-items: center; font-size: 12px; color: var(--text-muted);
+    background: rgba(0,0,0,0.2); border-top: 1px solid var(--panel-border);
+}
+.site-footer-links a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+.site-footer-links a:hover { color: var(--accent); }
+
+/* ============================================================
+   APP LOADER
+   ============================================================ */
+#appLoader {
+    position: fixed;
+    inset: 0; /* Stretches to all 4 corners */
+    z-index: 99999; /* Ensures it sits on top of everything */
+    background: #0f0519; /* Matches your theme background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease, visibility 0.5s;
+}
+
+#appLoader.hidden {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.loader-icon {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    animation: loaderPulse 2s infinite ease-in-out;
+}
+
+.loader-text {
+    font-family: "Cinzel", serif;
+    color: #d57bff; /* var(--accent) */
+    font-size: 16px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(213, 123, 255, 0.4);
+}
+
+.loader-bar {
+    width: 200px;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 99px;
+    overflow: hidden;
+    position: relative;
+}
+
+.loader-progress {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 30%;
+    background: #d57bff;
+    box-shadow: 0 0 10px #d57bff;
+    animation: loaderScan 1.5s infinite linear;
+}
+
+@keyframes loaderPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(0.9); opacity: 0.7; }
+}
+
+@keyframes loaderScan {
+    0% { left: -40%; }
+    100% { left: 140%; }
+}
+
+/* ============================================================
+   NEW COMPACT CARD DESIGN (Option 1)
+   ============================================================ */
+.now-playing-card.compact {
+    aspect-ratio: auto;
+    height: 140px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px;
+    gap: 15px;
+    background: linear-gradient(90deg, rgba(20,5,30,0.9), rgba(40,0,60,0.6));
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+.now-playing-card.compact .game-cover {
+    width: 90px;
+    height: 100%;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0; /* Prevents image from squishing */
+}
+
+.now-playing-card.compact .game-info-overlay {
+    position: static; /* Remove absolute positioning */
+    background: none;
+    padding: 0;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0; /* Critical for text truncation */
+}
+
+/* Typography Overrides for Compact Mode */
+.now-playing-card.compact .game-label {
+    text-shadow: none;
+    margin-bottom: 2px;
+}
+
+.now-playing-card.compact .game-title {
+    font-size: 18px; 
+    line-height: 1.2;
+    margin-bottom: 4px;
+    text-shadow: none;
+    
+    /* Handle Long Titles */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.now-playing-card.compact .game-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-shadow: none;
+    
+    /* Handle Long Stream Titles */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* ============================================================
    CONFIRMATION MODAL FIX (Hides the bottom-left text)
    ============================================================ */
@@ -821,3 +967,57 @@ body.is-mod .vod-edit-btn { display: block; }
     color: #ccc;
 }
 .confirm-btn.confirm-no:hover { border-color: #fff; color: #fff; }
+
+/* ============================================================
+   VOD LAYOUT EXTENSIONS (NEW STUFF)
+   ============================================================ */
+
+/* NEW: The specific columns for VODS */
+.col-vod-left {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+    height: 100%;
+    min-height: 0;
+    grid-column: 1 / 2; /* Always sits in the first slot */
+}
+
+.col-vod-main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+    height: 100%;
+    min-height: 0;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smooth resize */
+}
+
+/* VOD MODES */
+/* Library Mode: Main Column spans Left + Center slots */
+.col-vod-main.mode-library {
+    grid-column: 1 / 3; 
+}
+
+/* Player Mode: Main Column shrinks to Center slot only */
+.col-vod-main.mode-player {
+    grid-column: 2 / 3; 
+}
+
+/* CONTEXT MENU (Adding missing style to be safe) */
+.context-menu {
+    position: absolute; display: none; z-index: 10000;
+    background: rgba(10, 0, 20, 0.95); border: 1px solid var(--accent);
+    box-shadow: 0 0 15px rgba(0,0,0,0.8); border-radius: 6px;
+    min-width: 140px; backdrop-filter: blur(5px); overflow: hidden;
+}
+.ctx-header {
+    padding: 8px 12px; background: rgba(255,255,255,0.1); font-size: 11px;
+    color: var(--text-muted); text-transform: uppercase;
+    border-bottom: 1px solid rgba(255,255,255,0.1); pointer-events: none;
+}
+.ctx-item {
+    padding: 8px 12px; font-size: 13px; color: #fff; cursor: pointer;
+    transition: background 0.1s;
+}
+.ctx-item:hover { background: var(--accent); color: #000; }
