@@ -70,26 +70,27 @@ header {
 
 .username-display { font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(213, 123, 255, 0.5); }
 
-/* --- GRID LAYOUT (FIXED) --- */
+/* --- GRID LAYOUT (FIXED HEIGHTS) --- */
 .main-grid {
-    flex: 1; 
+    /* 1. Force the grid container to fill EXACTLY the remaining screen space */
+    height: calc(100vh - 64px); 
     display: grid; 
     grid-template-columns: 320px 1fr 380px;
-    /* REMOVED the rigid row constraint */
+    
+    /* 2. Force the ROW to fill that height (No shrinking!) */
+    grid-template-rows: 1fr; 
+    
     gap: 20px; 
     padding: 20px; 
     overflow: hidden;
-    min-height: 0; /* Allows grid to shrink properly */
 }
 
-/* Force ALL columns to fill the available height */
 .col-left, .col-center, .col-right { 
     display: flex; 
     flex-direction: column; 
     gap: 20px; 
     overflow: hidden; 
-    min-height: 0;
-    height: 100%; /* Forces column to touch bottom */
+    height: 100%; /* Force columns to touch the bottom */
 }
 
 /* Video Column Specifics */
@@ -99,14 +100,23 @@ header {
     flex-direction: column; 
     gap: 20px; 
     overflow: hidden; 
-    height: 100%; /* Force full height */
+    height: 100%; /* Critical: Force this column to be full height */
     min-height: 0;
 }
 
-/* Ensure the panels inside expand */
+/* Force the panel inside to fill the column absolutely */
 .col-video .panel {
-    flex: 1;      /* Grow to fill the column */
-    height: auto; /* Let flex handle the height */
+    flex: 1;
+    height: 100%;
+    display: flex; 
+    flex-direction: column;
+}
+
+/* Ensure the Hub Container fills the Panel */
+.video-hub-container {
+    height: 100%;
+    display: flex; 
+    flex-direction: column;
 }
 
 /* --- PANELS --- */
