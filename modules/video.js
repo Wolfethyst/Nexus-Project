@@ -63,7 +63,16 @@ export async function loadVideoData() {
 
 async function loadGames() {
     const { data } = await apiGet("/played");
+    // Load the fresh list from the server
     allPlayedGames = (data?.games || []).map((g, i) => ({ ...g, __index: i }));
+
+    // [NEW] If we already know what game is playing, re-apply it to the new list!
+    // This ensures we pull the REAL cover art instead of a placeholder
+    if (currentGameName) {
+        updatePlayedGamesList(currentGameName);
+    } else {
+        renderHubGames(); // Otherwise just render the library normally
+    }
 }
 
 async function loadClips() {
@@ -517,14 +526,34 @@ function renderPlayedGames(list) {
 }
 
 export function updatePlayedGamesList(gameName) {
-  if (!gameName) return; 
+  if (!gameName) return;
+  
+  // 1. Update the internal tracker
   const isSameGame = currentGameName && gameName.toLowerCase() === currentGameName.toLowerCase();
-  const isAlreadyFirst = allPlayedGames.length > 0 && (allPlayedGames[0].name || "").toLowerCase() === gameName.toLowerCase();
-  if (isSameGame && isAlreadyFirst) { return; }
   currentGameName = gameName; 
+
+  // 2. Find the game in your list or create a temporary one
   let foundIndex = allPlayedGames.findIndex(g => (g.name || "").toLowerCase() === gameName.toLowerCase());
-  if (foundIndex > -1) { const game = allPlayedGames.splice(foundIndex, 1)[0]; allPlayedGames.unshift(game); } 
-  else { allPlayedGames.unshift({ name: gameName, cover: "https://via.placeholder.com/300x450?text=" + encodeURIComponent(gameName), __index: -1 }); }
+  
+  if (foundIndex > -1) { 
+      // Game found! Move it to the top
+      const game = allPlayedGames.splice(foundIndex, 1)[0]; 
+      allPlayedGames.unshift(game); 
+  } else { 
+      // Game not in list? Add a temporary entry so it shows up immediately
+      // We use a placeholder first, but if the real list loads later, we'll fix it (see Step 2)
+      const placeholderCover = "https://via.placeholder.com/300x450?text=" + encodeURIComponent(gameName);
+      allPlayedGames.unshift({ name: gameName, cover: placeholderCover, __index: -1 }); 
+  }
+
+  // 3. [NEW] Update the Big Cover Image (This was missing!)
+  const coverImg = document.getElementById("gameCoverImage");
+  if (coverImg && allPlayedGames.length > 0) {
+      // Use the cover from the top game (which we just ensured is the current one)
+      coverImg.src = allPlayedGames[0].cover;
+  }
+
+  // 4. Update the sidebar list
   renderPlayedGames(allPlayedGames);
 }
 
