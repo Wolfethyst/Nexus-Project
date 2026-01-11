@@ -513,15 +513,69 @@ body.is-owner .adminOnly, body.is-mod .adminOnly { display: flex !important; }
 .cta-button:hover { background: #fff; box-shadow: 0 0 20px rgba(213, 123, 255, 0.6); }
 
 /* ============================================================
-   VIDEO HUB & LIBRARY (Restored exactly from V1)
+   VIDEO HUB & LIBRARY (REVISED FOR LOCKED HEADER & SCROLL)
    ============================================================ */
+
+/* 1. Main Container - Locked to Full Height */
 .video-hub-container {
-    padding: 20px; height: 100%; overflow-y: auto;
-    display: flex; flex-direction: column; gap: 20px;
+    height: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; /* Prevents the whole container from scrolling */
+    padding: 0; /* Remove padding from parent, move to children */
+    gap: 0; /* Let flex children handle spacing */
 }
+
+/* 2. Fixed Header (Title + Search) */
+.hub-header {
+    flex-shrink: 0; /* Never shrink */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--panel-border);
+    background: rgba(0, 0, 0, 0.2); /* Slight darkening */
+}
+
+.hub-title {
+    margin: 0;
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    color: #fff;
+    text-shadow: 0 0 10px var(--accent);
+}
+
+/* 3. Search Bar (Right Aligned, Compact) */
+.hub-search-input {
+    width: 240px; /* Fixed smaller width */
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 12px;
+    border-radius: 20px;
+    color: #fff;
+    font-family: 'Marcellus', serif;
+    font-size: 13px;
+    transition: 0.2s;
+}
+.hub-search-input:focus {
+    border-color: var(--accent);
+    background: rgba(0, 0, 0, 0.6);
+    outline: none;
+}
+
+/* 4. Scrollable Content Area (Grid Wrapper) */
+.hub-scroll-area {
+    flex: 1; /* Takes all remaining space */
+    overflow-y: auto; /* Only this part scrolls */
+    padding: 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) rgba(0,0,0,0.3);
+}
+
 .hub-games-grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px;
 }
+
 .hub-game-card {
     background: rgba(0,0,0,0.3); border-radius: 12px; overflow: hidden;
     border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
@@ -541,11 +595,25 @@ body.is-owner .adminOnly, body.is-mod .adminOnly { display: flex !important; }
 }
 .hub-game-card:hover .hub-game-title { opacity: 1; }
 
+/* 5. Fix for Details View Shrinking */
+.hub-scroll-wrapper {
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box; 
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) rgba(0,0,0,0.3);
+}
+
+/* --- DETAILS VIEW COMPONENTS (Hero, Tabs) --- */
 .game-hero {
     display: flex; gap: 25px; align-items: flex-end; padding: 30px;
     background: linear-gradient(90deg, rgba(20,0,40,0.8), rgba(20,0,40,0.3));
-    border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0; /* Flatten corners for details header */
+    border-bottom: 1px solid rgba(255,255,255,0.1);
     position: relative; overflow: hidden;
+    flex-shrink: 0; /* Header doesn't shrink */
 }
 .game-hero-bg {
     position: absolute; inset: 0; opacity: 0.1; filter: blur(20px); z-index: 0;
@@ -619,9 +687,16 @@ body.is-owner .adminOnly, body.is-mod .adminOnly { display: flex !important; }
     position: absolute; top: 20px; right: 20px; z-index: 2;
 }
 .hub-back-btn:hover { background: var(--accent); color: #000; }
-.hub-tabs { display: flex; gap: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+
+.hub-tabs { 
+    display: flex; gap: 20px; 
+    border-bottom: 1px solid rgba(255,255,255,0.1); 
+    padding: 0 30px; 
+    background: rgba(0,0,0,0.2); 
+    flex-shrink: 0;
+}
 .hub-tab {
-    background: none; border: none; padding: 10px 0; font-family: "Cinzel";
+    background: none; border: none; padding: 15px 0; font-family: "Cinzel";
     font-size: 14px; color: var(--text-muted); cursor: pointer; position: relative;
     transition: 0.2s;
 }
@@ -684,7 +759,7 @@ body.is-mod .vod-edit-btn { display: block; }
 .site-footer-links a:hover { color: var(--accent); }
 
 /* ============================================================
-   ADMIN & CONFIRMATION MODALS (Add to bottom of styles.css)
+   ADMIN & CONFIRMATION MODALS
    ============================================================ */
 
 /* Generic Modal Wrapper */
@@ -778,7 +853,7 @@ body.is-mod .vod-edit-btn { display: block; }
 .ctx-item:hover { background: var(--accent); color: #000; }
 
 /* ============================================================
-   APP LOADER (Add this to styles.css)
+   APP LOADER
    ============================================================ */
 #appLoader {
     position: fixed;

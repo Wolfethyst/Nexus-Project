@@ -199,13 +199,15 @@
 
         <div class="panel" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
             <div id="hub-home-view" class="video-hub-container">
-                <div style="padding:15px; border-bottom:1px solid var(--panel-border);">
-                    <h2 style="margin:0; font-family:'Cinzel';">Library</h2>
-                    <input id="hubSearchInput" type="text" placeholder="Find a game..." 
-                           style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.2); padding:6px 12px; border-radius:20px; color:#fff; font-family:'Marcellus'; margin-top:10px; width:100%;">
-                </div>
-                <div id="hubGamesGrid" class="hub-games-grid" style="padding:20px;"></div>
-            </div>
+    <div class="hub-header">
+        <h2 class="hub-title">Library</h2>
+        <input id="hubSearchInput" type="text" placeholder="Find a game..." class="hub-search-input">
+    </div>
+
+    <div class="hub-scroll-area">
+        <div id="hubGamesGrid" class="hub-games-grid"></div>
+    </div>
+</div>
             <div id="hub-details-view" class="video-hub-container hidden" style="display:flex; flex-direction:column; height:100%;">
                 <div class="game-hero">
                     <div class="game-hero-bg" id="heroBg"></div>
