@@ -468,10 +468,13 @@
     
     // Observer for Stream Title Updates
     const titleObserver = new MutationObserver(() => {
-        const title = document.getElementById('streamTitleLabel').innerText;
-        const game = document.getElementById('streamGameLabel').innerText;
-        document.getElementById('centerStreamTitle').innerText = title;
-        document.getElementById('centerStreamGame').innerText = game;
+        const titleLabel = document.getElementById('streamTitleLabel');
+        const gameLabel = document.getElementById('streamGameLabel');
+        const centerTitle = document.getElementById('centerStreamTitle');
+        const centerGame = document.getElementById('centerStreamGame');
+        
+        if (titleLabel && centerTitle) centerTitle.innerText = titleLabel.innerText;
+        if (gameLabel && centerGame) centerGame.innerText = gameLabel.innerText;
     });
     
     setTimeout(() => {
@@ -479,26 +482,29 @@
         if(target) {
             titleObserver.observe(target, { subtree: true, characterData: true, childList: true });
         }
+        // FORCE LOADER REMOVAL IN CASE OF ERROR
+        const loader = document.getElementById('appLoader');
+        if(loader) loader.classList.add('hidden');
     }, 1000);
 
-    // [UPDATED] View Switcher (Store Removed)
+    // [UPDATED] Robust View Switcher
     window.toggleMainView = (mode) => {
-        // Toggle visibility of sections
         document.querySelectorAll('.live-view').forEach(el => el.classList.toggle('hidden', mode !== 'live'));
         document.querySelectorAll('.video-view').forEach(el => el.classList.toggle('hidden', mode !== 'video'));
         
-        // Ensure marketplace panel stays hidden
         const marketPanel = document.getElementById('marketplacePanel');
         if (marketPanel) marketPanel.classList.add('hidden');
         
-        // Update Button States
-        document.getElementById('viewBtnLive').classList.toggle('active', mode === 'live');
-        document.getElementById('viewBtnVideo').classList.toggle('active', mode === 'video');
-        
-        // Note: Store button logic removed to prevent errors
+        const liveBtn = document.getElementById('viewBtnLive');
+        const videoBtn = document.getElementById('viewBtnVideo');
+        const storeBtn = document.getElementById('viewBtnStore'); // Might be null now
+
+        if (liveBtn) liveBtn.classList.toggle('active', mode === 'live');
+        if (videoBtn) videoBtn.classList.toggle('active', mode === 'video');
+        if (storeBtn) storeBtn.classList.remove('active');
     };
 
-    // Initialize Default View
+    // Initialize
     toggleMainView('live');
   </script>
 </body>

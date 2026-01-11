@@ -70,27 +70,43 @@ header {
 
 .username-display { font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(213, 123, 255, 0.5); }
 
-/* --- GRID LAYOUT --- */
+/* --- GRID LAYOUT (FIXED) --- */
 .main-grid {
+    flex: 1; 
+    display: grid; 
+    grid-template-columns: 320px 1fr 380px;
+    /* REMOVED the rigid row constraint */
+    gap: 20px; 
+    padding: 20px; 
+    overflow: hidden;
+    min-height: 0; /* Allows grid to shrink properly */
+}
 
-.col-left, .col-center, .col-right { display: flex; flex-direction: column; gap: 20px; overflow: hidden; min-height: 0; }
-.col-center { height: 100%; } 
+/* Force ALL columns to fill the available height */
+.col-left, .col-center, .col-right { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px; 
+    overflow: hidden; 
+    min-height: 0;
+    height: 100%; /* Forces column to touch bottom */
+}
 
-/* FIXED: Added height: 100% to fix broken VODs tab */
+/* Video Column Specifics */
 .col-video { 
     grid-column: 1 / 3; 
     display: flex; 
     flex-direction: column; 
     gap: 20px; 
     overflow: hidden; 
-    height: 100%; /* Force it to touch the bottom */
-    min-height: 0; /* Critical for scrolling to work inside flex items */
+    height: 100%; /* Force full height */
+    min-height: 0;
 }
 
-/* Force the panel inside to fill the column */
+/* Ensure the panels inside expand */
 .col-video .panel {
-    height: 100%;
-    flex: 1;
+    flex: 1;      /* Grow to fill the column */
+    height: auto; /* Let flex handle the height */
 }
 
 /* --- PANELS --- */
