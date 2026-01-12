@@ -26,6 +26,40 @@ import { updateChatControls } from './chat.js';
                 if(menu) menu.style.display = "none";
             });
         }
+
+        // [NEW] Delete Account Button Logic (Danger Zone)
+        const settingsModalInner = document.querySelector("#settingsModal .requestModalWindow");
+        if (settingsModalInner && !document.getElementById("deleteAccountBtn")) {
+            const dangerZone = document.createElement("div");
+            dangerZone.style.marginTop = "20px";
+            dangerZone.style.borderTop = "1px solid rgba(255, 68, 68, 0.3)";
+            dangerZone.style.paddingTop = "10px";
+            
+            dangerZone.innerHTML = `
+                <h4 style="color:#ff4444; margin:0 0 10px 0;">Danger Zone</h4>
+                <button id="deleteAccountBtn" class="panelSmallBtn" style="background:rgba(255,0,0,0.2); color:#ff4444; width:100%;">Delete Account Data</button>
+            `;
+            
+            // Insert before the Close button (assuming it's the last child)
+            settingsModalInner.insertBefore(dangerZone, settingsModalInner.lastElementChild);
+            
+            document.getElementById("deleteAccountBtn").addEventListener("click", async () => {
+                const confirmText = prompt("Type 'DELETE' to confirm deletion of your account and all crystals.");
+                if (confirmText !== "DELETE") return;
+                
+                try {
+                    const { res } = await apiPost("/auth/delete-account", {});
+                    if (res.ok) {
+                        alert("Account deleted.");
+                        window.location.reload();
+                    } else {
+                        alert("Failed to delete account.");
+                    }
+                } catch(e) {
+                    alert("Error processing request.");
+                }
+            });
+        }
     });
 })();
 
