@@ -3,6 +3,13 @@ import { apiGet, apiPost, escapeHtml, PLACEHOLDER_IMG, CLOUDFLARE_CUSTOMER, Stat
 import { openVodEditModal } from './admin.js';
 import { addSystemMessage } from './chat.js'; 
 
+// --- CONFIGURATION ---
+// If this instance stops working, swap it for another:
+// "https://piped.video" (Main - Strict)
+// "https://piped.mha.fi" (Alternative)
+// "https://piped.smnz.de" (Alternative)
+const PIPED_INSTANCE = "https://piped.kavin.rocks"; 
+
 let allPlayedGames = [];
 let vodsData = []; 
 let activeGameVods = []; 
@@ -245,7 +252,6 @@ export async function openGameDetails(gameName) {
     const targetGameLower = game.name.toLowerCase();
     const filteredContent = activeGameVods.filter(v => v.vod_provider !== 'bunny');
 
-    // Sort DESCENDING (Newest First)
     const gameVods = filteredContent.filter(v => !v.type || v.type === 'vod')
         .sort((a, b) => (b.created_at || b.createdAt) - (a.created_at || a.createdAt));
 
@@ -328,8 +334,8 @@ export async function playVideo(item, type) {
     mainVideoPlayer.removeAttribute('src');
     mainVideoPlayer.innerHTML = ''; 
 
-    // --- YOUTUBE LOGIC (PIPED PROXY - EMBED FRIENDLY) ---
-    // [FIX] Using 'piped.video' which is explicitly designed to allow embedding.
+    // --- YOUTUBE LOGIC (PIPED PROXY - KAVIN.ROCKS) ---
+    // Switched to kavin.rocks which is known to be stable and allows embedding
     if (item.vod_provider === 'youtube') {
         const wrapper = document.createElement('div');
         wrapper.id = 'nexus-youtube-embed'; 
@@ -354,8 +360,8 @@ export async function playVideo(item, type) {
             coverDiv.remove();
             const iframe = document.createElement('iframe');
             
-            // [FIX] Piped.video is robust and allows embeds
-            iframe.src = `https://piped.video/embed/${item.id}?autoplay=1`;
+            // [FIXED] Using the variable from top of file for easy switching
+            iframe.src = `${PIPED_INSTANCE}/embed/${item.id}?autoplay=1`;
             
             iframe.style.width = '100%'; 
             iframe.style.height = '100%'; 
@@ -392,7 +398,6 @@ export async function playVideo(item, type) {
     if (item.url) {
         mainVideoPlayer.style.display = 'block';
         if (typeof Hls !== 'undefined' && Hls.isSupported() && item.url.endsWith('.m3u8')) {
-            // [FIX] Assign to global tracker
             hlsInstance = new Hls(); 
             hlsInstance.loadSource(item.url); 
             hlsInstance.attachMedia(mainVideoPlayer);
