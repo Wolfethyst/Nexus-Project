@@ -456,17 +456,17 @@ function renderNexusUsers() {
 
 async function loadNexusUsers() {
     try {
-        const res = await fetch(`${BASE}/userdata`, { credentials: "include" });
+        // [UPDATED] Points to the new D1-backed endpoint
+        const res = await fetch(`${BASE}/mods/users`, { credentials: "include" });
         if (res.ok) {
             const data = await res.json();
-            nexusUsersAll = Object.values(data.users || {}).map(u => ({
-                uuid: u.uuid,
-                displayName: u.displayName || u.username,
-                points: u.points
-            }));
+            // The backend now returns { users: [ ... ] }
+            nexusUsersAll = data.users || [];
             applyUsersFilter();
         }
-    } catch (e) { }
+    } catch (e) {
+        console.error("Failed to load users:", e);
+    }
 }
 
 async function loadModsRoles() {
