@@ -71,24 +71,26 @@ export async function loadAuth() {
   // Handle Bans
   if (session.banStatus && session.banStatus.isBanned) {
       const { expiresAt, reason, banKind } = session.banStatus;
-      const { startTimeoutCountdown, showAutomodModal, lockChatInput } = await import('./chat.js');
-      
-      if (!expiresAt) {
-          lockChatInput(true, "You are permanently banned."); 
-          showAutomodModal("automod_ban", reason);
-      } else {
-          const now = Date.now();
-          const remainingMs = expiresAt - now;
-          if (remainingMs > 0) {
-              startTimeoutCountdown(expiresAt, reason, banKind || "manual_timeout");
+      // Dynamic import to avoid circular dependency issues at load time
+      import('./chat.js').then(({ startTimeoutCountdown, showAutomodModal, lockChatInput }) => {
+          if (!expiresAt) {
+              lockChatInput(true, "You are permanently banned."); 
+              showAutomodModal("automod_ban", reason);
           } else {
-              updateChatControls(true);
+              const now = Date.now();
+              const remainingMs = expiresAt - now;
+              if (remainingMs > 0) {
+                  startTimeoutCountdown(expiresAt, reason, banKind || "manual_timeout");
+              } else {
+                  updateChatControls(true);
+              }
           }
-      }
+      });
   } else {
       updateChatControls(true);
   }
 
+  // FIXED: Safety check for crystal display
   const headerCrystalDisplay = document.getElementById("headerCrystalDisplay"); 
   if(headerCrystalDisplay) headerCrystalDisplay.classList.remove("hidden");
   
@@ -122,7 +124,7 @@ function renderLoggedOutUI() {
   State.nexusProfiles = {};
   updateChatControls(false);
   
-  // FIXED: Safety check to prevent crash if element is missing
+  // FIXED: Safety check prevents crash if element is missing
   const crysDisplay = document.getElementById("headerCrystalDisplay");
   if (crysDisplay) crysDisplay.classList.add("hidden");
   
