@@ -3,12 +3,8 @@ import { apiGet, apiPost, escapeHtml, PLACEHOLDER_IMG, CLOUDFLARE_CUSTOMER, Stat
 import { openVodEditModal } from './admin.js';
 import { addSystemMessage } from './chat.js'; 
 
-// --- CONFIGURATION ---
-// We switch to Invidious because it renders server-side (no CORS issues)
-// "https://vid.puffyan.us" (Strong, Stable)
-// "https://yewtu.be" (Alternative)
-// "https://invidious.drgns.space" (Alternative)
-const PROXY_INSTANCE = "https://vid.puffyan.us"; 
+// [NEW] Hardcoded API Base for the Proxy
+const API_BASE = "https://data.wolfethyst.tv";
 
 let allPlayedGames = [];
 let vodsData = []; 
@@ -335,8 +331,8 @@ export async function playVideo(item, type) {
     mainVideoPlayer.removeAttribute('src');
     mainVideoPlayer.innerHTML = ''; 
 
-    // --- YOUTUBE LOGIC (INVIDIOUS) ---
-    // Using Invidious because it renders server-side and doesn't trigger CORS/Security blocks
+    // --- YOUTUBE LOGIC (BACKEND PROXY) ---
+    // This points to YOUR backend, bypassing all browser security blocks.
     if (item.vod_provider === 'youtube') {
         const wrapper = document.createElement('div');
         wrapper.id = 'nexus-youtube-embed'; 
@@ -345,6 +341,7 @@ export async function playVideo(item, type) {
         wrapper.style.backgroundColor = '#000';
         wrapper.style.position = 'relative';
 
+        // Add a cover overlay so it looks professional before loading
         const coverDiv = document.createElement('div');
         coverDiv.style.position = 'absolute';
         coverDiv.style.inset = '0';
@@ -359,20 +356,24 @@ export async function playVideo(item, type) {
 
         coverDiv.onclick = () => {
             coverDiv.remove();
-            const iframe = document.createElement('iframe');
             
-            // [FIX] Using the configured PROXY_INSTANCE (vid.puffyan.us)
-            iframe.src = `${PROXY_INSTANCE}/embed/${item.id}?autoplay=1`;
+            // Remove the wrapper itself to reveal the main video player
+            wrapper.remove();
+            mainVideoPlayer.style.display = 'block';
+
+            // Construct Proxy URL
+            const proxyUrl = `${API_BASE}/stream/proxy?id=${item.id}`;
             
-            iframe.style.width = '100%'; 
-            iframe.style.height = '100%'; 
-            iframe.style.border = 'none';
-            iframe.allowFullscreen = true;
+            // Set source to your own backend
+            const source = document.createElement('source');
+            source.src = proxyUrl;
+            source.type = 'video/mp4';
             
-            // [FIX] Hides referrer so strict privacy browsers don't block the embed
-            iframe.referrerPolicy = "no-referrer";
+            mainVideoPlayer.innerHTML = '';
+            mainVideoPlayer.appendChild(source);
+            mainVideoPlayer.load();
             
-            wrapper.appendChild(iframe);
+            mainVideoPlayer.play().catch(e => console.log("Autoplay blocked", e));
         };
 
         videoParent.appendChild(wrapper);
