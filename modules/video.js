@@ -13,7 +13,7 @@ let currentGameName = null;
 
 // Trackers
 let youtubePlayerInstance = null;
-let hlsInstance = null; // [NEW] Track HLS to destroy it properly
+let hlsInstance = null;
 
 const mainVideoPlayer = document.getElementById('main-video-player');
 
@@ -70,7 +70,6 @@ async function loadGames() {
 async function loadClips() {
     try { 
         const { data } = await apiGet('/clips/list'); 
-        // [FIX] Ensure it is always an array
         clipsData = (data && data.ok && Array.isArray(data.clips)) ? data.clips : []; 
     } catch(e){ clipsData = []; }
 }
@@ -329,8 +328,8 @@ export async function playVideo(item, type) {
     mainVideoPlayer.removeAttribute('src');
     mainVideoPlayer.innerHTML = ''; 
 
-    // --- YOUTUBE LOGIC (INVIDIOUS PROXY - SAFE MODE) ---
-    // Uses 'yewtu.be' which is currently the most reliable/stable instance
+    // --- YOUTUBE LOGIC (PIPED PROXY - EMBED FRIENDLY) ---
+    // [FIX] Using 'piped.video' which is explicitly designed to allow embedding.
     if (item.vod_provider === 'youtube') {
         const wrapper = document.createElement('div');
         wrapper.id = 'nexus-youtube-embed'; 
@@ -354,8 +353,10 @@ export async function playVideo(item, type) {
         coverDiv.onclick = () => {
             coverDiv.remove();
             const iframe = document.createElement('iframe');
-            // [FIXED] Switched to yewtu.be for stability
-            iframe.src = `https://yewtu.be/embed/${item.id}?autoplay=1`;
+            
+            // [FIX] Piped.video is robust and allows embeds
+            iframe.src = `https://piped.video/embed/${item.id}?autoplay=1`;
+            
             iframe.style.width = '100%'; 
             iframe.style.height = '100%'; 
             iframe.style.border = 'none';
