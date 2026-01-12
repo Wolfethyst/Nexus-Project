@@ -292,6 +292,8 @@ export async function openGameDetails(gameName) {
 export function openHubHome() {
     document.getElementById('hub-details-view').classList.add('hidden');
     document.getElementById('hub-home-view').classList.remove('hidden');
+    
+    // This will now reset the layout to normal (2-column)
     closeVideoStage(); 
 }
 
@@ -310,8 +312,14 @@ export function switchHubTab(tabName) {
 // --- PLAYER ---
 export function playVideo(item, type) {
     activeVideoItem = item; activeVideoType = type;
+    
+    // [UPDATED] Activate "Watching Mode" (Moves Library to Sidebar)
+    const videoCol = document.querySelector('.col-video');
+    if(videoCol) videoCol.classList.add('watching');
+
     const stage = document.getElementById('videoStage');
     if(stage) stage.classList.remove('hidden');
+    // We don't necessarily need scrollIntoView if the layout shifts, but keeping it is safe
     if(stage) stage.scrollIntoView({ behavior: 'smooth' });
 
     document.getElementById('meta-title').textContent = item.title || "Untitled";
@@ -398,8 +406,13 @@ export function handleVideoClick(id, type) {
 }
 
 export function closeVideoStage() {
+    // [UPDATED] Deactivate "Watching Mode" (Reset layout)
+    const videoCol = document.querySelector('.col-video');
+    if(videoCol) videoCol.classList.remove('watching');
+
     const stage = document.getElementById('videoStage');
     if(stage) stage.classList.add('hidden');
+    
     const existingBunny = document.getElementById('nexus-bunny-embed');
     const existingYt = document.getElementById('nexus-youtube-embed');
     if(existingBunny) existingBunny.remove();
@@ -425,7 +438,7 @@ export function toggleMainView(mode) {
     const videoCol = document.querySelector('.video-view'); 
     const btnLive = document.getElementById('viewBtnLive');
     const btnVideo = document.getElementById('viewBtnVideo');
-    const mainGrid = document.querySelector('.main-grid'); // [NEW] Select the grid
+    const mainGrid = document.querySelector('.main-grid'); 
 
     if (mode === 'live') {
         liveEls.forEach(el => el.classList.remove('hidden'));
@@ -433,7 +446,6 @@ export function toggleMainView(mode) {
         if (btnLive) btnLive.classList.add('active');
         if (btnVideo) btnVideo.classList.remove('active');
         
-        // [NEW] Restore original 3-column grid
         if (mainGrid) mainGrid.classList.remove('mode-video');
     } else {
         liveEls.forEach(el => el.classList.add('hidden'));
@@ -441,7 +453,6 @@ export function toggleMainView(mode) {
         if (btnLive) btnLive.classList.remove('active');
         if (btnVideo) btnVideo.classList.add('active');
 
-        // [NEW] Switch to 2-column grid for VODS
         if (mainGrid) mainGrid.classList.add('mode-video');
     }
 }
