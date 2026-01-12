@@ -11,6 +11,10 @@ let activeVideoItem = null;
 let activeVideoType = null;
 let currentGameName = null;
 
+// Trackers
+let youtubePlayerInstance = null;
+let hlsInstance = null; // [NEW] Track HLS to destroy it properly
+
 const mainVideoPlayer = document.getElementById('main-video-player');
 
 // --- HELPERS ---
@@ -34,9 +38,7 @@ export async function loadVideoData() {
     if (directClipId) {
         try {
             const { data } = await apiGet(`/clips/meta?id=${directClipId}`);
-            if (data && data.ok && data.clip) {
-                playVideo(data.clip, 'clip'); 
-            }
+            if (data && data.ok && data.clip) playVideo(data.clip, 'clip'); 
         } catch(e) { console.error("Fast load failed", e); }
     } 
 
@@ -48,18 +50,14 @@ export async function loadVideoData() {
         loadStreamTitle(),
         loadClips(),
         loadVods().then(() => {
-            if (directVodId && vodsData.length > 0) {
-                handleVideoClick(directVodId, 'vod');
-            }
+            if (directVodId && vodsData.length > 0) handleVideoClick(directVodId, 'vod');
         })
     ]);
 
     await heavyLifting;
 
     const loader = document.getElementById("appLoader");
-    if(loader) {
-        setTimeout(() => loader.classList.add("hidden"), 500); 
-    }
+    if(loader) setTimeout(() => loader.classList.add("hidden"), 500); 
 }
 
 async function loadGames() {
@@ -70,7 +68,11 @@ async function loadGames() {
 }
 
 async function loadClips() {
-    try { const { data } = await apiGet('/clips/list'); if(data?.ok) clipsData = data.clips; } catch(e){}
+    try { 
+        const { data } = await apiGet('/clips/list'); 
+        // [FIX] Ensure it is always an array
+        clipsData = (data && data.ok && Array.isArray(data.clips)) ? data.clips : []; 
+    } catch(e){ clipsData = []; }
 }
 
 async function loadVods() {
@@ -314,20 +316,21 @@ export async function playVideo(item, type) {
     if(qualitySelect) qualitySelect.style.display = 'none'; 
 
     const videoParent = mainVideoPlayer.parentNode;
-    const existingBunny = document.getElementById('nexus-bunny-embed');
-    const existingYt = document.getElementById('nexus-youtube-embed');
-    const existingOdysee = document.getElementById('nexus-odysee-embed');
-
-    if(existingBunny) existingBunny.remove();
-    if(existingYt) existingYt.remove();
-    if(existingOdysee) existingOdysee.remove();
     
+    // CLEANUP OLD EMBEDS
+    ['nexus-bunny-embed', 'nexus-youtube-embed', 'nexus-odysee-embed'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.remove();
+    });
+    
+    // RESET NATIVE PLAYER & HLS
+    if(hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
     mainVideoPlayer.style.display = 'none'; 
     mainVideoPlayer.removeAttribute('src');
     mainVideoPlayer.innerHTML = ''; 
 
-    // --- YOUTUBE LOGIC (INVIDIOUS PROXY) ---
-    // Using Invidious bypasses the "Bot" check because it doesn't use Google's player.
+    // --- YOUTUBE LOGIC (INVIDIOUS PROXY - SAFE MODE) ---
+    // Uses 'yewtu.be' which is currently the most reliable/stable instance
     if (item.vod_provider === 'youtube') {
         const wrapper = document.createElement('div');
         wrapper.id = 'nexus-youtube-embed'; 
@@ -351,11 +354,8 @@ export async function playVideo(item, type) {
         coverDiv.onclick = () => {
             coverDiv.remove();
             const iframe = document.createElement('iframe');
-            
-            // USING INVIDIOUS INSTANCE TO BYPASS BLOCKS
-            // You can change 'invidious.jing.rocks' to another instance if this one is slow
-            iframe.src = `https://invidious.jing.rocks/embed/${item.id}?autoplay=1`;
-            
+            // [FIXED] Switched to yewtu.be for stability
+            iframe.src = `https://yewtu.be/embed/${item.id}?autoplay=1`;
             iframe.style.width = '100%'; 
             iframe.style.height = '100%'; 
             iframe.style.border = 'none';
@@ -376,7 +376,7 @@ export async function playVideo(item, type) {
         wrapper.style.backgroundColor = '#000';
         
         const iframe = document.createElement('iframe');
-        iframe.src = `https://odysee.com/$/embed/${item.id}`; // Uses Claim ID
+        iframe.src = `https://odysee.com/$/embed/${item.id}`; 
         iframe.style.width = '100%'; 
         iframe.style.height = '100%'; 
         iframe.style.border = 'none';
@@ -391,7 +391,10 @@ export async function playVideo(item, type) {
     if (item.url) {
         mainVideoPlayer.style.display = 'block';
         if (typeof Hls !== 'undefined' && Hls.isSupported() && item.url.endsWith('.m3u8')) {
-            const hls = new Hls(); hls.loadSource(item.url); hls.attachMedia(mainVideoPlayer);
+            // [FIX] Assign to global tracker
+            hlsInstance = new Hls(); 
+            hlsInstance.loadSource(item.url); 
+            hlsInstance.attachMedia(mainVideoPlayer);
         } else { 
             const source = document.createElement('source');
             source.src = item.url;
@@ -418,13 +421,21 @@ export function closeVideoStage() {
     const stage = document.getElementById('videoStage');
     if(stage) stage.classList.add('hidden');
     
-    const existingBunny = document.getElementById('nexus-bunny-embed');
-    const existingYt = document.getElementById('nexus-youtube-embed');
-    const existingOdysee = document.getElementById('nexus-odysee-embed');
+    // CLEANUP
+    ['nexus-bunny-embed', 'nexus-youtube-embed', 'nexus-odysee-embed'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.remove();
+    });
 
-    if(existingBunny) existingBunny.remove();
-    if(existingYt) existingYt.remove();
-    if(existingOdysee) existingOdysee.remove();
+    if (youtubePlayerInstance) {
+        try { youtubePlayerInstance.destroy(); } catch(e){}
+        youtubePlayerInstance = null;
+    }
+
+    if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+    }
 
     if(mainVideoPlayer) { 
         mainVideoPlayer.pause(); 
