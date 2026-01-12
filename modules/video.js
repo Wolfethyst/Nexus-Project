@@ -4,11 +4,11 @@ import { openVodEditModal } from './admin.js';
 import { addSystemMessage } from './chat.js'; 
 
 // --- CONFIGURATION ---
-// If this instance stops working, swap it for another:
-// "https://piped.video" (Main - Strict)
-// "https://piped.mha.fi" (Alternative)
-// "https://piped.smnz.de" (Alternative)
-const PIPED_INSTANCE = "https://piped.smnz.de"; 
+// We switch to Invidious because it renders server-side (no CORS issues)
+// "https://vid.puffyan.us" (Strong, Stable)
+// "https://yewtu.be" (Alternative)
+// "https://invidious.drgns.space" (Alternative)
+const PROXY_INSTANCE = "https://vid.puffyan.us"; 
 
 let allPlayedGames = [];
 let vodsData = []; 
@@ -252,6 +252,7 @@ export async function openGameDetails(gameName) {
     const targetGameLower = game.name.toLowerCase();
     const filteredContent = activeGameVods.filter(v => v.vod_provider !== 'bunny');
 
+    // Sort DESCENDING (Newest First)
     const gameVods = filteredContent.filter(v => !v.type || v.type === 'vod')
         .sort((a, b) => (b.created_at || b.createdAt) - (a.created_at || a.createdAt));
 
@@ -334,8 +335,8 @@ export async function playVideo(item, type) {
     mainVideoPlayer.removeAttribute('src');
     mainVideoPlayer.innerHTML = ''; 
 
-    // --- YOUTUBE LOGIC (PIPED PROXY - KAVIN.ROCKS) ---
-    // Switched to kavin.rocks which is known to be stable and allows embedding
+    // --- YOUTUBE LOGIC (INVIDIOUS) ---
+    // Using Invidious because it renders server-side and doesn't trigger CORS/Security blocks
     if (item.vod_provider === 'youtube') {
         const wrapper = document.createElement('div');
         wrapper.id = 'nexus-youtube-embed'; 
@@ -360,13 +361,17 @@ export async function playVideo(item, type) {
             coverDiv.remove();
             const iframe = document.createElement('iframe');
             
-            // [FIXED] Using the variable from top of file for easy switching
-            iframe.src = `${PIPED_INSTANCE}/embed/${item.id}?autoplay=1`;
+            // [FIX] Using the configured PROXY_INSTANCE (vid.puffyan.us)
+            iframe.src = `${PROXY_INSTANCE}/embed/${item.id}?autoplay=1`;
             
             iframe.style.width = '100%'; 
             iframe.style.height = '100%'; 
             iframe.style.border = 'none';
             iframe.allowFullscreen = true;
+            
+            // [FIX] Hides referrer so strict privacy browsers don't block the embed
+            iframe.referrerPolicy = "no-referrer";
+            
             wrapper.appendChild(iframe);
         };
 
