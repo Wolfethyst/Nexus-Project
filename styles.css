@@ -71,40 +71,46 @@ header {
 .username-display { font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(213, 123, 255, 0.5); }
 
 /* ============================================================
-   LAYOUT ENGINE (SIMPLIFIED & MATCHED TO LIVE VIEW)
+   LAYOUT ENGINE (UNIFIED GRID SYSTEM)
    ============================================================ */
 
-/* 1. Main Grid - The Stage */
+/* 1. MASTER GRID - The Stage */
 .main-grid {
     flex: 1; 
     display: grid; 
-    /* The Master Layout: Left (320px) | Center (Flex) | Right (380px) */
+    /* The Master Geometry: Left (320px) | Center (Flex) | Right (380px) */
     grid-template-columns: 320px 1fr 380px; 
-    grid-template-rows: 100%; /* Force full height */
+    /* FORCE ROWS TO FILL HEIGHT (This stops the shrinking) */
+    grid-template-rows: 100%; 
     gap: 20px; 
     padding: 20px; 
     overflow: hidden; 
     height: calc(100vh - 64px); 
 }
 
-/* 2. Standard Columns (Live View) */
+/* 2. LIVE COLUMNS (Standard) */
 .col-left, .col-center, .col-right { 
     display: flex; flex-direction: column; gap: 20px; 
-    overflow: hidden; height: 100%; min-height: 0;
-}
-
-/* 3. The Video Column Container */
-.col-video { 
-    grid-column: 1 / 3; /* Spans across Left + Center tracks */
     overflow: hidden; 
     height: 100%; 
     min-height: 0;
-    /* Default: Flex column for Browsing (Full width) */
+}
+
+/* 3. VOD COLUMN (The Hybrid) */
+.col-video { 
+    /* Default Browse Mode: Span the first 2 columns */
+    grid-column: 1 / 3; 
+    overflow: hidden; 
+    height: 100%; 
+    min-height: 0;
+    
+    /* Behave exactly like a column */
     display: flex; 
     flex-direction: column; 
 }
 
-/* 4. Panels - The actual boxes */
+/* 4. PANELS - The Boxes */
+/* We add !important to height to override any flex shrinking issues */
 .panel {
     background: var(--panel-bg); 
     border: 1px solid var(--panel-border);
@@ -113,64 +119,72 @@ header {
     display: flex; flex-direction: column; 
     overflow: hidden; 
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    
+    /* THE FIX: Force it to fill the column */
     flex: 1; 
+    height: 100% !important; 
     min-height: 0; 
 }
 
 /* ============================================================
-   WATCHING MODE (THE MAGIC SWITCH)
+   WATCHING MODE (COPYING LIVE LAYOUT LOGIC)
    ============================================================ */
 
-/* When a video is playing, turn .col-video into its own Grid 
-   that mimics the Main Grid's first two columns exactly. */
+/* When a video is playing, we split .col-video into 2 columns
+   that MATCH the Live Tab's Left/Center columns exactly. */
 .col-video.watching {
     display: grid;
-    grid-template-columns: 320px 1fr; /* MATCHES LIVE VIEW EXACTLY */
-    grid-template-rows: 100%;         /* Forces panels to touch bottom */
-    gap: 20px;                        /* Same gap as main grid */
+    grid-template-columns: 320px 1fr; /* Exact match to Live View */
+    grid-template-rows: 100%;         /* Force bottom touch */
+    gap: 20px;                        
 }
 
-/* 1. LIBRARY PANEL (Moves to Left Slot) */
+/* 1. SIDEBAR (Library) - Moves to Left Slot */
 .col-video.watching > .panel:not(#videoStage) {
     grid-column: 1;
     order: 1;
-    height: 100%;       /* Prevent shrinking */
-    border-right: 1px solid var(--panel-border);
+    height: 100% !important; /* Lock height */
 }
 
-/* 2. PLAYER PANEL (Moves to Center Slot) */
+/* 2. PLAYER (Video) - Moves to Center Slot */
 .col-video.watching #videoStage {
     grid-column: 2;
     order: 2;
     display: flex !important;
-    height: 100%;       /* Prevent shrinking */
+    height: 100% !important; /* Lock height */
     margin: 0 !important;
 }
 
 /* ============================================================
-   INTERNAL PANEL FIXES
+   INTERNAL CONTENT FIXES (Prevent Inner Shrinking)
    ============================================================ */
 
-/* Ensure the Library Scrolling area always fills the panel */
+/* 1. VOD Library Container */
 .video-hub-container {
     display: flex; flex-direction: column; 
     height: 100%; 
     overflow: hidden;
+    flex: 1;
 }
 
+/* 2. Scroll Areas */
 .hub-scroll-wrapper, .hub-scroll-area {
     flex: 1; 
     overflow-y: auto; 
     min-height: 0;
+    height: 100%;
 }
 
-/* Fix the Video Player "Purple Box" Issue */
+/* 3. Video Player Internals (Fixes Purple Box) */
 .video-player-section {
-    display: flex; flex-direction: column; height: 100%;
+    display: flex; 
+    flex-direction: column; 
+    height: 100%; 
+    flex: 1;
 }
 
 .video-container {
-    flex: 1; /* Pushes title down, fills space */
+    flex: 1; /* Pushes meta-data down */
     background: #000;
     position: relative;
     overflow: hidden;
@@ -178,9 +192,10 @@ header {
     align-items: center; 
     justify-content: center;
     width: 100%;
+    height: 100%; /* Force fill */
 }
 
-/* Force video elements to fill the container */
+/* Force iframe/video to fill the black box */
 .video-container iframe, 
 .video-container video, 
 #nexus-youtube-embed,
@@ -189,14 +204,18 @@ header {
     height: 100% !important;
     border: none;
     display: block;
+    position: absolute; inset: 0;
 }
 
-/* Sidebar Styling Cleanups (When in Watching Mode) */
-.col-video.watching .game-hero { display: none; }
+/* ============================================================
+   WATCHING MODE SIDEBAR STYLING
+   ============================================================ */
+/* When in sidebar mode, hide/shrink elements to fit 320px */
+.col-video.watching .game-hero { display: none !important; }
 .col-video.watching .hub-search-input { width: 100%; }
 .col-video.watching .hub-tabs { padding: 0 5px; gap: 5px; }
 .col-video.watching .hub-tab { font-size: 11px; padding: 10px 0; flex: 1; text-align: center; }
-.col-video.watching .video-grid { grid-template-columns: 1fr; } 
+.col-video.watching .video-grid { grid-template-columns: 1fr; } /* Single column list */
 .col-video.watching .game-steam-btn { display: none; }
 
 /* --- CARDS & WIDGETS --- */
