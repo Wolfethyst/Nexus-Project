@@ -8,7 +8,7 @@ import { addSystemMessage } from './chat.js';
 // "https://piped.video" (Main - Strict)
 // "https://piped.mha.fi" (Alternative)
 // "https://piped.smnz.de" (Alternative)
-const PIPED_INSTANCE = "https://piped.mha.fi"; 
+const PIPED_INSTANCE = "https://piped.smnz.de"; 
 
 let allPlayedGames = [];
 let vodsData = []; 
