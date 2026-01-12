@@ -71,10 +71,6 @@ export async function loadAuth() {
   // Handle Bans
   if (session.banStatus && session.banStatus.isBanned) {
       const { expiresAt, reason, banKind } = session.banStatus;
-      // We need to import these from chat to avoid circular deps issues, 
-      // but typically we pass data or use window global for specific UI calls if tightly coupled.
-      // For now, we will rely on chat.js exporting these or handling it.
-      // *Wait*, let's import the specific helpers.
       const { startTimeoutCountdown, showAutomodModal, lockChatInput } = await import('./chat.js');
       
       if (!expiresAt) {
@@ -97,7 +93,9 @@ export async function loadAuth() {
   if(headerCrystalDisplay) headerCrystalDisplay.classList.remove("hidden");
   
   loadNexusProfileForCurrentUser(session);
-  document.getElementById("loginArea").innerHTML = `<div id="welcomeText">${escapeHtml(getDisplayName(u))}</div>`;
+  
+  const loginArea = document.getElementById("loginArea");
+  if (loginArea) loginArea.innerHTML = `<div id="welcomeText">${escapeHtml(getDisplayName(u))}</div>`;
   
   const avatarBox = document.getElementById("avatarContainer");
   const avatarSrc = u.avatar || "https://data.wolfethyst.tv/assets/nexus_icon";
@@ -117,11 +115,21 @@ export async function loadAuth() {
 function renderLoggedOutUI() {
   State.user = null; State.isOwner = false; State.nexusRoles = []; State.isModOrOwner = false;
   document.body.classList.remove("is-owner", "is-mod");
-  document.getElementById("nexusProfileSection").innerHTML = "";
+  
+  const profileSection = document.getElementById("nexusProfileSection");
+  if (profileSection) profileSection.innerHTML = "";
+  
   State.nexusProfiles = {};
   updateChatControls(false);
-  document.getElementById("headerCrystalDisplay").classList.add("hidden");
-  document.getElementById("avatarContainer").innerHTML = `<img id="userAvatar" class="avatar" src="https://data.wolfethyst.tv/assets/nexus_icon" style="opacity:0.5; filter:grayscale(1);" />`;
+  
+  // FIXED: Safety check to prevent crash if element is missing
+  const crysDisplay = document.getElementById("headerCrystalDisplay");
+  if (crysDisplay) crysDisplay.classList.add("hidden");
+  
+  const avatarContainer = document.getElementById("avatarContainer");
+  if (avatarContainer) {
+      avatarContainer.innerHTML = `<img id="userAvatar" class="avatar" src="https://data.wolfethyst.tv/assets/nexus_icon" style="opacity:0.5; filter:grayscale(1);" />`;
+  }
   
   const loginArea = document.getElementById("loginArea");
   if (loginArea) {
