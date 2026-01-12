@@ -11,14 +11,12 @@ let activeVideoItem = null;
 let activeVideoType = null;
 let currentGameName = null;
 
-// Track the YouTube Player Instance
-let youtubePlayerInstance = null;
-
 const mainVideoPlayer = document.getElementById('main-video-player');
 
 // --- HELPERS ---
 function getThumbUrl(item, type) {
     if (item.vod_provider === 'youtube') return `https://img.youtube.com/vi/${item.id}/maxresdefault.jpg`;
+    if (item.vod_provider === 'odysee') return `https://thumbnails.lbry.com/${item.id}`; 
     
     // Cloudflare Fallback
     const vidId = item.videoId || item.cloudflare_id; 
@@ -27,28 +25,12 @@ function getThumbUrl(item, type) {
     return PLACEHOLDER_IMG;
 }
 
-// Helper to load the YouTube API securely
-function loadYouTubeApi() {
-    return new Promise((resolve) => {
-        if (window.YT && window.YT.Player) {
-            resolve();
-        } else {
-            const tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            window.onYouTubeIframeAPIReady = () => resolve();
-            document.head.appendChild(tag);
-        }
-    });
-}
-
 // [UPDATED] Prioritized Loading Sequence
 export async function loadVideoData() {
-    // 1. Check if the user is visiting a specific link (Direct Play)
     const params = new URLSearchParams(window.location.search);
     const directClipId = params.get("clip");
     const directVodId = params.get("vod");
 
-    // 2. If there is a direct link, load and play it IMMEDIATELY
     if (directClipId) {
         try {
             const { data } = await apiGet(`/clips/meta?id=${directClipId}`);
@@ -58,7 +40,6 @@ export async function loadVideoData() {
         } catch(e) { console.error("Fast load failed", e); }
     } 
 
-    // 3. Load the rest of the site content in the background
     const heavyLifting = Promise.all([
         loadGames().then(() => {
             if (currentGameName) updatePlayedGamesList(currentGameName);
@@ -84,12 +65,8 @@ export async function loadVideoData() {
 async function loadGames() {
     const { data } = await apiGet("/played");
     allPlayedGames = (data?.games || []).map((g, i) => ({ ...g, __index: i }));
-
-    if (currentGameName) {
-        updatePlayedGamesList(currentGameName);
-    } else {
-        renderHubGames(); 
-    }
+    if (currentGameName) updatePlayedGamesList(currentGameName);
+    else renderHubGames(); 
 }
 
 async function loadClips() {
@@ -183,11 +160,14 @@ function renderHubGrid(containerId, items, type) {
 
     container.innerHTML = items.map(item => {
         const isYouTube = item.vod_provider === 'youtube';
+        const isOdysee = item.vod_provider === 'odysee';
         const thumbUrl = getThumbUrl(item, type);
         const title = escapeHtml(item.title || "Untitled");
         const dateStr = new Date(item.createdAt || item.created_at).toLocaleDateString();
+        
         let badgeHtml = "";
         if (isYouTube) badgeHtml = `<div class="provider-badge">YouTube</div>`;
+        else if (isOdysee) badgeHtml = `<div class="provider-badge" style="background:#e0245e;">Odysee</div>`;
         else if (item.is_exclusive) badgeHtml = `<div class="provider-badge" style="background:var(--accent);">Exclusive</div>`;
         
         let editBtn = "";
@@ -212,24 +192,16 @@ export async function openGameDetails(gameName) {
     const pub = game.publisher || "--";
     const rel = game.release_date || "--";
     const steamUrl = game.steam_url || game.steamUrl || "";
+    const safeName = escapeHtml(game.name).replace(/'/g, "\\'");
 
-    let steamBtnHtml = "";
-    if (steamUrl) {
-        steamBtnHtml = `<a href="${steamUrl}" target="_blank" class="game-steam-btn"><img src="https://store.steampowered.com/favicon.ico" style="width:14px;height:14px;"> View on Steam</a>`;
-    }
-
-    let adminBtnsHtml = "";
-    if (State.isModOrOwner && !game.isInbox) {
-        const safeName = escapeHtml(game.name).replace(/'/g, "\\'");
-        adminBtnsHtml = `
-            <div style="display:flex; gap:5px; margin-top:10px;">
-                <button onclick="window.refreshGameMetadata('${safeName}')" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.8; font-size:11px;" title="Fetch info from Steam/IGDB">↻ Info</button>
-                <button onclick="window.promptRenameGame()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7;" title="Rename">✏️</button>
-                <button onclick="window.promptChangeCover()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7;" title="Cover">🖼️</button>
-                <button onclick="window.promptDeleteGame()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7; background:rgba(255,0,0,0.2); color:#ffaaaa;" title="Delete">🗑️</button>
-            </div>
-        `;
-    }
+    let steamBtnHtml = steamUrl ? `<a href="${steamUrl}" target="_blank" class="game-steam-btn"><img src="https://store.steampowered.com/favicon.ico" style="width:14px;height:14px;"> View on Steam</a>` : "";
+    let adminBtnsHtml = (State.isModOrOwner && !game.isInbox) ? `
+        <div style="display:flex; gap:5px; margin-top:10px;">
+            <button onclick="window.refreshGameMetadata('${safeName}')" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.8; font-size:11px;" title="Fetch info from Steam/IGDB">↻ Info</button>
+            <button onclick="window.promptRenameGame()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7;" title="Rename">✏️</button>
+            <button onclick="window.promptChangeCover()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7;" title="Cover">🖼️</button>
+            <button onclick="window.promptDeleteGame()" class="panelSmallBtn" style="padding:4px 8px; border-radius:4px; opacity:0.7; background:rgba(255,0,0,0.2); color:#ffaaaa;" title="Delete">🗑️</button>
+        </div>` : "";
 
     const heroContentEl = document.querySelector('.game-hero-content');
     if (heroContentEl) {
@@ -315,45 +287,48 @@ export function switchHubTab(tabName) {
     });
 }
 
-// --- PLAYER (OFFICIAL YOUTUBE API IMPL) ---
+// --- PLAYER ---
 export async function playVideo(item, type) {
     activeVideoItem = item; activeVideoType = type;
     
-    // Activate "Watching Mode" Layout
+    // Layout
     const videoCol = document.querySelector('.col-video');
     if(videoCol) videoCol.classList.add('watching');
-
     const stage = document.getElementById('videoStage');
     if(stage) stage.classList.remove('hidden');
     if(stage) stage.scrollIntoView({ behavior: 'smooth' });
 
+    // Metadata
     document.getElementById('meta-title').textContent = item.title || "Untitled";
     document.getElementById('meta-date').textContent = new Date(item.createdAt || item.created_at).toLocaleDateString();
     
     let tagLabel = "Broadcast Archive";
     if(type === 'clip') tagLabel = "Live Clip";
     else if (item.vod_provider === 'youtube') tagLabel = "Archive (YouTube)";
+    else if (item.vod_provider === 'odysee') tagLabel = "Archive (Odysee)";
     document.getElementById('meta-tag').textContent = tagLabel;
     
     const btnDownload = document.getElementById('btn-download');
+    if(btnDownload) btnDownload.style.display = 'none'; 
     const qualitySelect = document.getElementById('videoQualitySelect');
     if(qualitySelect) qualitySelect.style.display = 'none'; 
 
     const videoParent = mainVideoPlayer.parentNode;
     const existingBunny = document.getElementById('nexus-bunny-embed');
     const existingYt = document.getElementById('nexus-youtube-embed');
+    const existingOdysee = document.getElementById('nexus-odysee-embed');
+
     if(existingBunny) existingBunny.remove();
-    // Recreate container for stability
     if(existingYt) existingYt.remove();
+    if(existingOdysee) existingOdysee.remove();
     
     mainVideoPlayer.style.display = 'none'; 
     mainVideoPlayer.removeAttribute('src');
     mainVideoPlayer.innerHTML = ''; 
 
-    if(btnDownload) btnDownload.style.display = 'none'; 
-
+    // --- YOUTUBE LOGIC (INVIDIOUS PROXY) ---
+    // Using Invidious bypasses the "Bot" check because it doesn't use Google's player.
     if (item.vod_provider === 'youtube') {
-        // 1. Create the container div
         const wrapper = document.createElement('div');
         wrapper.id = 'nexus-youtube-embed'; 
         wrapper.style.width = '100%';
@@ -361,7 +336,6 @@ export async function playVideo(item, type) {
         wrapper.style.backgroundColor = '#000';
         wrapper.style.position = 'relative';
 
-        // 2. Add the specialized Play Button overlay
         const coverDiv = document.createElement('div');
         coverDiv.style.position = 'absolute';
         coverDiv.style.inset = '0';
@@ -371,58 +345,49 @@ export async function playVideo(item, type) {
         coverDiv.style.alignItems = 'center';
         coverDiv.style.justifyContent = 'center';
         coverDiv.style.zIndex = '10';
-        
-        const playBtn = document.createElement('div');
-        playBtn.innerText = "▶";
-        playBtn.style.fontSize = "60px";
-        playBtn.style.color = "#fff";
-        playBtn.style.textShadow = "0 0 20px rgba(0,0,0,0.5)";
-        coverDiv.appendChild(playBtn);
-        
+        coverDiv.innerHTML = `<div style="font-size:60px; color:#fff; text-shadow:0 0 20px rgba(0,0,0,0.5);">▶</div>`;
         wrapper.appendChild(coverDiv);
 
-        // 3. Click Listener -> Load API
-        coverDiv.onclick = async () => {
-            coverDiv.innerText = "Loading..."; 
-            
-            // Wait for API
-            await loadYouTubeApi();
-            
-            // Remove the cover so the player can take over
+        coverDiv.onclick = () => {
             coverDiv.remove();
+            const iframe = document.createElement('iframe');
             
-            // Initialize Player
-            if (youtubePlayerInstance) {
-                try { youtubePlayerInstance.destroy(); } catch(e){}
-            }
-
-            // [FIXED] Forcing NOCOOKIE domain via host property
-            youtubePlayerInstance = new YT.Player('nexus-youtube-embed', {
-                height: '100%',
-                width: '100%',
-                videoId: item.id,
-                // CRITICAL FIX: Forces API to use privacy domain
-                host: 'https://www.youtube-nocookie.com',
-                playerVars: {
-                    'autoplay': 1,
-                    'modestbranding': 1,
-                    'rel': 0,
-                    'playsinline': 1,
-                    // CRITICAL FIX: Establish trust with YouTube
-                    'origin': window.location.origin,
-                    'widget_referrer': window.location.href
-                },
-                events: {
-                    'onReady': (event) => event.target.playVideo(),
-                    'onError': (e) => console.error("YT Error:", e.data)
-                }
-            });
+            // USING INVIDIOUS INSTANCE TO BYPASS BLOCKS
+            // You can change 'invidious.jing.rocks' to another instance if this one is slow
+            iframe.src = `https://invidious.jing.rocks/embed/${item.id}?autoplay=1`;
+            
+            iframe.style.width = '100%'; 
+            iframe.style.height = '100%'; 
+            iframe.style.border = 'none';
+            iframe.allowFullscreen = true;
+            wrapper.appendChild(iframe);
         };
 
         videoParent.appendChild(wrapper);
         return;
     }
 
+    // --- ODYSEE LOGIC ---
+    if (item.vod_provider === 'odysee') {
+        const wrapper = document.createElement('div');
+        wrapper.id = 'nexus-odysee-embed'; 
+        wrapper.style.width = '100%';
+        wrapper.style.height = '100%';
+        wrapper.style.backgroundColor = '#000';
+        
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://odysee.com/$/embed/${item.id}`; // Uses Claim ID
+        iframe.style.width = '100%'; 
+        iframe.style.height = '100%'; 
+        iframe.style.border = 'none';
+        iframe.allowFullscreen = true;
+        
+        wrapper.appendChild(iframe);
+        videoParent.appendChild(wrapper);
+        return;
+    }
+
+    // --- NATIVE / BUNNY LOGIC ---
     if (item.url) {
         mainVideoPlayer.style.display = 'block';
         if (typeof Hls !== 'undefined' && Hls.isSupported() && item.url.endsWith('.m3u8')) {
@@ -442,33 +407,25 @@ export async function playVideo(item, type) {
 export function handleVideoClick(id, type) {
     let item = vodsData.find(i => i.id === id);
     if(type === 'clip') item = clipsData.find(i => i.id === id);
-    
-    if (!item && activeGameVods.length > 0) {
-        item = activeGameVods.find(i => i.id === id);
-    }
-
+    if (!item && activeGameVods.length > 0) item = activeGameVods.find(i => i.id === id);
     if(item) playVideo(item, type);
     else console.warn("Video not found:", id);
 }
 
 export function closeVideoStage() {
-    // Deactivate "Watching Mode"
     const videoCol = document.querySelector('.col-video');
     if(videoCol) videoCol.classList.remove('watching');
-
     const stage = document.getElementById('videoStage');
     if(stage) stage.classList.add('hidden');
     
-    // Destroy API Instance
-    if (youtubePlayerInstance) {
-        try { youtubePlayerInstance.destroy(); } catch(e){}
-        youtubePlayerInstance = null;
-    }
-
     const existingBunny = document.getElementById('nexus-bunny-embed');
     const existingYt = document.getElementById('nexus-youtube-embed');
+    const existingOdysee = document.getElementById('nexus-odysee-embed');
+
     if(existingBunny) existingBunny.remove();
     if(existingYt) existingYt.remove();
+    if(existingOdysee) existingOdysee.remove();
+
     if(mainVideoPlayer) { 
         mainVideoPlayer.pause(); 
         mainVideoPlayer.removeAttribute('src'); 
@@ -512,7 +469,6 @@ window.refreshGameMetadata = async function(gameName) {
     const btn = document.activeElement;
     const oldText = btn ? btn.innerText : "↻ Info";
     if(btn) { btn.innerText = "Wait..."; btn.disabled = true; }
-
     try {
         const { data } = await apiPost('/played/refresh-metadata', { name: gameName });
         if (data && data.ok) {
@@ -527,10 +483,7 @@ window.refreshGameMetadata = async function(gameName) {
                 if (data.data.cover) game.cover = data.data.cover;
             }
             openGameDetails(gameName); 
-        } else {
-            console.warn("Refresh failed:", data);
-            alert("Could not find game info on IGDB.");
-        }
+        } else { alert("Could not find game info on IGDB."); }
     } catch(e) { console.error(e); alert("Error refreshing metadata."); } 
     finally { if(btn) { btn.innerText = oldText; btn.disabled = false; } }
 };
@@ -541,27 +494,14 @@ export async function promptRenameGame() {
     if(!oldName) return;
     const newName = prompt(`Rename folder "${oldName}" to:`, oldName);
     if (!newName || newName === oldName) return;
-    if (!confirm(`This will move all videos from "${oldName}" to "${newName}" and rename the folder permanently.\n\nProceed?`)) return;
-
-    const btn = document.querySelector(".panelSmallBtn[title='Rename']");
-    const originalText = btn ? btn.innerText : "";
-    if(btn) btn.innerText = "Moving...";
-
+    if (!confirm(`This will move all videos from "${oldName}" to "${newName}"?\n\nProceed?`)) return;
     try {
         const { res, data } = await apiPost('/played/rename', { oldName, newName });
         if (res.ok) {
             alert(`Success! Moved ${data.count} videos.`);
-            await loadVideoData(); 
-            openGameDetails(newName);
-        } else {
-            alert("Error: " + (data.error || "Move failed"));
-        }
-    } catch(e) {
-        console.error(e);
-        alert("Network error during move.");
-    } finally {
-        if(btn) btn.innerText = originalText;
-    }
+            await loadVideoData(); openGameDetails(newName);
+        } else { alert("Error: " + (data.error || "Move failed")); }
+    } catch(e) { alert("Network error during move."); }
 }
 
 export async function promptChangeCover() {
@@ -573,8 +513,6 @@ export async function promptChangeCover() {
     try {
         const { res, data } = await apiPost('/played/set-cover', { name: gameName, cover: newCover });
         if (res.ok && data.cover) {
-            const heroBg = document.getElementById('heroBg'); const heroCover = document.getElementById('heroCover');
-            if(heroCover) heroCover.src = data.cover; if(heroBg) heroBg.style.backgroundImage = `url('${data.cover}')`;
             const localGame = allPlayedGames.find(g => g.name.toLowerCase() === gameName.toLowerCase());
             if (localGame) { localGame.cover = data.cover; localGame.isVirtual = false; } else { allPlayedGames.push({ name: gameName, cover: data.cover }); }
             renderHubGames(document.getElementById('hubSearchInput')?.value || "");
@@ -590,22 +528,19 @@ export async function promptDeleteGame() {
     const game = allPlayedGames.find(g => g.name === gameName);
     if (!game) return;
     if (game.isInbox) { alert("You cannot delete the Inbox."); return; }
-    if (!confirm(`Are you sure you want to delete the folder "${gameName}"?\n\nThis does NOT delete videos, only the folder entry.`)) return;
-    if (game.__index === undefined || game.__index === -1) { alert("Cannot delete (virtual folder). Refresh page."); return; }
+    if (!confirm(`Are you sure you want to delete the folder "${gameName}"?`)) return;
+    if (game.__index === undefined || game.__index === -1) { alert("Cannot delete (virtual folder)."); return; }
     try {
         const { res } = await apiPost('/played/delete', { index: game.__index });
         if (res.ok) {
             const localArrayIndex = allPlayedGames.indexOf(game);
             if (localArrayIndex > -1) allPlayedGames.splice(localArrayIndex, 1);
-            allPlayedGames.forEach(g => { if (g.__index > game.__index) g.__index -= 1; });
-            alert("Folder deleted!");
-            openHubHome();   
-            renderHubGames(); 
+            alert("Folder deleted!"); openHubHome(); renderHubGames(); 
         } else { alert("Failed to delete."); }
     } catch(e) { alert("Error deleting folder."); }
 }
 
-// --- LEGACY SIDEBAR GAMES LIST ---
+// --- LEGACY SIDEBAR ---
 function renderPlayedGames(list) {
   const gamesPlayedEl = document.getElementById("gamesPlayed");
   if (!gamesPlayedEl) return;
@@ -621,16 +556,13 @@ export function updatePlayedGamesList(gameName) {
   currentGameName = gameName; 
   let foundIndex = allPlayedGames.findIndex(g => (g.name || "").toLowerCase() === gameName.toLowerCase());
   if (foundIndex > -1) { 
-      const game = allPlayedGames.splice(foundIndex, 1)[0]; 
-      allPlayedGames.unshift(game); 
+      const game = allPlayedGames.splice(foundIndex, 1)[0]; allPlayedGames.unshift(game); 
   } else { 
       const placeholderCover = "https://via.placeholder.com/300x450?text=" + encodeURIComponent(gameName);
       allPlayedGames.unshift({ name: gameName, cover: placeholderCover, __index: -1 }); 
   }
   const coverImg = document.getElementById("gameCoverImage");
-  if (coverImg && allPlayedGames.length > 0) {
-      coverImg.src = allPlayedGames[0].cover;
-  }
+  if (coverImg && allPlayedGames.length > 0) coverImg.src = allPlayedGames[0].cover;
   renderPlayedGames(allPlayedGames);
 }
 
@@ -645,35 +577,25 @@ export function handleGameCardClick(el) {
     gameInfoModalEl.classList.add("open");
 }
 
-// --- CLIP BUTTON HANDLER (Uses Chat System) ---
 document.addEventListener("DOMContentLoaded", () => {
     const clipBtn = document.getElementById("clipBtn");
     if (clipBtn) {
         clipBtn.addEventListener("click", async () => {
-            if (!State.user) { 
-                addSystemMessage("You must be logged in to clip!", "error"); 
-                return; 
-            }
-            addSystemMessage("Clip is being created and will be available shortly...", "loading");
+            if (!State.user) { addSystemMessage("You must be logged in to clip!", "error"); return; }
+            addSystemMessage("Clip is being created...", "loading");
             clipBtn.disabled = true;
             try {
                 const { res, data } = await apiPost("/clips/create", { windowSeconds: 30 });
                 if (res.ok && data.id) {
                     const watchLink = `${window.location.origin}/?clip=${data.id}`;
                     navigator.clipboard.writeText(watchLink).catch(() => {});
-                } else {
-                    addSystemMessage(data.error || "Failed to create clip.", "error");
-                }
-            } catch (e) {
-                addSystemMessage("Network Error", "error");
-            } finally {
-                clipBtn.disabled = false;
-            }
+                } else { addSystemMessage(data.error || "Failed to create clip.", "error"); }
+            } catch (e) { addSystemMessage("Network Error", "error"); } finally { clipBtn.disabled = false; }
         });
     }
 });
 
-// Attach to window so onclick attributes work
+// Global Exports
 window.openGameDetails = openGameDetails;
 window.openHubHome = openHubHome;
 window.handleVideoClick = handleVideoClick;
