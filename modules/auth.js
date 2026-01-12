@@ -89,7 +89,6 @@ export async function loadAuth() {
       updateChatControls(true);
   }
 
-  // FIXED: Safety check for crystal display
   const headerCrystalDisplay = document.getElementById("headerCrystalDisplay"); 
   if(headerCrystalDisplay) headerCrystalDisplay.classList.remove("hidden");
   
@@ -103,32 +102,24 @@ export async function loadAuth() {
   const decoClass = u.decoration ? ` ${escapeHtml(u.decoration)}` : ""; 
   if (avatarBox) avatarBox.innerHTML = `<img id="userAvatar" class="avatar${decoClass}" src="${avatarSrc}" />`;
 
-  // --- CONNECT/DISCONNECT BUTTON LOGIC (FIXED) ---
+  // REVERTED TO INNERHTML LOGIC TO MATCH UPLOADED FILE
   const userMenuPlatforms = document.getElementById("userMenuPlatforms");
   if (userMenuPlatforms) {
-    userMenuPlatforms.innerHTML = ""; // Clear existing
-
-    // Helper to create rows
-    const createPlatformRow = (name, iconUrl, isConnected, route) => {
-        const row = document.createElement("div");
-        row.className = "platformRow";
-        row.innerHTML = `<div class="platformLeft"><img class="platformIcon" src="${iconUrl}"><span>${name}</span></div>`;
-        
-        const btn = document.createElement("button");
-        btn.className = "platformBtn";
-        btn.textContent = isConnected ? "Disconnect" : "Connect";
-        btn.onclick = () => { window.location.href = `${API}/auth/${route}/${isConnected ? "logout" : "login"}`; };
-        
-        row.appendChild(btn);
-        return row;
-    };
-
-    userMenuPlatforms.appendChild(createPlatformRow("Twitch", "https://data.wolfethyst.tv/assets/twitch_icon", session.twitch, "twitch"));
-    userMenuPlatforms.appendChild(createPlatformRow("YouTube", "https://data.wolfethyst.tv/assets/youtube_icon", session.youtube, "youtube"));
+    const twitch = session.twitch; 
+    const youtube = session.youtube;
+    
+    // Using the exact URL structure from your file:
+    userMenuPlatforms.innerHTML = `
+      <div class="platformRow">
+        <div class="platformLeft"><img class="platformIcon" src="https://data.wolfethyst.tv/assets/twitch_icon"><span>Twitch</span></div>
+        <button class="platformBtn" onclick="location.href='${API}/auth/twitch/${twitch ? "logout" : "login"}'">${twitch ? "Disconnect" : "Connect"}</button>
+      </div>
+      <div class="platformRow">
+        <div class="platformLeft"><img class="platformIcon" src="https://data.wolfethyst.tv/assets/youtube_icon"><span>YouTube</span></div>
+        <button class="platformBtn" onclick="location.href='${API}/auth/youtube/${youtube ? "logout" : "login"}'">${youtube ? "Disconnect" : "Connect"}</button>
+      </div>`;
   }
-
-  const userMenuButtons = document.getElementById("userMenuButtons"); 
-  if (userMenuButtons) userMenuButtons.innerHTML = `<div class="logout" onclick="location.href='${API}/auth/logout'">Logout</div>`;
+  const userMenuButtons = document.getElementById("userMenuButtons"); if (userMenuButtons) userMenuButtons.innerHTML = `<div class="logout" onclick="location.href='${API}/auth/logout'">Logout</div>`;
 }
 
 function renderLoggedOutUI() {
