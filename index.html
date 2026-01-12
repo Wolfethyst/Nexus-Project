@@ -37,7 +37,7 @@
         <div id="avatarContainer"></div>
         <div class="user-info-text">
             <div id="loginArea"></div>
-            <div class="crystals">
+            <div id="headerCrystalDisplay" class="crystals">
                 <img src="https://data.wolfethyst.tv/assets/wolfe_crystal" width="14">
                 <span id="headerPoints">0</span>
             </div>
@@ -47,7 +47,7 @@
     <div class="nav-tabs">
         <button id="viewBtnLive" class="nav-tab active" onclick="toggleMainView('live')">LIVE</button>
         <button id="viewBtnVideo" class="nav-tab" onclick="toggleMainView('video')">VODS</button>
-        </div>
+    </div>
 
     <div class="brand">
         NEXUS
@@ -111,9 +111,9 @@
     </div>
 
 
-    <div class="col-center">
+    <div class="col-center live-view">
         
-        <div class="stream-block live-view">
+        <div class="stream-block">
             <div class="stream-info-bar">
                 <div style="flex: 1; min-width: 0;">
                     <h2 id="centerStreamTitle" class="stream-main-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Stream Title Loading...</h2>
@@ -157,8 +157,8 @@
                 </div>
             </div>
         </div>
-
-        </div> 
+        
+    </div> 
     <div id="vodMainCol" class="col-vod-main video-view hidden mode-library">
         
         <div id="videoStage" class="panel video-player-section hidden" style="margin-bottom: 20px; flex-shrink:0;">
@@ -237,7 +237,7 @@
                         <div id="hub-content-clips" class="video-grid hidden"></div>
                     </div>
                 </div>
-                </div>
+            </div>
         </div>
     </div>
 
@@ -279,75 +279,21 @@
     </div>
   </div>
 
-  <div id="settingsModal" class="requestModal">
-      <div class="requestModalWindow">
-        <h3>Settings</h3>
-        <button class="panelSmallBtn" onclick="setTheme('default')">Default Theme</button>
-        <button class="panelSmallBtn" onclick="setTheme('light')">Light Theme</button>
-        <div style="margin-top:10px;">
-            <label><input type="checkbox" id="decoToggle" checked onchange="toggleDecorations(this.checked)"> Show Decorations</label>
-        </div>
-        <button class="panelSmallBtn" onclick="document.getElementById('settingsModal').classList.remove('open')">Close</button>
-      </div>
-  </div>
-  
-  <div id="vodEditModal" class="requestModal">
-      <div class="requestModalWindow">
-        <h3>Edit VOD</h3>
-        <input type="hidden" id="editVodId">
-        <input type="text" id="editVodTitle" placeholder="Title" class="panelInput">
-        <input type="text" id="editVodGame" placeholder="Game" class="panelInput">
-        <div class="requestModalButtons">
-            <button id="saveVodBtn">Save</button>
-            <button onclick="document.getElementById('vodEditModal').classList.remove('open')">Cancel</button>
-        </div>
-      </div>
-  </div>
-
-  <div id="gameInfoModal" class="requestModal">
-      <div class="requestModalWindow">
-      <h3 id="gameInfoTitle">Game</h3>
-      <div id="gameInfoBody" class="game-info-body" style="display:none;">
-        <img id="gameInfoCover" class="game-info-cover" alt="">
-        <div id="gameInfoText" class="game-info-text"></div>
-      </div>
-      <div class="requestModalButtons">
-        <a id="gameSteamBtn" class="panelSmallBtn" href="#" target="_blank" rel="noopener" style="display:none;">Steam</a>
-        <button id="gameInfoCloseBtn" class="panelSmallBtn">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="tipOverlay" class="chat-overlay hidden">
-       <div class="chat-card">
-          <div class="chat-card-header">
-              <h3>Send a Tip</h3>
-              <button class="modal-close-btn-embedded" onclick="toggleTipModal(false)">×</button>
-          </div>
-          <div class="tip-input-group">
-              <button class="tip-preset" onclick="selectTipAmount(3)">$3</button>
-              <button class="tip-preset" onclick="selectTipAmount(5)">$5</button>
-              <button class="tip-preset" onclick="selectTipAmount(10)">$10</button>
-              <input id="tipCustomInput" class="tip-custom-input" type="number" placeholder="$ Custom" />
-          </div>
-          <div id="tipCardSection">
-              <div id="tipCardElement"></div>
-              <button id="tipCheckoutBtn" class="cta-button" style="margin-top:10px;">Pay</button>
-          </div>
-       </div>
-   </div>
-
-   <div id="redeemDrawer" style="display:none;"><div id="redeemDrawerInner"></div></div>
-   <div id="requestModal" class="requestModal"><div class="requestModalWindow"><h3>Request a Game</h3><input id="requestGameInput" type="text" placeholder="Enter a game name..." /><div class="requestModalButtons"><button id="submitRequestBtn">Submit</button><button id="cancelRequestBtn">Cancel</button></div></div></div>
-   <div id="unbanRequestModal" class="requestModal"><div class="requestModalWindow"><h3>Unban Request</h3><textarea id="unbanMessageInput" placeholder="Why should we unban you?" style="width:100%; height:80px; margin-bottom:10px;"></textarea><div class="requestModalButtons"><button id="unbanSubmitBtn">Submit</button><button id="unbanCloseBtn">Cancel</button></div></div></div>
-   <div id="unbanSubmittedModal" class="requestModal"><div class="requestModalWindow"><h3>Request Submitted</h3><p>Your request has been sent to the moderators.</p><div class="requestModalButtons"><button id="unbanSubmittedOkBtn">OK</button></div></div></div>
-   <div id="chatContextMenu" class="context-menu"><div class="ctx-header" id="ctxHeader">User</div><div class="ctx-item" id="ctxReplyBtn">Reply</div><div class="ctx-item" id="ctxDeleteBtn">Delete Message</div><div class="ctx-item" id="ctxTimeoutBtn">Timeout</div><div class="ctx-item" id="ctxBanBtn">Ban</div><div class="ctx-item" id="ctxModBtn">Promote to Mod</div><div class="ctx-item" id="ctxCopyIdBtn">Copy ID</div></div>
-   <div id="timeoutModal" class="requestModal"><div class="requestModalWindow"><h3>Timeout User</h3><p id="timeoutUserLabel" style="color:var(--accent); margin-bottom:10px;"></p><div class="duration-buttons"><button class="panelSmallBtn durationBtn" data-mins="5">5m</button><button class="panelSmallBtn durationBtn" data-mins="10">10m</button><button class="panelSmallBtn durationBtn" data-mins="15">15m</button><input type="number" id="timeoutCustomMins" placeholder="Custom (m)" style="width: 60px; padding: 4px;" /></div><input id="timeoutReasonInput" type="text" placeholder="Reason (optional)" style="margin-top:10px; width:100%; box-sizing:border-box;" /><div class="requestModalButtons"><button id="confirmTimeoutBtn" class="destructive-btn">Timeout</button><button data-close-modal="timeoutModal">Cancel</button></div></div></div>
-   <div id="timeoutInfoModal" class="requestModal"><div class="requestModalWindow"><div id="timeoutInfoBody" style="margin: 15px 0; line-height: 1.5;"></div><div class="requestModalButtons"><button data-close-modal="timeoutInfoModal">Acknowledge</button></div></div></div>
-   <div id="banModal" class="requestModal"><div class="requestModalWindow"><h3>Ban User</h3><p id="banUserLabel" style="color:#ff4444; margin-bottom:10px; font-weight:bold;"></p><input id="banReasonInput" type="text" placeholder="Reason (Required)" style="width:100%; box-sizing:border-box;" /><div class="requestModalButtons"><button id="confirmBanBtn" class="destructive-btn">Ban Permanently</button><button data-close-modal="banModal">Cancel</button></div></div></div>
-   <div id="modConfirmModal" class="requestModal"><div class="requestModalWindow"><h3>Promote to Moderator</h3><p>Are you sure you want to make <span id="modUserLabel" style="color:var(--accent);"></span> a moderator?</p><p style="font-size:12px; color:var(--text-muted);">They will have full access to ban/timeout users.</p><div class="requestModalButtons"><button id="confirmModBtn">Confirm</button><button data-close-modal="modConfirmModal">Cancel</button></div></div></div>
-   <div id="clearChatConfirmModal" class="requestModal"><div class="requestModalWindow"><h3>Clear Chat?</h3><p style="margin-bottom:15px;">Are you sure you want to delete all messages for everyone? This cannot be undone.</p><div class="requestModalButtons"><button id="confirmClearChatBtn" class="destructive-btn">Yes, Clear It</button><button data-close-modal="clearChatConfirmModal">Cancel</button></div></div></div>
-   <div id="sfxArea" style="display:none;"></div>
+  <div id="settingsModal" class="requestModal"><div class="requestModalWindow"><h3>Settings</h3><button class="panelSmallBtn" onclick="setTheme('default')">Default Theme</button><button class="panelSmallBtn" onclick="setTheme('light')">Light Theme</button><div style="margin-top:10px;"><label><input type="checkbox" id="decoToggle" checked onchange="toggleDecorations(this.checked)"> Show Decorations</label></div><button class="panelSmallBtn" onclick="document.getElementById('settingsModal').classList.remove('open')">Close</button></div></div>
+  <div id="vodEditModal" class="requestModal"><div class="requestModalWindow"><h3>Edit VOD</h3><input type="hidden" id="editVodId"><input type="text" id="editVodTitle" placeholder="Title" class="panelInput"><input type="text" id="editVodGame" placeholder="Game" class="panelInput"><div class="requestModalButtons"><button id="saveVodBtn">Save</button><button onclick="document.getElementById('vodEditModal').classList.remove('open')">Cancel</button></div></div></div>
+  <div id="gameInfoModal" class="requestModal"><div class="requestModalWindow"><h3 id="gameInfoTitle">Game</h3><div id="gameInfoBody" class="game-info-body" style="display:none;"><img id="gameInfoCover" class="game-info-cover" alt=""><div id="gameInfoText" class="game-info-text"></div></div><div class="requestModalButtons"><a id="gameSteamBtn" class="panelSmallBtn" href="#" target="_blank" rel="noopener" style="display:none;">Steam</a><button id="gameInfoCloseBtn" class="panelSmallBtn">Close</button></div></div></div>
+  <div id="tipOverlay" class="chat-overlay hidden"><div class="chat-card"><div class="chat-card-header"><h3>Send a Tip</h3><button class="modal-close-btn-embedded" onclick="toggleTipModal(false)">×</button></div><div class="tip-input-group"><button class="tip-preset" onclick="selectTipAmount(3)">$3</button><button class="tip-preset" onclick="selectTipAmount(5)">$5</button><button class="tip-preset" onclick="selectTipAmount(10)">$10</button><input id="tipCustomInput" class="tip-custom-input" type="number" placeholder="$ Custom" /></div><div id="tipCardSection"><div id="tipCardElement"></div><button id="tipCheckoutBtn" class="cta-button" style="margin-top:10px;">Pay</button></div></div></div>
+  <div id="redeemDrawer" style="display:none;"><div id="redeemDrawerInner"></div></div>
+  <div id="requestModal" class="requestModal"><div class="requestModalWindow"><h3>Request a Game</h3><input id="requestGameInput" type="text" placeholder="Enter a game name..." /><div class="requestModalButtons"><button id="submitRequestBtn">Submit</button><button id="cancelRequestBtn">Cancel</button></div></div></div>
+  <div id="unbanRequestModal" class="requestModal"><div class="requestModalWindow"><h3>Unban Request</h3><textarea id="unbanMessageInput" placeholder="Why should we unban you?" style="width:100%; height:80px; margin-bottom:10px;"></textarea><div class="requestModalButtons"><button id="unbanSubmitBtn">Submit</button><button id="unbanCloseBtn">Cancel</button></div></div></div>
+  <div id="unbanSubmittedModal" class="requestModal"><div class="requestModalWindow"><h3>Request Submitted</h3><p>Your request has been sent to the moderators.</p><div class="requestModalButtons"><button id="unbanSubmittedOkBtn">OK</button></div></div></div>
+  <div id="chatContextMenu" class="context-menu"><div class="ctx-header" id="ctxHeader">User</div><div class="ctx-item" id="ctxReplyBtn">Reply</div><div class="ctx-item" id="ctxDeleteBtn">Delete Message</div><div class="ctx-item" id="ctxTimeoutBtn">Timeout</div><div class="ctx-item" id="ctxBanBtn">Ban</div><div class="ctx-item" id="ctxModBtn">Promote to Mod</div><div class="ctx-item" id="ctxCopyIdBtn">Copy ID</div></div>
+  <div id="timeoutModal" class="requestModal"><div class="requestModalWindow"><h3>Timeout User</h3><p id="timeoutUserLabel" style="color:var(--accent); margin-bottom:10px;"></p><div class="duration-buttons"><button class="panelSmallBtn durationBtn" data-mins="5">5m</button><button class="panelSmallBtn durationBtn" data-mins="10">10m</button><button class="panelSmallBtn durationBtn" data-mins="15">15m</button><input type="number" id="timeoutCustomMins" placeholder="Custom (m)" style="width: 60px; padding: 4px;" /></div><input id="timeoutReasonInput" type="text" placeholder="Reason (optional)" style="margin-top:10px; width:100%; box-sizing:border-box;" /><div class="requestModalButtons"><button id="confirmTimeoutBtn" class="destructive-btn">Timeout</button><button data-close-modal="timeoutModal">Cancel</button></div></div></div>
+  <div id="timeoutInfoModal" class="requestModal"><div class="requestModalWindow"><div id="timeoutInfoBody" style="margin: 15px 0; line-height: 1.5;"></div><div class="requestModalButtons"><button data-close-modal="timeoutInfoModal">Acknowledge</button></div></div></div>
+  <div id="banModal" class="requestModal"><div class="requestModalWindow"><h3>Ban User</h3><p id="banUserLabel" style="color:#ff4444; margin-bottom:10px; font-weight:bold;"></p><input id="banReasonInput" type="text" placeholder="Reason (Required)" style="width:100%; box-sizing:border-box;" /><div class="requestModalButtons"><button id="confirmBanBtn" class="destructive-btn">Ban Permanently</button><button data-close-modal="banModal">Cancel</button></div></div></div>
+  <div id="modConfirmModal" class="requestModal"><div class="requestModalWindow"><h3>Promote to Moderator</h3><p>Are you sure you want to make <span id="modUserLabel" style="color:var(--accent);"></span> a moderator?</p><p style="font-size:12px; color:var(--text-muted);">They will have full access to ban/timeout users.</p><div class="requestModalButtons"><button id="confirmModBtn">Confirm</button><button data-close-modal="modConfirmModal">Cancel</button></div></div></div>
+  <div id="clearChatConfirmModal" class="requestModal"><div class="requestModalWindow"><h3>Clear Chat?</h3><p style="margin-bottom:15px;">Are you sure you want to delete all messages for everyone? This cannot be undone.</p><div class="requestModalButtons"><button id="confirmClearChatBtn" class="destructive-btn">Yes, Clear It</button><button data-close-modal="clearChatConfirmModal">Cancel</button></div></div></div>
+  <div id="sfxArea" style="display:none;"></div>
 
   <script src="https://js.stripe.com/v3/"></script>
   <script type="module" src="app.js"></script>
