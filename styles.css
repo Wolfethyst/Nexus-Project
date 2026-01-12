@@ -1055,3 +1055,88 @@ body.is-mod .vod-edit-btn { display: block; }
     color: #ccc;
 }
 .confirm-btn.confirm-no:hover { border-color: #fff; color: #fff; }
+
+.platformRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.platformLeft {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-head);
+    font-size: 13px;
+    color: #fff;
+}
+
+.platformIcon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.platformBtn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+/* Specific Style for "Connect" (Action) vs "Disconnect" (Danger) */
+.platformBtn:hover {
+    background: #fff;
+    color: #000;
+}
+
+/* If the button text is "Disconnect", make it reddish on hover */
+button[onclick*="unlink"]:hover, 
+button[onclick*="logout"]:hover {
+    background: rgba(255, 68, 68, 0.2);
+    border-color: #ff4444;
+    color: #ff4444;
+}
+
+/* --- FIX: Chat Header Styling --- */
+/* This targets the panel header specifically inside the right column */
+.col-right .panel-header {
+    background: linear-gradient(90deg, rgba(20,5,30,0.9), rgba(40,0,60,0.6));
+    border-bottom: 1px solid var(--accent);
+    padding: 15px;
+    font-family: var(--font-head);
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: var(--accent);
+    text-shadow: 0 0 10px rgba(213, 123, 255, 0.3);
+    text-transform: uppercase;
+}
+
+/* Style the "Clear" button in the header */
+.col-right .panel-header button {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.6);
+    font-size: 10px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+
+.col-right .panel-header button:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: rgba(255, 0, 0, 0.1);
+}

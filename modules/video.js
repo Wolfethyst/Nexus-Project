@@ -116,8 +116,6 @@ async function loadVods() {
     } catch(e) { console.error("VODs load error", e); }
 }
 
-// src/modules/video.js
-
 export async function loadStreamTitle() {
     const { data } = await apiGet("/stream/now");
     
@@ -269,8 +267,13 @@ export async function openGameDetails(gameName) {
     const targetGameLower = game.name.toLowerCase();
     const filteredContent = activeGameVods.filter(v => v.vod_provider !== 'bunny');
 
-    const gameVods = filteredContent.filter(v => !v.type || v.type === 'vod').sort((a, b) => (a.created_at || a.createdAt) - (b.created_at || b.createdAt));
-    const gameVideos = filteredContent.filter(v => v.type === 'video').sort((a, b) => (b.created_at || b.createdAt) - (a.created_at || a.createdAt));
+    // [FIXED] Sort DESCENDING (Newest First)
+    const gameVods = filteredContent.filter(v => !v.type || v.type === 'vod')
+        .sort((a, b) => (b.created_at || b.createdAt) - (a.created_at || a.createdAt));
+
+    const gameVideos = filteredContent.filter(v => v.type === 'video')
+        .sort((a, b) => (b.created_at || b.createdAt) - (a.created_at || a.createdAt));
+
     const gameClips = clipsData.filter(c => {
         if (c.game) return c.game.toLowerCase() === targetGameLower;
         return (c.title || "").toLowerCase().includes(targetGameLower);
@@ -292,8 +295,6 @@ export async function openGameDetails(gameName) {
 export function openHubHome() {
     document.getElementById('hub-details-view').classList.add('hidden');
     document.getElementById('hub-home-view').classList.remove('hidden');
-    
-    // This will now reset the layout to normal (2-column)
     closeVideoStage(); 
 }
 
@@ -313,13 +314,12 @@ export function switchHubTab(tabName) {
 export function playVideo(item, type) {
     activeVideoItem = item; activeVideoType = type;
     
-    // [UPDATED] Activate "Watching Mode" (Moves Library to Sidebar)
+    // [UPDATED] Activate "Watching Mode" Layout
     const videoCol = document.querySelector('.col-video');
     if(videoCol) videoCol.classList.add('watching');
 
     const stage = document.getElementById('videoStage');
     if(stage) stage.classList.remove('hidden');
-    // We don't necessarily need scrollIntoView if the layout shifts, but keeping it is safe
     if(stage) stage.scrollIntoView({ behavior: 'smooth' });
 
     document.getElementById('meta-title').textContent = item.title || "Untitled";
@@ -340,7 +340,10 @@ export function playVideo(item, type) {
     if(existingBunny) existingBunny.remove();
     if(existingYt) existingYt.remove();
     
-    mainVideoPlayer.style.display = 'none'; mainVideoPlayer.src = "";
+    mainVideoPlayer.style.display = 'none'; 
+    mainVideoPlayer.removeAttribute('src');
+    mainVideoPlayer.innerHTML = ''; // Clear old sources
+
     if(btnDownload) btnDownload.style.display = 'none'; 
 
     if (item.vod_provider === 'youtube') {
@@ -387,7 +390,14 @@ export function playVideo(item, type) {
         mainVideoPlayer.style.display = 'block';
         if (typeof Hls !== 'undefined' && Hls.isSupported() && item.url.endsWith('.m3u8')) {
             const hls = new Hls(); hls.loadSource(item.url); hls.attachMedia(mainVideoPlayer);
-        } else { mainVideoPlayer.src = item.url; }
+        } else { 
+            // [FIXED] Proper MP4 Source Handling for Clips
+            const source = document.createElement('source');
+            source.src = item.url;
+            source.type = 'video/mp4';
+            mainVideoPlayer.appendChild(source);
+            mainVideoPlayer.load();
+        }
         mainVideoPlayer.play().catch(e => console.log("Autoplay blocked", e));
         if(btnDownload) { btnDownload.href = item.url; btnDownload.style.display = 'inline-block'; }
     }
@@ -406,18 +416,21 @@ export function handleVideoClick(id, type) {
 }
 
 export function closeVideoStage() {
-    // [UPDATED] Deactivate "Watching Mode" (Reset layout)
+    // [UPDATED] Deactivate "Watching Mode"
     const videoCol = document.querySelector('.col-video');
     if(videoCol) videoCol.classList.remove('watching');
 
     const stage = document.getElementById('videoStage');
     if(stage) stage.classList.add('hidden');
-    
     const existingBunny = document.getElementById('nexus-bunny-embed');
     const existingYt = document.getElementById('nexus-youtube-embed');
     if(existingBunny) existingBunny.remove();
     if(existingYt) existingYt.remove();
-    if(mainVideoPlayer) { mainVideoPlayer.pause(); mainVideoPlayer.src = ""; }
+    if(mainVideoPlayer) { 
+        mainVideoPlayer.pause(); 
+        mainVideoPlayer.removeAttribute('src'); 
+        mainVideoPlayer.innerHTML = '';
+    }
 }
 
 export function shareActiveVideo() {
@@ -435,25 +448,19 @@ export function shareActiveVideo() {
 
 export function toggleMainView(mode) {
     const liveEls = document.querySelectorAll('.live-view');
-    const videoCol = document.querySelector('.video-view'); 
+    const videoCol = document.querySelector('.col-video'); // Explicit selector
     const btnLive = document.getElementById('viewBtnLive');
     const btnVideo = document.getElementById('viewBtnVideo');
-    const mainGrid = document.querySelector('.main-grid'); 
-
     if (mode === 'live') {
         liveEls.forEach(el => el.classList.remove('hidden'));
         if (videoCol) videoCol.classList.add('hidden');
         if (btnLive) btnLive.classList.add('active');
         if (btnVideo) btnVideo.classList.remove('active');
-        
-        if (mainGrid) mainGrid.classList.remove('mode-video');
     } else {
         liveEls.forEach(el => el.classList.add('hidden'));
         if (videoCol) videoCol.classList.remove('hidden');
         if (btnLive) btnLive.classList.remove('active');
         if (btnVideo) btnVideo.classList.add('active');
-
-        if (mainGrid) mainGrid.classList.add('mode-video');
     }
 }
 
