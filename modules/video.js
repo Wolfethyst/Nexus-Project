@@ -11,7 +11,7 @@ let activeVideoItem = null;
 let activeVideoType = null;
 let currentGameName = null;
 
-// [NEW] Track the YouTube Player Instance
+// Track the YouTube Player Instance
 let youtubePlayerInstance = null;
 
 const mainVideoPlayer = document.getElementById('main-video-player');
@@ -27,7 +27,7 @@ function getThumbUrl(item, type) {
     return PLACEHOLDER_IMG;
 }
 
-// [NEW] Helper to load the YouTube API securely
+// Helper to load the YouTube API securely
 function loadYouTubeApi() {
     return new Promise((resolve) => {
         if (window.YT && window.YT.Player) {
@@ -272,7 +272,7 @@ export async function openGameDetails(gameName) {
     const targetGameLower = game.name.toLowerCase();
     const filteredContent = activeGameVods.filter(v => v.vod_provider !== 'bunny');
 
-    // [FIXED] Sort DESCENDING (Newest First)
+    // Sort DESCENDING (Newest First)
     const gameVods = filteredContent.filter(v => !v.type || v.type === 'vod')
         .sort((a, b) => (b.created_at || b.createdAt) - (a.created_at || a.createdAt));
 
@@ -343,8 +343,7 @@ export async function playVideo(item, type) {
     const existingBunny = document.getElementById('nexus-bunny-embed');
     const existingYt = document.getElementById('nexus-youtube-embed');
     if(existingBunny) existingBunny.remove();
-    // Do NOT remove existingYt here if we might reuse the container, 
-    // but for stability, we will clear it and recreate.
+    // Recreate container for stability
     if(existingYt) existingYt.remove();
     
     mainVideoPlayer.style.display = 'none'; 
@@ -397,20 +396,25 @@ export async function playVideo(item, type) {
                 try { youtubePlayerInstance.destroy(); } catch(e){}
             }
 
+            // [FIXED] Forcing NOCOOKIE domain via host property
             youtubePlayerInstance = new YT.Player('nexus-youtube-embed', {
                 height: '100%',
                 width: '100%',
                 videoId: item.id,
+                // CRITICAL FIX: Forces API to use privacy domain
+                host: 'https://www.youtube-nocookie.com',
                 playerVars: {
                     'autoplay': 1,
                     'modestbranding': 1,
                     'rel': 0,
                     'playsinline': 1,
-                    // CRITICAL: Tells YouTube we are a legit domain
-                    'origin': window.location.origin 
+                    // CRITICAL FIX: Establish trust with YouTube
+                    'origin': window.location.origin,
+                    'widget_referrer': window.location.href
                 },
                 events: {
-                    'onReady': (event) => event.target.playVideo()
+                    'onReady': (event) => event.target.playVideo(),
+                    'onError': (e) => console.error("YT Error:", e.data)
                 }
             });
         };
@@ -487,7 +491,7 @@ export function shareActiveVideo() {
 
 export function toggleMainView(mode) {
     const liveEls = document.querySelectorAll('.live-view');
-    const videoCol = document.querySelector('.col-video'); // Explicit selector
+    const videoCol = document.querySelector('.col-video'); 
     const btnLive = document.getElementById('viewBtnLive');
     const btnVideo = document.getElementById('viewBtnVideo');
     if (mode === 'live') {
