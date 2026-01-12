@@ -310,11 +310,13 @@ export function switchHubTab(tabName) {
     });
 }
 
+// src/modules/video.js
+
 // --- PLAYER ---
 export function playVideo(item, type) {
     activeVideoItem = item; activeVideoType = type;
     
-    // [UPDATED] Activate "Watching Mode" Layout
+    // Activate "Watching Mode" Layout
     const videoCol = document.querySelector('.col-video');
     if(videoCol) videoCol.classList.add('watching');
 
@@ -342,7 +344,7 @@ export function playVideo(item, type) {
     
     mainVideoPlayer.style.display = 'none'; 
     mainVideoPlayer.removeAttribute('src');
-    mainVideoPlayer.innerHTML = ''; // Clear old sources
+    mainVideoPlayer.innerHTML = ''; 
 
     if(btnDownload) btnDownload.style.display = 'none'; 
 
@@ -354,6 +356,8 @@ export function playVideo(item, type) {
         wrapper.style.backgroundColor = '#000';
         wrapper.style.position = 'relative';
         wrapper.style.cursor = 'pointer';
+        
+        // High-res thumbnail
         wrapper.style.backgroundImage = `url('https://img.youtube.com/vi/${item.id}/maxresdefault.jpg')`;
         wrapper.style.backgroundSize = 'cover';
         wrapper.style.backgroundPosition = 'center';
@@ -372,12 +376,21 @@ export function playVideo(item, type) {
 
         wrapper.onclick = () => {
             const iframe = document.createElement('iframe');
-            iframe.src = `https://www.youtube.com/embed/${item.id}?autoplay=1&rel=0&modestbranding=1&origin=${window.location.origin}`;
+            
+            // [FIX] Use nocookie domain + encoded origin
+            const origin = encodeURIComponent(window.location.origin);
+            iframe.src = `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&modestbranding=1&rel=0&origin=${origin}`;
+            
             iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
             iframe.allowFullscreen = true;
+            
+            // [FIX] Add Referrer Policy to satisfy new browser security rules
+            iframe.referrerPolicy = "strict-origin-when-cross-origin";
+            
             iframe.style.width = '100%'; 
             iframe.style.height = '100%'; 
             iframe.style.border = 'none';
+            
             wrapper.innerHTML = ''; 
             wrapper.appendChild(iframe);
         };
@@ -391,7 +404,6 @@ export function playVideo(item, type) {
         if (typeof Hls !== 'undefined' && Hls.isSupported() && item.url.endsWith('.m3u8')) {
             const hls = new Hls(); hls.loadSource(item.url); hls.attachMedia(mainVideoPlayer);
         } else { 
-            // [FIXED] Proper MP4 Source Handling for Clips
             const source = document.createElement('source');
             source.src = item.url;
             source.type = 'video/mp4';
