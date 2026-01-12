@@ -37,7 +37,7 @@
         <div id="avatarContainer"></div>
         <div class="user-info-text">
             <div id="loginArea"></div>
-            <div id="headerCrystalDisplay" class="crystals">
+            <div id="headerCrystalDisplay" class="crystals" style="display:none;">
                 <img src="https://data.wolfethyst.tv/assets/wolfe_crystal" width="14">
                 <span id="headerPoints">0</span>
             </div>
@@ -47,6 +47,7 @@
     <div class="nav-tabs">
         <button id="viewBtnLive" class="nav-tab active" onclick="toggleMainView('live')">LIVE</button>
         <button id="viewBtnVideo" class="nav-tab" onclick="toggleMainView('video')">VODS</button>
+        <button id="viewBtnStore" class="nav-tab hidden" style="display:none;">STORE</button>
     </div>
 
     <div class="brand">
@@ -58,6 +59,7 @@
   <div id="loginPopup"></div>
   <div id="userMenu">
       <div id="nexusProfileSection"></div>
+      <button id="nexusProfileSaveBtn" class="hidden" style="display:none;">Save</button>
       <hr style="border-color:rgba(255,255,255,0.1);">
       <div class="userMenuRow" id="openSettingsBtn">
         <span class="menuIcon">⚙️</span>
@@ -157,6 +159,8 @@
                 </div>
             </div>
         </div>
+        
+        <div id="marketplacePanel" class="hidden" style="display:none;"></div>
         
     </div> 
     <div id="vodMainCol" class="col-vod-main video-view hidden mode-library">
@@ -262,9 +266,9 @@
     </div>
 
   </div> <div class="site-footer">
-    <div class="site-footer-left">© <span id="footer-year">2026</span> Wolfethyst</div>
-    <div class="site-footer-links">
-        <a href="https://nexus.wolfethyst.tv/privacy" target="_blank">Privacy</a>
+    <div class="footer-stack">
+        <div>© <span id="footer-year">2026</span> Wolfethyst</div>
+        <div><a href="https://nexus.wolfethyst.tv/privacy" target="_blank">Privacy</a></div>
     </div>
   </div>
 
