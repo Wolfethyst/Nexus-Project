@@ -425,16 +425,24 @@ export function toggleMainView(mode) {
     const videoCol = document.querySelector('.video-view'); 
     const btnLive = document.getElementById('viewBtnLive');
     const btnVideo = document.getElementById('viewBtnVideo');
+    const mainGrid = document.querySelector('.main-grid'); // [NEW] Select the grid
+
     if (mode === 'live') {
         liveEls.forEach(el => el.classList.remove('hidden'));
         if (videoCol) videoCol.classList.add('hidden');
         if (btnLive) btnLive.classList.add('active');
         if (btnVideo) btnVideo.classList.remove('active');
+        
+        // [NEW] Restore original 3-column grid
+        if (mainGrid) mainGrid.classList.remove('mode-video');
     } else {
         liveEls.forEach(el => el.classList.add('hidden'));
         if (videoCol) videoCol.classList.remove('hidden');
         if (btnLive) btnLive.classList.remove('active');
         if (btnVideo) btnVideo.classList.add('active');
+
+        // [NEW] Switch to 2-column grid for VODS
+        if (mainGrid) mainGrid.classList.add('mode-video');
     }
 }
 

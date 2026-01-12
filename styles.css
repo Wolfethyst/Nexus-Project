@@ -164,6 +164,20 @@ header {
     flex-shrink: 0; /* Ensure header never squishes */
 }
 
+/* [NEW] Video Mode Layout: Collapses the left column */
+.main-grid.mode-video {
+    grid-template-columns: 1fr 380px; /* Only Main Content + Chat */
+}
+
+.main-grid.mode-video .col-video {
+    grid-column: 1 / 2; /* Spans the first column only (which is now the big 1fr space) */
+}
+
+/* Ensure content inside doesn't overflow */
+.main-grid.mode-video .col-video .panel {
+    width: 100%;
+}
+
 /* --- CARDS & WIDGETS --- */
 .now-playing-card {
     position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 2/3; 

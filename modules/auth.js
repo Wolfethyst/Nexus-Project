@@ -112,11 +112,11 @@ export async function loadAuth() {
     userMenuPlatforms.innerHTML = `
       <div class="platformRow">
         <div class="platformLeft"><img class="platformIcon" src="https://data.wolfethyst.tv/assets/twitch_icon"><span>Twitch</span></div>
-        <button class="platformBtn" onclick="location.href='${API}/auth/twitch/${twitch ? "logout" : "login"}'">${twitch ? "Disconnect" : "Connect"}</button>
+        <button class="platformBtn" onclick="location.href='${API}/auth/twitch/${twitch ? "unlink" : "login"}'">${twitch ? "Disconnect" : "Connect"}</button>
       </div>
       <div class="platformRow">
         <div class="platformLeft"><img class="platformIcon" src="https://data.wolfethyst.tv/assets/youtube_icon"><span>YouTube</span></div>
-        <button class="platformBtn" onclick="location.href='${API}/auth/youtube/${youtube ? "logout" : "login"}'">${youtube ? "Disconnect" : "Connect"}</button>
+        <button class="platformBtn" onclick="location.href='${API}/auth/youtube/${youtube ? "unlink" : "login"}'">${youtube ? "Disconnect" : "Connect"}</button>
       </div>`;
   }
   const userMenuButtons = document.getElementById("userMenuButtons"); if (userMenuButtons) userMenuButtons.innerHTML = `<div class="logout" onclick="location.href='${API}/auth/logout'">Logout</div>`;
