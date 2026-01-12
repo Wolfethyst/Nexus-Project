@@ -71,7 +71,6 @@ export async function loadAuth() {
   // Handle Bans
   if (session.banStatus && session.banStatus.isBanned) {
       const { expiresAt, reason, banKind } = session.banStatus;
-      // Dynamic import to avoid circular dependency issues at load time
       import('./chat.js').then(({ startTimeoutCountdown, showAutomodModal, lockChatInput }) => {
           if (!expiresAt) {
               lockChatInput(true, "You are permanently banned."); 
@@ -104,14 +103,32 @@ export async function loadAuth() {
   const decoClass = u.decoration ? ` ${escapeHtml(u.decoration)}` : ""; 
   if (avatarBox) avatarBox.innerHTML = `<img id="userAvatar" class="avatar${decoClass}" src="${avatarSrc}" />`;
 
+  // --- CONNECT/DISCONNECT BUTTON LOGIC (FIXED) ---
   const userMenuPlatforms = document.getElementById("userMenuPlatforms");
   if (userMenuPlatforms) {
-    const twitch = session.twitch; const youtube = session.youtube;
-    userMenuPlatforms.innerHTML = `
-      <div class="platformRow"><div class="platformLeft"><img class="platformIcon" src="https://data.wolfethyst.tv/assets/twitch_icon"><span>Twitch</span></div><button class="platformBtn" onclick="location.href='${API}/auth/twitch/${twitch ? "logout" : "login"}'">${twitch ? "Disconnect" : "Connect"}</button></div>
-      <div class="platformRow"><div class="platformLeft"><img class="platformIcon" src="https://data.wolfethyst.tv/assets/youtube_icon"><span>YouTube</span></div><button class="platformBtn" onclick="location.href='${API}/auth/youtube/${youtube ? "logout" : "login"}'">${youtube ? "Disconnect" : "Connect"}</button></div>`;
+    userMenuPlatforms.innerHTML = ""; // Clear existing
+
+    // Helper to create rows
+    const createPlatformRow = (name, iconUrl, isConnected, route) => {
+        const row = document.createElement("div");
+        row.className = "platformRow";
+        row.innerHTML = `<div class="platformLeft"><img class="platformIcon" src="${iconUrl}"><span>${name}</span></div>`;
+        
+        const btn = document.createElement("button");
+        btn.className = "platformBtn";
+        btn.textContent = isConnected ? "Disconnect" : "Connect";
+        btn.onclick = () => { window.location.href = `${API}/auth/${route}/${isConnected ? "logout" : "login"}`; };
+        
+        row.appendChild(btn);
+        return row;
+    };
+
+    userMenuPlatforms.appendChild(createPlatformRow("Twitch", "https://data.wolfethyst.tv/assets/twitch_icon", session.twitch, "twitch"));
+    userMenuPlatforms.appendChild(createPlatformRow("YouTube", "https://data.wolfethyst.tv/assets/youtube_icon", session.youtube, "youtube"));
   }
-  const userMenuButtons = document.getElementById("userMenuButtons"); if (userMenuButtons) userMenuButtons.innerHTML = `<div class="logout" onclick="location.href='${API}/auth/logout'">Logout</div>`;
+
+  const userMenuButtons = document.getElementById("userMenuButtons"); 
+  if (userMenuButtons) userMenuButtons.innerHTML = `<div class="logout" onclick="location.href='${API}/auth/logout'">Logout</div>`;
 }
 
 function renderLoggedOutUI() {
@@ -124,7 +141,6 @@ function renderLoggedOutUI() {
   State.nexusProfiles = {};
   updateChatControls(false);
   
-  // FIXED: Safety check prevents crash if element is missing
   const crysDisplay = document.getElementById("headerCrystalDisplay");
   if (crysDisplay) crysDisplay.classList.add("hidden");
   
