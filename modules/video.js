@@ -11,6 +11,9 @@ let activeVideoItem = null;
 let activeVideoType = null;
 let currentGameName = null;
 
+// [NEW] Track the YouTube Player Instance
+let youtubePlayerInstance = null;
+
 const mainVideoPlayer = document.getElementById('main-video-player');
 
 // --- HELPERS ---
@@ -24,6 +27,20 @@ function getThumbUrl(item, type) {
     return PLACEHOLDER_IMG;
 }
 
+// [NEW] Helper to load the YouTube API securely
+function loadYouTubeApi() {
+    return new Promise((resolve) => {
+        if (window.YT && window.YT.Player) {
+            resolve();
+        } else {
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            window.onYouTubeIframeAPIReady = () => resolve();
+            document.head.appendChild(tag);
+        }
+    });
+}
+
 // [UPDATED] Prioritized Loading Sequence
 export async function loadVideoData() {
     // 1. Check if the user is visiting a specific link (Direct Play)
@@ -34,7 +51,6 @@ export async function loadVideoData() {
     // 2. If there is a direct link, load and play it IMMEDIATELY
     if (directClipId) {
         try {
-            // Fetch JUST this clip metadata first (Fast!)
             const { data } = await apiGet(`/clips/meta?id=${directClipId}`);
             if (data && data.ok && data.clip) {
                 playVideo(data.clip, 'clip'); 
@@ -45,14 +61,12 @@ export async function loadVideoData() {
     // 3. Load the rest of the site content in the background
     const heavyLifting = Promise.all([
         loadGames().then(() => {
-            // Re-apply current game cover if we know it
             if (currentGameName) updatePlayedGamesList(currentGameName);
             else renderHubGames();
         }),
         loadStreamTitle(),
         loadClips(),
         loadVods().then(() => {
-            // Handle Direct VOD link (only possible after VOD list loads)
             if (directVodId && vodsData.length > 0) {
                 handleVideoClick(directVodId, 'vod');
             }
@@ -61,25 +75,20 @@ export async function loadVideoData() {
 
     await heavyLifting;
 
-    // --- [NEW] HIDE LOADER WHEN DONE ---
     const loader = document.getElementById("appLoader");
     if(loader) {
-        // Small delay to ensure images paint
         setTimeout(() => loader.classList.add("hidden"), 500); 
     }
 }
 
 async function loadGames() {
     const { data } = await apiGet("/played");
-    // Load the fresh list from the server
     allPlayedGames = (data?.games || []).map((g, i) => ({ ...g, __index: i }));
 
-    // [NEW] If we already know what game is playing, re-apply it to the new list!
-    // This ensures we pull the REAL cover art instead of a placeholder
     if (currentGameName) {
         updatePlayedGamesList(currentGameName);
     } else {
-        renderHubGames(); // Otherwise just render the library normally
+        renderHubGames(); 
     }
 }
 
@@ -123,22 +132,18 @@ export async function loadStreamTitle() {
     const gameInput = document.getElementById("streamGameInput");
     const titleLabel = document.getElementById("streamTitleLabel"); 
     const gameLabel = document.getElementById("streamGameLabel"); 
-    
-    // [UPDATED] Target the text inside the new Compact Card
     const statusText = document.getElementById("liveStatusCardText");
 
     if (data) {
         if(titleInput) titleInput.value = data.title || "";
         if(gameInput) gameInput.value = data.game || "";
-        
         if(titleLabel) titleLabel.textContent = data.title || "Stream Title";
-        if(gameLabel) gameLabel.textContent = data.game || "Just Chatting"; // Now shows inside card title
+        if(gameLabel) gameLabel.textContent = data.game || "Just Chatting"; 
 
-        // Update the Compact Card Status
         if (data.live) {
             if(statusText) {
                 statusText.textContent = "● Live";
-                statusText.style.color = "#72ffb0"; // Bright Green
+                statusText.style.color = "#72ffb0"; 
                 statusText.style.textShadow = "0 0 8px rgba(114, 255, 176, 0.5)";
             }
         } else {
@@ -310,10 +315,8 @@ export function switchHubTab(tabName) {
     });
 }
 
-// src/modules/video.js
-
-// --- PLAYER ---
-export function playVideo(item, type) {
+// --- PLAYER (OFFICIAL YOUTUBE API IMPL) ---
+export async function playVideo(item, type) {
     activeVideoItem = item; activeVideoType = type;
     
     // Activate "Watching Mode" Layout
@@ -340,6 +343,8 @@ export function playVideo(item, type) {
     const existingBunny = document.getElementById('nexus-bunny-embed');
     const existingYt = document.getElementById('nexus-youtube-embed');
     if(existingBunny) existingBunny.remove();
+    // Do NOT remove existingYt here if we might reuse the container, 
+    // but for stability, we will clear it and recreate.
     if(existingYt) existingYt.remove();
     
     mainVideoPlayer.style.display = 'none'; 
@@ -349,50 +354,65 @@ export function playVideo(item, type) {
     if(btnDownload) btnDownload.style.display = 'none'; 
 
     if (item.vod_provider === 'youtube') {
+        // 1. Create the container div
         const wrapper = document.createElement('div');
-        wrapper.id = 'nexus-youtube-embed';
+        wrapper.id = 'nexus-youtube-embed'; 
         wrapper.style.width = '100%';
         wrapper.style.height = '100%';
         wrapper.style.backgroundColor = '#000';
         wrapper.style.position = 'relative';
-        wrapper.style.cursor = 'pointer';
+
+        // 2. Add the specialized Play Button overlay
+        const coverDiv = document.createElement('div');
+        coverDiv.style.position = 'absolute';
+        coverDiv.style.inset = '0';
+        coverDiv.style.background = `url('https://img.youtube.com/vi/${item.id}/maxresdefault.jpg') center/cover`;
+        coverDiv.style.cursor = 'pointer';
+        coverDiv.style.display = 'flex';
+        coverDiv.style.alignItems = 'center';
+        coverDiv.style.justifyContent = 'center';
+        coverDiv.style.zIndex = '10';
         
-        // High-res thumbnail
-        wrapper.style.backgroundImage = `url('https://img.youtube.com/vi/${item.id}/maxresdefault.jpg')`;
-        wrapper.style.backgroundSize = 'cover';
-        wrapper.style.backgroundPosition = 'center';
-
         const playBtn = document.createElement('div');
-        playBtn.innerHTML = "▶";
-        playBtn.style.position = 'absolute';
-        playBtn.style.top = '50%';
-        playBtn.style.left = '50%';
-        playBtn.style.transform = 'translate(-50%, -50%)';
-        playBtn.style.fontSize = '60px';
-        playBtn.style.color = '#fff';
-        playBtn.style.textShadow = '0 0 20px rgba(0,0,0,0.5)';
-        playBtn.style.pointerEvents = 'none'; 
-        wrapper.appendChild(playBtn);
+        playBtn.innerText = "▶";
+        playBtn.style.fontSize = "60px";
+        playBtn.style.color = "#fff";
+        playBtn.style.textShadow = "0 0 20px rgba(0,0,0,0.5)";
+        coverDiv.appendChild(playBtn);
+        
+        wrapper.appendChild(coverDiv);
 
-        wrapper.onclick = () => {
-            const iframe = document.createElement('iframe');
+        // 3. Click Listener -> Load API
+        coverDiv.onclick = async () => {
+            coverDiv.innerText = "Loading..."; 
             
-            // [FIX] Use nocookie domain + encoded origin
-            const origin = encodeURIComponent(window.location.origin);
-            iframe.src = `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&modestbranding=1&rel=0&origin=${origin}`;
+            // Wait for API
+            await loadYouTubeApi();
             
-            iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-            iframe.allowFullscreen = true;
+            // Remove the cover so the player can take over
+            coverDiv.remove();
             
-            // [FIX] Add Referrer Policy to satisfy new browser security rules
-            iframe.referrerPolicy = "strict-origin-when-cross-origin";
-            
-            iframe.style.width = '100%'; 
-            iframe.style.height = '100%'; 
-            iframe.style.border = 'none';
-            
-            wrapper.innerHTML = ''; 
-            wrapper.appendChild(iframe);
+            // Initialize Player
+            if (youtubePlayerInstance) {
+                try { youtubePlayerInstance.destroy(); } catch(e){}
+            }
+
+            youtubePlayerInstance = new YT.Player('nexus-youtube-embed', {
+                height: '100%',
+                width: '100%',
+                videoId: item.id,
+                playerVars: {
+                    'autoplay': 1,
+                    'modestbranding': 1,
+                    'rel': 0,
+                    'playsinline': 1,
+                    // CRITICAL: Tells YouTube we are a legit domain
+                    'origin': window.location.origin 
+                },
+                events: {
+                    'onReady': (event) => event.target.playVideo()
+                }
+            });
         };
 
         videoParent.appendChild(wrapper);
@@ -428,12 +448,19 @@ export function handleVideoClick(id, type) {
 }
 
 export function closeVideoStage() {
-    // [UPDATED] Deactivate "Watching Mode"
+    // Deactivate "Watching Mode"
     const videoCol = document.querySelector('.col-video');
     if(videoCol) videoCol.classList.remove('watching');
 
     const stage = document.getElementById('videoStage');
     if(stage) stage.classList.add('hidden');
+    
+    // Destroy API Instance
+    if (youtubePlayerInstance) {
+        try { youtubePlayerInstance.destroy(); } catch(e){}
+        youtubePlayerInstance = null;
+    }
+
     const existingBunny = document.getElementById('nexus-bunny-embed');
     const existingYt = document.getElementById('nexus-youtube-embed');
     if(existingBunny) existingBunny.remove();
@@ -586,33 +613,20 @@ function renderPlayedGames(list) {
 
 export function updatePlayedGamesList(gameName) {
   if (!gameName) return;
-  
-  // 1. Update the internal tracker
   const isSameGame = currentGameName && gameName.toLowerCase() === currentGameName.toLowerCase();
   currentGameName = gameName; 
-
-  // 2. Find the game in your list or create a temporary one
   let foundIndex = allPlayedGames.findIndex(g => (g.name || "").toLowerCase() === gameName.toLowerCase());
-  
   if (foundIndex > -1) { 
-      // Game found! Move it to the top
       const game = allPlayedGames.splice(foundIndex, 1)[0]; 
       allPlayedGames.unshift(game); 
   } else { 
-      // Game not in list? Add a temporary entry so it shows up immediately
-      // We use a placeholder first, but if the real list loads later, we'll fix it (see Step 2)
       const placeholderCover = "https://via.placeholder.com/300x450?text=" + encodeURIComponent(gameName);
       allPlayedGames.unshift({ name: gameName, cover: placeholderCover, __index: -1 }); 
   }
-
-  // 3. [NEW] Update the Big Cover Image (This was missing!)
   const coverImg = document.getElementById("gameCoverImage");
   if (coverImg && allPlayedGames.length > 0) {
-      // Use the cover from the top game (which we just ensured is the current one)
       coverImg.src = allPlayedGames[0].cover;
   }
-
-  // 4. Update the sidebar list
   renderPlayedGames(allPlayedGames);
 }
 
@@ -636,20 +650,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 addSystemMessage("You must be logged in to clip!", "error"); 
                 return; 
             }
-
-            // 1. Notify "Creating..."
             addSystemMessage("Clip is being created and will be available shortly...", "loading");
             clipBtn.disabled = true;
-
             try {
                 const { res, data } = await apiPost("/clips/create", { windowSeconds: 30 });
-                
                 if (res.ok && data.id) {
-                    // Success!
-                    // We DO NOT add a "Clip Ready" message here locally. 
-                    // The server now broadcasts it via the Chat Room so both the Dock and Dashboard see it.
-                    
-                    // We can still copy the link silently for convenience
                     const watchLink = `${window.location.origin}/?clip=${data.id}`;
                     navigator.clipboard.writeText(watchLink).catch(() => {});
                 } else {
