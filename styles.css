@@ -71,34 +71,40 @@ header {
 .username-display { font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(213, 123, 255, 0.5); }
 
 /* ============================================================
-   LAYOUT ENGINE (FIXED & LOCKED HEIGHT)
+   LAYOUT ENGINE (SIMPLIFIED & MATCHED TO LIVE VIEW)
    ============================================================ */
 
 /* 1. Main Grid - The Stage */
 .main-grid {
     flex: 1; 
     display: grid; 
+    /* The Master Layout: Left (320px) | Center (Flex) | Right (380px) */
     grid-template-columns: 320px 1fr 380px; 
+    grid-template-rows: 100%; /* Force full height */
     gap: 20px; 
     padding: 20px; 
     overflow: hidden; 
-    height: calc(100vh - 64px); /* rigid height */
+    height: calc(100vh - 64px); 
 }
 
-/* 2. Standard Columns */
+/* 2. Standard Columns (Live View) */
 .col-left, .col-center, .col-right { 
     display: flex; flex-direction: column; gap: 20px; 
     overflow: hidden; height: 100%; min-height: 0;
 }
 
-/* 3. The Video Column (VODs) */
+/* 3. The Video Column Container */
 .col-video { 
-    grid-column: 1 / 3; /* Default: Spans Left + Center */
-    display: flex; flex-direction: column; gap: 20px; 
-    overflow: hidden; height: 100%; min-height: 0;
+    grid-column: 1 / 3; /* Spans across Left + Center tracks */
+    overflow: hidden; 
+    height: 100%; 
+    min-height: 0;
+    /* Default: Flex column for Browsing (Full width) */
+    display: flex; 
+    flex-direction: column; 
 }
 
-/* 4. Panels - The Boxes */
+/* 4. Panels - The actual boxes */
 .panel {
     background: var(--panel-bg); 
     border: 1px solid var(--panel-border);
@@ -107,69 +113,74 @@ header {
     display: flex; flex-direction: column; 
     overflow: hidden; 
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    flex: 1; /* Grow to fill column */
+    flex: 1; 
     min-height: 0; 
 }
 
-/* 5. VOD VIEW SPECIFIC FIXES (Stop Shrinking!) */
-/* Force the library container to always be full height */
-.video-hub-container {
-    display: flex; flex-direction: column; 
-    height: 100%; overflow: hidden;
-}
+/* ============================================================
+   WATCHING MODE (THE MAGIC SWITCH)
+   ============================================================ */
 
-/* Force the scroll area to consume all remaining space */
-.hub-scroll-wrapper, .hub-scroll-area {
-    flex: 1; overflow-y: auto; min-height: 0;
-}
-
-/* --- WATCHING MODE LAYOUT (When Video Plays) --- */
-.main-grid.mode-video {
-    grid-template-columns: 1fr 380px; /* Hide Left Col */
-}
-.main-grid.mode-video .col-video {
-    grid-column: 1 / 2; /* Take up the big space */
-}
-
-/* The Grid Split: Sidebar (Left) | Player (Right) */
+/* When a video is playing, turn .col-video into its own Grid 
+   that mimics the Main Grid's first two columns exactly. */
 .col-video.watching {
     display: grid;
-    grid-template-columns: 320px 1fr; 
-    grid-template-rows: 100%; /* Lock height to 100% of parent */
-    gap: 20px;
+    grid-template-columns: 320px 1fr; /* MATCHES LIVE VIEW EXACTLY */
+    grid-template-rows: 100%;         /* Forces panels to touch bottom */
+    gap: 20px;                        /* Same gap as main grid */
 }
 
-/* Sidebar Panel in Watching Mode */
+/* 1. LIBRARY PANEL (Moves to Left Slot) */
 .col-video.watching > .panel:not(#videoStage) {
-    grid-column: 1; order: 1;
-    height: 100% !important; /* FORCE FULL HEIGHT */
+    grid-column: 1;
+    order: 1;
+    height: 100%;       /* Prevent shrinking */
+    border-right: 1px solid var(--panel-border);
 }
 
-/* Player Panel in Watching Mode */
+/* 2. PLAYER PANEL (Moves to Center Slot) */
 .col-video.watching #videoStage {
-    grid-column: 2; order: 2;
+    grid-column: 2;
+    order: 2;
     display: flex !important;
-    height: 100% !important; /* FORCE FULL HEIGHT */
+    height: 100%;       /* Prevent shrinking */
     margin: 0 !important;
 }
 
-/* --- VIDEO PLAYER INTERNAL SIZING (Fixes Purple/Empty Box) --- */
+/* ============================================================
+   INTERNAL PANEL FIXES
+   ============================================================ */
+
+/* Ensure the Library Scrolling area always fills the panel */
+.video-hub-container {
+    display: flex; flex-direction: column; 
+    height: 100%; 
+    overflow: hidden;
+}
+
+.hub-scroll-wrapper, .hub-scroll-area {
+    flex: 1; 
+    overflow-y: auto; 
+    min-height: 0;
+}
+
+/* Fix the Video Player "Purple Box" Issue */
 .video-player-section {
-    display: flex; flex-direction: column;
+    display: flex; flex-direction: column; height: 100%;
 }
 
 .video-container {
-    flex: 1; /* This pushes metadata down and fills space with video */
+    flex: 1; /* Pushes title down, fills space */
     background: #000;
     position: relative;
     overflow: hidden;
-    min-height: 0;
-    display: flex; /* Centers content if needed */
-    align-items: center;
+    display: flex; 
+    align-items: center; 
     justify-content: center;
+    width: 100%;
 }
 
-/* Ensure iframe/video inside takes full space */
+/* Force video elements to fill the container */
 .video-container iframe, 
 .video-container video, 
 #nexus-youtube-embed,
@@ -180,14 +191,12 @@ header {
     display: block;
 }
 
-/* --- SIDEBAR ADJUSTMENTS FOR WATCHING MODE --- */
-.col-video.watching .game-hero { display: none; } /* Hide Header Image */
+/* Sidebar Styling Cleanups (When in Watching Mode) */
+.col-video.watching .game-hero { display: none; }
 .col-video.watching .hub-search-input { width: 100%; }
 .col-video.watching .hub-tabs { padding: 0 5px; gap: 5px; }
 .col-video.watching .hub-tab { font-size: 11px; padding: 10px 0; flex: 1; text-align: center; }
-.col-video.watching .video-grid { grid-template-columns: 1fr; } /* Single Column List */
-
-/* Hide unwanted buttons/elements in sidebar mode */
+.col-video.watching .video-grid { grid-template-columns: 1fr; } 
 .col-video.watching .game-steam-btn { display: none; }
 
 /* --- CARDS & WIDGETS --- */
