@@ -3,7 +3,6 @@ import { apiGet, apiPost, escapeHtml, PLACEHOLDER_IMG, CLOUDFLARE_CUSTOMER, Stat
 import { openVodEditModal } from './admin.js';
 import { addSystemMessage } from './chat.js'; 
 
-// [NEW] Hardcoded API Base for the Proxy
 const API_BASE = "https://data.wolfethyst.tv";
 
 let allPlayedGames = [];
