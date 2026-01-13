@@ -5,6 +5,9 @@ import { addSystemMessage } from './chat.js';
 
 const API_BASE = "https://data.wolfethyst.tv";
 
+// Safety fallback in case config.js has a typo
+const SAFE_PLACEHOLDER = "https://data.wolfethyst.tv/assets/nexus_icon"; 
+
 let allPlayedGames = [];
 let vodsData = []; 
 let activeGameVods = []; 
@@ -28,7 +31,7 @@ function getThumbUrl(item, type) {
     const vidId = item.videoId || item.cloudflare_id; 
     if(vidId) return `https://customer-${CLOUDFLARE_CUSTOMER}.cloudflarestream.com/${vidId}/thumbnails/thumbnail.jpg`;
     
-    return PLACEHOLDER_IMG;
+    return SAFE_PLACEHOLDER;
 }
 
 // [UPDATED] Prioritized Loading Sequence
@@ -152,7 +155,8 @@ export function renderHubGames(filterText = "") {
 
     grid.innerHTML = games.map(g => {
         const safeName = g.name.replace(/'/g, "\\'"); 
-        return `<div class="hub-game-card" onclick="window.openGameDetails('${safeName}')"><img src="${g.cover}" loading="lazy" onerror="this.src='${PLACEHOLDER_IMG}'"><div class="hub-game-title">${escapeHtml(g.name)}</div></div>`;
+        // [FIX] Added this.onerror=null to prevent infinite loops if placeholder also fails
+        return `<div class="hub-game-card" onclick="window.openGameDetails('${safeName}')"><img src="${g.cover}" loading="lazy" onerror="this.onerror=null;this.src='${SAFE_PLACEHOLDER}'"><div class="hub-game-title">${escapeHtml(g.name)}</div></div>`;
     }).join("");
 }
 
@@ -178,7 +182,8 @@ function renderHubGrid(containerId, items, type) {
             editBtn = `<div class="vod-edit-btn" onclick="window.openVodEditModal(event, '${item.id}')">EDIT</div>`;
         }
 
-        return `<div class="video-card" onclick="window.handleVideoClick('${item.id}', '${type}')"><div class="video-card-thumb"><img src="${thumbUrl}" onerror="this.src='${PLACEHOLDER_IMG}'">${badgeHtml}${editBtn}<div class="video-card-dur">${item.duration || type.toUpperCase()}</div></div><div class="video-card-body"><div class="video-card-title" title="${title}">${title}</div><div class="video-card-date">${dateStr}</div></div></div>`;
+        // [FIX] Added this.onerror=null to prevent infinite loops
+        return `<div class="video-card" onclick="window.handleVideoClick('${item.id}', '${type}')"><div class="video-card-thumb"><img src="${thumbUrl}" onerror="this.onerror=null;this.src='${SAFE_PLACEHOLDER}'">${badgeHtml}${editBtn}<div class="video-card-dur">${item.duration || type.toUpperCase()}</div></div><div class="video-card-body"><div class="video-card-title" title="${title}">${title}</div><div class="video-card-date">${dateStr}</div></div></div>`;
     }).join("");
 }
 
@@ -208,8 +213,9 @@ export async function openGameDetails(gameName) {
 
     const heroContentEl = document.querySelector('.game-hero-content');
     if (heroContentEl) {
+        // [FIX] Added this.onerror=null
         heroContentEl.innerHTML = `
-            <img id="heroCover" class="game-hero-cover" src="${game.cover}" onerror="this.src='${PLACEHOLDER_IMG}'">
+            <img id="heroCover" class="game-hero-cover" src="${game.cover}" onerror="this.onerror=null;this.src='${SAFE_PLACEHOLDER}'">
             <div class="game-hero-main">
                 <h1 id="heroTitle" class="game-hero-title">${escapeHtml(game.name)}</h1>
                 <div class="game-hero-stats">
@@ -568,7 +574,7 @@ function renderPlayedGames(list) {
   if (!gamesPlayedEl) return;
   gamesPlayedEl.innerHTML = list.map(g => {
     const isCurrent = currentGameName && (g.name || "").toLowerCase() === currentGameName.toLowerCase();
-    return `<div class="game-card ${isCurrent ? "current-game" : ""}" tabindex="0" role="button" onclick="window.handleGameCardClick(this)" data-name="${escapeHtml(g.name)}" data-desc="${escapeHtml(g.description || "")}" data-cover="${escapeHtml(g.cover || "")}" data-steam="${escapeHtml(g.steamUrl || "")}"><div class="game-thumb"><img loading="lazy" src="${g.cover}" alt="${escapeHtml(g.name)}"></div></div>`;
+    return `<div class="game-card ${isCurrent ? "current-game" : ""}" tabindex="0" role="button" onclick="window.handleGameCardClick(this)" data-name="${escapeHtml(g.name)}" data-desc="${escapeHtml(g.description || "")}" data-cover="${escapeHtml(g.cover || "")}" data-steam="${escapeHtml(g.steamUrl || "")}"><div class="game-thumb"><img loading="lazy" src="${g.cover}" alt="${escapeHtml(g.name)}" onerror="this.onerror=null;this.src='${SAFE_PLACEHOLDER}'"></div></div>`;
   }).join("");
 }
 
