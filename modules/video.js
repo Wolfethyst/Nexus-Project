@@ -5,7 +5,8 @@ import { addSystemMessage } from './chat.js';
 
 const API_BASE = "https://data.wolfethyst.tv";
 
-// Safety fallback in case config.js has a typo
+// [FIX] A known working image to stop the loop.
+// We use a specific asset path we know exists or a simple placeholder.
 const SAFE_PLACEHOLDER = "https://data.wolfethyst.tv/assets/nexus_icon"; 
 
 let allPlayedGames = [];
@@ -100,7 +101,7 @@ async function loadVods() {
 
         if (State.isModOrOwner && unsortedCount > 0) {
             allPlayedGames = allPlayedGames.filter(g => g.name !== "⚠️ Inbox");
-            allPlayedGames.push({ name: "⚠️ Inbox", cover: "https://data.wolfethyst.tv/assets/nexus_icon", isVirtual: true, isInbox: true });
+            allPlayedGames.push({ name: "⚠️ Inbox", cover: SAFE_PLACEHOLDER, isVirtual: true, isInbox: true });
         }
         allPlayedGames.sort((a,b) => (a.isInbox ? -1 : a.name.localeCompare(b.name)));
         renderHubGames(); 
@@ -155,7 +156,7 @@ export function renderHubGames(filterText = "") {
 
     grid.innerHTML = games.map(g => {
         const safeName = g.name.replace(/'/g, "\\'"); 
-        // [FIX] Added this.onerror=null to prevent infinite loops if placeholder also fails
+        // [CRITICAL FIX] this.onerror=null STOPS THE INFINITE LOOP
         return `<div class="hub-game-card" onclick="window.openGameDetails('${safeName}')"><img src="${g.cover}" loading="lazy" onerror="this.onerror=null;this.src='${SAFE_PLACEHOLDER}'"><div class="hub-game-title">${escapeHtml(g.name)}</div></div>`;
     }).join("");
 }
@@ -182,7 +183,7 @@ function renderHubGrid(containerId, items, type) {
             editBtn = `<div class="vod-edit-btn" onclick="window.openVodEditModal(event, '${item.id}')">EDIT</div>`;
         }
 
-        // [FIX] Added this.onerror=null to prevent infinite loops
+        // [CRITICAL FIX] Added this.onerror=null here too
         return `<div class="video-card" onclick="window.handleVideoClick('${item.id}', '${type}')"><div class="video-card-thumb"><img src="${thumbUrl}" onerror="this.onerror=null;this.src='${SAFE_PLACEHOLDER}'">${badgeHtml}${editBtn}<div class="video-card-dur">${item.duration || type.toUpperCase()}</div></div><div class="video-card-body"><div class="video-card-title" title="${title}">${title}</div><div class="video-card-date">${dateStr}</div></div></div>`;
     }).join("");
 }
@@ -213,7 +214,7 @@ export async function openGameDetails(gameName) {
 
     const heroContentEl = document.querySelector('.game-hero-content');
     if (heroContentEl) {
-        // [FIX] Added this.onerror=null
+        // [CRITICAL FIX] Added this.onerror=null
         heroContentEl.innerHTML = `
             <img id="heroCover" class="game-hero-cover" src="${game.cover}" onerror="this.onerror=null;this.src='${SAFE_PLACEHOLDER}'">
             <div class="game-hero-main">
