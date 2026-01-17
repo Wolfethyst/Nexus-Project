@@ -22,25 +22,25 @@ export async function loadLeaderboard() {
 
   const lbEl = document.getElementById("leaderboard");
   if (!lbEl) return;
-  
-  lbEl.innerHTML = data.leaderboard.map((u, i) => { 
-      let rankClass = i === 0 ? "gold" : i === 1 ? "silver" : i === 2 ? "bronze" : "";
-      return `<div class="lbRow ${rankClass}"><div class="lbPos">${i+1}</div><div class="lbName">${escapeHtml(u.displayName)}</div><div class="lbRight"><span>${formatCompact(u.points)}</span><img class="lbCrystal" src="https://data.wolfethyst.tv/assets/wolfe_crystal"></div></div>`; 
+
+  lbEl.innerHTML = data.leaderboard.map((u, i) => {
+    let rankClass = i === 0 ? "gold" : i === 1 ? "silver" : i === 2 ? "bronze" : "";
+    return `<div class="lbRow ${rankClass}"><div class="lbPos">${i+1}</div><div class="lbName">${escapeHtml(u.displayName)}</div><div class="lbRight"><span>${formatCompact(u.points)}</span><img class="lbCrystal" src="https://data.wolfethyst.tv/assets/wolfe_crystal"></div></div>`;
   }).join("");
 
   if (State.user) {
-      if (State.isOwner) {
-          State.points = INFINITE_POINTS;
-      } else {
-          const meInLb = data.leaderboard.find(u => String(u.id) === String(State.user.id));
-          if (meInLb) State.points = meInLb.points;
-      }
-      const displayPoints = State.points >= INFINITE_POINTS ? "∞" : State.points.toLocaleString(); 
-      const headerPoints = document.getElementById("headerPoints");
-      const chatPoints = document.getElementById("chatPointsText");
-      
-      if(headerPoints) headerPoints.textContent = `${displayPoints} Crystals`; 
-      if(chatPoints) chatPoints.textContent = formatCompact(State.points); 
+    if (State.isOwner) {
+      State.points = INFINITE_POINTS;
+    } else {
+      const meInLb = data.leaderboard.find(u => String(u.id) === String(State.user.id));
+      if (meInLb) State.points = meInLb.points;
+    }
+    const displayPoints = State.points >= INFINITE_POINTS ? "∞" : State.points.toLocaleString();
+    const headerPoints = document.getElementById("headerPoints");
+    const chatPoints = document.getElementById("chatPointsText");
+
+    if(headerPoints) headerPoints.textContent = `${displayPoints} Crystals`;
+    if(chatPoints) chatPoints.textContent = formatCompact(State.points);
   }
 }
 
