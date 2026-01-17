@@ -25,14 +25,25 @@ const mainVideoPlayer = document.getElementById('main-video-player');
 
 // --- HELPERS ---
 function getThumbUrl(item, type) {
-    if (item.vod_provider === 'youtube') return `https://img.youtube.com/vi/${item.id}/maxresdefault.jpg`;
-    if (item.vod_provider === 'odysee') return `https://thumbnails.lbry.com/${item.id}`; 
-    
-    // Cloudflare Fallback
-    const vidId = item.videoId || item.cloudflare_id; 
-    if(vidId) return `https://customer-${CLOUDFLARE_CUSTOMER}.cloudflarestream.com/${vidId}/thumbnails/thumbnail.jpg`;
-    
-    return SAFE_PLACEHOLDER;
+  // For YouTube videos
+  if (item.vod_provider === 'youtube') {
+    const thumbUrl = `https://img.youtube.com/vi/${item.id}/maxresdefault.jpg`;
+    return thumbUrl;
+  }
+  
+  // For Odysee videos
+  if (item.vod_provider === 'odysee') {
+    return `https://thumbnails.lbry.com/${item.id}`;
+  }
+  
+  // For Cloudflare videos
+  const vidId = item.videoId || item.cloudflare_id;
+  if (vidId) {
+    return `https://customer-${CLOUDFLARE_CUSTOMER}.cloudflarestream.com/${vidId}/thumbnails/thumbnail.jpg`;
+  }
+  
+  // Always return your safe placeholder as last resort
+  return "https://data.wolfethyst.tv/assets/nexus_icon";
 }
 
 // [UPDATED] Prioritized Loading Sequence
@@ -144,21 +155,29 @@ export async function loadStreamTitle() {
 
 // --- HUB LOGIC ---
 export function renderHubGames(filterText = "") {
-    const grid = document.getElementById('hubGamesGrid');
-    if(!grid) return;
-    const games = allPlayedGames.filter(g => {
-            if (!g.name.toLowerCase().includes(filterText.toLowerCase())) return false;
-            return true;
-        }).sort((a,b) => {
-            if(a.isInbox) return -1; if(b.isInbox) return 1;
-            return a.name.localeCompare(b.name);
-        });
-
-    grid.innerHTML = games.map(g => {
-        const safeName = g.name.replace(/'/g, "\\'"); 
-        // [CRITICAL FIX] this.onerror=null STOPS THE INFINITE LOOP
-        return `<div class="hub-game-card" onclick="window.openGameDetails('${safeName}')"><img src="${g.cover}" loading="lazy" onerror="this.onerror=null;this.src='${SAFE_PLACEHOLDER}'"><div class="hub-game-title">${escapeHtml(g.name)}</div></div>`;
-    }).join("");
+  const grid = document.getElementById('hubGamesGrid');
+  if (!grid) return;
+  
+  const games = allPlayedGames.filter(g => {
+    if (!g.name.toLowerCase().includes(filterText.toLowerCase())) return false;
+    return true;
+  }).sort((a, b) => {
+    if (a.isInbox) return -1;
+    if (b.isInbox) return 1;
+    return a.name.localeCompare(b.name);
+  });
+  
+  grid.innerHTML = games.map(g => {
+    const safeName = g.name.replace(/'/g, "\\'");
+    // Use a proper fallback and prevent infinite loops
+    return `<div class="hub-game-card" onclick="window.openGameDetails('${safeName}')">
+      <img src="${g.cover || 'https://data.wolfethyst.tv/assets/nexus_icon'}" 
+           loading="lazy" 
+           onerror="if(!this.dataset.fallback){this.dataset.fallback='true';this.src='https://data.wolfethyst.tv/assets/nexus_icon';}"
+           alt="${escapeHtml(g.name)}">
+      <div class="hub-game-title">${escapeHtml(g.name)}</div>
+    </div>`;
+  }).join("");
 }
 
 function renderHubGrid(containerId, items, type) {
@@ -339,52 +358,57 @@ export async function playVideo(item, type) {
 
     // --- YOUTUBE LOGIC (BACKEND PROXY) ---
     // This points to YOUR backend, bypassing all browser security blocks.
-    if (item.vod_provider === 'youtube') {
-        const wrapper = document.createElement('div');
-        wrapper.id = 'nexus-youtube-embed'; 
-        wrapper.style.width = '100%';
-        wrapper.style.height = '100%';
-        wrapper.style.backgroundColor = '#000';
-        wrapper.style.position = 'relative';
-
-        // Add a cover overlay so it looks professional before loading
-        const coverDiv = document.createElement('div');
-        coverDiv.style.position = 'absolute';
-        coverDiv.style.inset = '0';
-        coverDiv.style.background = `url('https://img.youtube.com/vi/${item.id}/maxresdefault.jpg') center/cover`;
-        coverDiv.style.cursor = 'pointer';
-        coverDiv.style.display = 'flex';
-        coverDiv.style.alignItems = 'center';
-        coverDiv.style.justifyContent = 'center';
-        coverDiv.style.zIndex = '10';
-        coverDiv.innerHTML = `<div style="font-size:60px; color:#fff; text-shadow:0 0 20px rgba(0,0,0,0.5);">▶</div>`;
-        wrapper.appendChild(coverDiv);
-
-        coverDiv.onclick = () => {
-            coverDiv.remove();
-            
-            // Remove the wrapper itself to reveal the main video player
-            wrapper.remove();
-            mainVideoPlayer.style.display = 'block';
-
-            // Construct Proxy URL
-            const proxyUrl = `${API_BASE}/stream/proxy?id=${item.id}`;
-            
-            // Set source to your own backend
-            const source = document.createElement('source');
-            source.src = proxyUrl;
-            source.type = 'video/mp4';
-            
-            mainVideoPlayer.innerHTML = '';
-            mainVideoPlayer.appendChild(source);
-            mainVideoPlayer.load();
-            
-            mainVideoPlayer.play().catch(e => console.log("Autoplay blocked", e));
-        };
-
-        videoParent.appendChild(wrapper);
-        return;
+    // --- YOUTUBE LOGIC (IMPROVED) ---
+if (item.vod_provider === 'youtube') {
+  const wrapper = document.createElement('div');
+  wrapper.id = 'nexus-youtube-embed';
+  wrapper.style.width = '100%';
+  wrapper.style.height = '100%';
+  wrapper.style.backgroundColor = '#000';
+  wrapper.style.position = 'relative';
+  
+  // Try to get the video through the proxy first
+  try {
+    const proxyResponse = await fetch(`${API_BASE}/stream/proxy?id=${item.id}`);
+    const proxyData = await proxyResponse.json();
+    
+    if (proxyData.type === "youtube_embed") {
+      // Use YouTube embed as fallback
+      const iframe = document.createElement('iframe');
+      iframe.src = proxyData.embedUrl;
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = 'none';
+      iframe.allowFullscreen = true;
+      iframe.allow = "autoplay; encrypted-media";
+      wrapper.appendChild(iframe);
+    } else if (proxyData.url) {
+      // Use proxied video URL
+      mainVideoPlayer.style.display = 'block';
+      const source = document.createElement('source');
+      source.src = proxyData.url;
+      source.type = 'video/mp4';
+      mainVideoPlayer.innerHTML = '';
+      mainVideoPlayer.appendChild(source);
+      mainVideoPlayer.load();
+      mainVideoPlayer.play().catch(e => console.log("Autoplay blocked", e));
     }
+  } catch (e) {
+    console.error("Proxy failed, using direct embed", e);
+    // Direct YouTube embed as final fallback
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube.com/embed/${item.id}?autoplay=1&rel=0`;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    iframe.allowFullscreen = true;
+    iframe.allow = "autoplay; encrypted-media";
+    wrapper.appendChild(iframe);
+  }
+  
+  videoParent.appendChild(wrapper);
+  return;
+}
 
     // --- ODYSEE LOGIC ---
     if (item.vod_provider === 'odysee') {
