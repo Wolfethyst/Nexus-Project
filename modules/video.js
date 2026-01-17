@@ -21,6 +21,24 @@ let youtubePlayerInstance = null;
 let hlsInstance = null;
 const mainVideoPlayer = document.getElementById('main-video-player');
 
+// --- GLOBAL IMAGE ERROR HANDLER ---
+// Add a global error handler to catch all image errors
+function handleImageError(event) {
+  const img = event.target;
+  // Only set the fallback once
+  if (!img.dataset.fallbackSet) {
+    img.dataset.fallbackSet = "true";
+    img.src = SAFE_PLACEHOLDER;
+    // Remove the error handler to prevent further calls
+    img.onerror = null;
+  }
+}
+
+// Register the global error handler
+if (typeof document !== 'undefined') {
+  document.addEventListener('error', handleImageError, true);
+}
+
 // --- HELPERS ---
 function getThumbUrl(item, type) {
   // For YouTube videos
@@ -171,17 +189,40 @@ export function renderHubGames(filterText = "") {
     return a.name.localeCompare(b.name);
   });
 
-  grid.innerHTML = games.map(g => {
+  // Use document fragment for better performance
+  const fragment = document.createDocumentFragment();
+  
+  games.forEach(g => {
     const safeName = g.name.replace(/'/g, "\\'");
-    // [CRITICAL FIX] Use a proper fallback and prevent infinite loops with dataset tracking
-    return `<div class="hub-game-card" onclick="window.openGameDetails('${safeName}')">
-      <img src="${g.cover || SAFE_PLACEHOLDER}" 
-           loading="lazy" 
-           onerror="if(!this.dataset.fallback){this.dataset.fallback='true';this.src='${SAFE_PLACEHOLDER}';}"
-           alt="${escapeHtml(g.name)}">
-      <div class="hub-game-title">${escapeHtml(g.name)}</div>
-    </div>`;
-  }).join("");
+    const card = document.createElement('div');
+    card.className = 'hub-game-card';
+    card.setAttribute('onclick', `window.openGameDetails('${safeName}')`);
+    
+    const img = document.createElement('img');
+    img.src = g.cover || SAFE_PLACEHOLDER;
+    img.loading = 'lazy';
+    img.alt = escapeHtml(g.name);
+    
+    // Set up error handling for this specific image
+    img.addEventListener('error', function() {
+      if (!this.dataset.fallbackSet) {
+        this.dataset.fallbackSet = "true";
+        this.src = SAFE_PLACEHOLDER;
+      }
+    });
+    
+    const title = document.createElement('div');
+    title.className = 'hub-game-title';
+    title.textContent = escapeHtml(g.name);
+    
+    card.appendChild(img);
+    card.appendChild(title);
+    fragment.appendChild(card);
+  });
+  
+  // Clear the grid and append the new content
+  grid.innerHTML = '';
+  grid.appendChild(fragment);
 }
 
 function renderHubGrid(containerId, items, type) {
@@ -193,7 +234,10 @@ function renderHubGrid(containerId, items, type) {
     return;
   }
 
-  container.innerHTML = items.map(item => {
+  // Use document fragment for better performance
+  const fragment = document.createDocumentFragment();
+  
+  items.forEach(item => {
     const isYouTube = item.vod_provider === 'youtube';
     const isOdysee = item.vod_provider === 'odysee';
     const thumbUrl = getThumbUrl(item, type);
@@ -210,19 +254,42 @@ function renderHubGrid(containerId, items, type) {
       editBtn = `<div class="vod-edit-btn" onclick="window.openVodEditModal(event, '${item.id}')">EDIT</div>`;
     }
 
-    // [CRITICAL FIX] Use dataset tracking to prevent infinite loops
-    return `<div class="video-card" onclick="window.handleVideoClick('${item.id}', '${type}')">
-      <div class="video-card-thumb">
-        <img src="${thumbUrl}" onerror="if(!this.dataset.fallback){this.dataset.fallback='true';this.src='${SAFE_PLACEHOLDER}';}">
-        ${badgeHtml}${editBtn}
-        <div class="video-card-dur">${item.duration || type.toUpperCase()}</div>
-      </div>
-      <div class="video-card-body">
-        <div class="video-card-title" title="${title}">${title}</div>
-        <div class="video-card-date">${dateStr}</div>
-      </div>
-    </div>`;
-  }).join("");
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.setAttribute('onclick', `window.handleVideoClick('${item.id}', '${type}')`);
+    
+    const thumb = document.createElement('div');
+    thumb.className = 'video-card-thumb';
+    
+    const img = document.createElement('img');
+    img.src = thumbUrl;
+    
+    // Set up error handling for this specific image
+    img.addEventListener('error', function() {
+      if (!this.dataset.fallbackSet) {
+        this.dataset.fallbackSet = "true";
+        this.src = SAFE_PLACEHOLDER;
+      }
+    });
+    
+    thumb.innerHTML = `${badgeHtml}${editBtn}<div class="video-card-dur">${item.duration || type.toUpperCase()}</div>`;
+    thumb.insertBefore(img, thumb.firstChild);
+    
+    const body = document.createElement('div');
+    body.className = 'video-card-body';
+    body.innerHTML = `
+      <div class="video-card-title" title="${title}">${title}</div>
+      <div class="video-card-date">${dateStr}</div>
+    `;
+    
+    card.appendChild(thumb);
+    card.appendChild(body);
+    fragment.appendChild(card);
+  });
+  
+  // Clear the container and append the new content
+  container.innerHTML = '';
+  container.appendChild(fragment);
 }
 
 // --- OPEN GAME DETAILS ---
@@ -252,31 +319,57 @@ export async function openGameDetails(gameName) {
 
   const heroContentEl = document.querySelector('.game-hero-content');
   if (heroContentEl) {
-    // [CRITICAL FIX] Use dataset tracking to prevent infinite loops
-    heroContentEl.innerHTML = `
-      <img id="heroCover" class="game-hero-cover" src="${game.cover}" onerror="if(!this.dataset.fallback){this.dataset.fallback='true';this.src='${SAFE_PLACEHOLDER}';}">
-      <div class="game-hero-main">
-        <h1 id="heroTitle" class="game-hero-title">${escapeHtml(game.name)}</h1>
-        <div class="game-hero-stats">
-          <span class="game-hero-stat">📼 <span id="heroVodCount">...</span> VODs</span>
-          <span class="game-hero-stat">🎬 <span id="heroClipCount">...</span> Clips</span>
-        </div>
-        ${steamBtnHtml}
-        ${adminBtnsHtml}
+    // Create elements programmatically instead of using innerHTML
+    heroContentEl.innerHTML = '';
+    
+    const coverImg = document.createElement('img');
+    coverImg.id = 'heroCover';
+    coverImg.className = 'game-hero-cover';
+    coverImg.src = game.cover;
+    
+    // Set up error handling for this specific image
+    coverImg.addEventListener('error', function() {
+      if (!this.dataset.fallbackSet) {
+        this.dataset.fallbackSet = "true";
+        this.src = SAFE_PLACEHOLDER;
+      }
+    });
+    
+    const mainDiv = document.createElement('div');
+    mainDiv.className = 'game-hero-main';
+    mainDiv.innerHTML = `
+      <h1 id="heroTitle" class="game-hero-title">${escapeHtml(game.name)}</h1>
+      <div class="game-hero-stats">
+        <span class="game-hero-stat">📼 <span id="heroVodCount">...</span> VODs</span>
+        <span class="game-hero-stat">🎬 <span id="heroClipCount">...</span> Clips</span>
       </div>
-      <div class="game-hero-details">
-        <div id="heroDescription" class="game-desc-text">${escapeHtml(summary)}</div>
-        <div class="game-meta-grid">
-          <div class="game-meta-item"><span class="meta-label">Developer</span><span id="heroDev" class="meta-value">${escapeHtml(dev)}</span></div>
-          <div class="game-meta-item"><span class="meta-label">Publisher</span><span id="heroPub" class="meta-value">${escapeHtml(pub)}</span></div>
-          <div class="game-meta-item"><span class="meta-label">Release</span><span id="heroRelease" class="meta-value">${escapeHtml(rel)}</span></div>
-        </div>
+      ${steamBtnHtml}
+      ${adminBtnsHtml}
+    `;
+    
+    const detailsDiv = document.createElement('div');
+    detailsDiv.className = 'game-hero-details';
+    detailsDiv.innerHTML = `
+      <div id="heroDescription" class="game-desc-text">${escapeHtml(summary)}</div>
+      <div class="game-meta-grid">
+        <div class="game-meta-item"><span class="meta-label">Developer</span><span id="heroDev" class="meta-value">${escapeHtml(dev)}</span></div>
+        <div class="game-meta-item"><span class="meta-label">Publisher</span><span id="heroPub" class="meta-value">${escapeHtml(pub)}</span></div>
+        <div class="game-meta-item"><span class="meta-label">Release</span><span id="heroRelease" class="meta-value">${escapeHtml(rel)}</span></div>
       </div>
     `;
+    
+    heroContentEl.appendChild(coverImg);
+    heroContentEl.appendChild(mainDiv);
+    heroContentEl.appendChild(detailsDiv);
   }
 
   const heroBg = document.getElementById('heroBg');
-  if (heroBg) heroBg.style.backgroundImage = `url('${game.cover}')`;
+  if (heroBg) {
+    // Don't set the background image if it's the same as the cover to avoid loading it twice
+    if (game.cover !== heroBg.style.backgroundImage?.match(/url$$"(.+?)"$$/)?.[1]) {
+      heroBg.style.backgroundImage = `url('${game.cover}')`;
+    }
+  }
 
   activeGameVods = [];
   if (game.isInbox) {
@@ -700,15 +793,46 @@ function renderPlayedGames(list) {
   const gamesPlayedEl = document.getElementById("gamesPlayed");
   if (!gamesPlayedEl) return;
 
-  gamesPlayedEl.innerHTML = list.map(g => {
+  // Use document fragment for better performance
+  const fragment = document.createDocumentFragment();
+  
+  list.forEach(g => {
     const isCurrent = currentGameName && (g.name || "").toLowerCase() === currentGameName.toLowerCase();
 
-    return `<div class="game-card ${isCurrent ? "current-game" : ""}" tabindex="0" role="button" onclick="window.handleGameCardClick(this)" data-name="${escapeHtml(g.name)}" data-desc="${escapeHtml(g.description || "")}" data-cover="${escapeHtml(g.cover || "")}" data-steam="${escapeHtml(g.steamUrl || "")}">
-      <div class="game-thumb">
-        <img loading="lazy" src="${g.cover}" alt="${escapeHtml(g.name)}" onerror="if(!this.dataset.fallback){this.dataset.fallback='true';this.src='${SAFE_PLACEHOLDER}';}">
-      </div>
-    </div>`;
-  }).join("");
+    const card = document.createElement('div');
+    card.className = `game-card ${isCurrent ? "current-game" : ""}`;
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('onclick', 'window.handleGameCardClick(this)');
+    card.setAttribute('data-name', escapeHtml(g.name));
+    card.setAttribute('data-desc', escapeHtml(g.description || ""));
+    card.setAttribute('data-cover', escapeHtml(g.cover || ""));
+    card.setAttribute('data-steam', escapeHtml(g.steamUrl || ""));
+    
+    const thumb = document.createElement('div');
+    thumb.className = 'game-thumb';
+    
+    const img = document.createElement('img');
+    img.loading = 'lazy';
+    img.src = g.cover;
+    img.alt = escapeHtml(g.name);
+    
+    // Set up error handling for this specific image
+    img.addEventListener('error', function() {
+      if (!this.dataset.fallbackSet) {
+        this.dataset.fallbackSet = "true";
+        this.src = SAFE_PLACEHOLDER;
+      }
+    });
+    
+    thumb.appendChild(img);
+    card.appendChild(thumb);
+    fragment.appendChild(card);
+  });
+  
+  // Clear the container and append the new content
+  gamesPlayedEl.innerHTML = '';
+  gamesPlayedEl.appendChild(fragment);
 }
 
 export function updatePlayedGamesList(gameName) {
@@ -728,7 +852,16 @@ export function updatePlayedGamesList(gameName) {
   }
 
   const coverImg = document.getElementById("gameCoverImage");
-  if (coverImg && allPlayedGames.length > 0) coverImg.src = allPlayedGames[0].cover;
+  if (coverImg && allPlayedGames.length > 0) {
+    // Set up error handling for this specific image
+    coverImg.addEventListener('error', function() {
+      if (!this.dataset.fallbackSet) {
+        this.dataset.fallbackSet = "true";
+        this.src = SAFE_PLACEHOLDER;
+      }
+    });
+    coverImg.src = allPlayedGames[0].cover;
+  }
 
   renderPlayedGames(allPlayedGames);
 }
@@ -738,7 +871,18 @@ export function handleGameCardClick(el) {
   if(!gameInfoModalEl) return;
 
   document.getElementById("gameInfoTitle").innerText = el.dataset.name;
-  document.getElementById("gameInfoCover").src = el.dataset.cover;
+  
+  const coverImg = document.getElementById("gameInfoCover");
+  coverImg.src = el.dataset.cover;
+  
+  // Set up error handling for this specific image
+  coverImg.addEventListener('error', function() {
+    if (!this.dataset.fallbackSet) {
+      this.dataset.fallbackSet = "true";
+      this.src = SAFE_PLACEHOLDER;
+    }
+  });
+  
   document.getElementById("gameInfoText").innerText = el.dataset.desc || "No description available.";
 
   const btn = document.getElementById("gameSteamBtn");
