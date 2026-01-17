@@ -41,7 +41,7 @@ function getThumbUrl(item, type) {
   }
 
   // Always return your safe placeholder as last resort
-  return "https://data.wolfethyst.tv/assets/nexus_icon";
+  return SAFE_PLACEHOLDER;
 }
 
 // [UPDATED] Prioritized Loading Sequence
@@ -173,11 +173,11 @@ export function renderHubGames(filterText = "") {
 
   grid.innerHTML = games.map(g => {
     const safeName = g.name.replace(/'/g, "\\'");
-    // Use a proper fallback and prevent infinite loops
+    // [CRITICAL FIX] Use a proper fallback and prevent infinite loops with dataset tracking
     return `<div class="hub-game-card" onclick="window.openGameDetails('${safeName}')">
       <img src="${g.cover || SAFE_PLACEHOLDER}" 
            loading="lazy" 
-           onerror="this.onerror=null;this.src='${SAFE_PLACEHOLDER}';"
+           onerror="if(!this.dataset.fallback){this.dataset.fallback='true';this.src='${SAFE_PLACEHOLDER}';}"
            alt="${escapeHtml(g.name)}">
       <div class="hub-game-title">${escapeHtml(g.name)}</div>
     </div>`;
@@ -210,10 +210,10 @@ function renderHubGrid(containerId, items, type) {
       editBtn = `<div class="vod-edit-btn" onclick="window.openVodEditModal(event, '${item.id}')">EDIT</div>`;
     }
 
-    // [CRITICAL FIX] Added this.onerror=null here too
+    // [CRITICAL FIX] Use dataset tracking to prevent infinite loops
     return `<div class="video-card" onclick="window.handleVideoClick('${item.id}', '${type}')">
       <div class="video-card-thumb">
-        <img src="${thumbUrl}" onerror="this.onerror=null;this.src='${SAFE_PLACEHOLDER}';">
+        <img src="${thumbUrl}" onerror="if(!this.dataset.fallback){this.dataset.fallback='true';this.src='${SAFE_PLACEHOLDER}';}">
         ${badgeHtml}${editBtn}
         <div class="video-card-dur">${item.duration || type.toUpperCase()}</div>
       </div>
@@ -252,9 +252,9 @@ export async function openGameDetails(gameName) {
 
   const heroContentEl = document.querySelector('.game-hero-content');
   if (heroContentEl) {
-    // [CRITICAL FIX] Added this.onerror=null
+    // [CRITICAL FIX] Use dataset tracking to prevent infinite loops
     heroContentEl.innerHTML = `
-      <img id="heroCover" class="game-hero-cover" src="${game.cover}" onerror="this.onerror=null;this.src='${SAFE_PLACEHOLDER}';">
+      <img id="heroCover" class="game-hero-cover" src="${game.cover}" onerror="if(!this.dataset.fallback){this.dataset.fallback='true';this.src='${SAFE_PLACEHOLDER}';}">
       <div class="game-hero-main">
         <h1 id="heroTitle" class="game-hero-title">${escapeHtml(game.name)}</h1>
         <div class="game-hero-stats">
@@ -705,7 +705,7 @@ function renderPlayedGames(list) {
 
     return `<div class="game-card ${isCurrent ? "current-game" : ""}" tabindex="0" role="button" onclick="window.handleGameCardClick(this)" data-name="${escapeHtml(g.name)}" data-desc="${escapeHtml(g.description || "")}" data-cover="${escapeHtml(g.cover || "")}" data-steam="${escapeHtml(g.steamUrl || "")}">
       <div class="game-thumb">
-        <img loading="lazy" src="${g.cover}" alt="${escapeHtml(g.name)}" onerror="this.onerror=null;this.src='${SAFE_PLACEHOLDER}';">
+        <img loading="lazy" src="${g.cover}" alt="${escapeHtml(g.name)}" onerror="if(!this.dataset.fallback){this.dataset.fallback='true';this.src='${SAFE_PLACEHOLDER}';}">
       </div>
     </div>`;
   }).join("");
