@@ -191,18 +191,18 @@ export function renderHubGames(filterText = "") {
 
   // Use document fragment for better performance
   const fragment = document.createDocumentFragment();
-  
+
   games.forEach(g => {
     const safeName = g.name.replace(/'/g, "\\'");
     const card = document.createElement('div');
     card.className = 'hub-game-card';
     card.setAttribute('onclick', `window.openGameDetails('${safeName}')`);
-    
+
     const img = document.createElement('img');
     img.src = g.cover || SAFE_PLACEHOLDER;
     img.loading = 'lazy';
     img.alt = escapeHtml(g.name);
-    
+
     // Set up error handling for this specific image
     img.addEventListener('error', function() {
       if (!this.dataset.fallbackSet) {
@@ -210,16 +210,16 @@ export function renderHubGames(filterText = "") {
         this.src = SAFE_PLACEHOLDER;
       }
     });
-    
+
     const title = document.createElement('div');
     title.className = 'hub-game-title';
     title.textContent = escapeHtml(g.name);
-    
+
     card.appendChild(img);
     card.appendChild(title);
     fragment.appendChild(card);
   });
-  
+
   // Clear the grid and append the new content
   grid.innerHTML = '';
   grid.appendChild(fragment);
@@ -236,7 +236,7 @@ function renderHubGrid(containerId, items, type) {
 
   // Use document fragment for better performance
   const fragment = document.createDocumentFragment();
-  
+
   items.forEach(item => {
     const isYouTube = item.vod_provider === 'youtube';
     const isOdysee = item.vod_provider === 'odysee';
@@ -257,13 +257,13 @@ function renderHubGrid(containerId, items, type) {
     const card = document.createElement('div');
     card.className = 'video-card';
     card.setAttribute('onclick', `window.handleVideoClick('${item.id}', '${type}')`);
-    
+
     const thumb = document.createElement('div');
     thumb.className = 'video-card-thumb';
-    
+
     const img = document.createElement('img');
     img.src = thumbUrl;
-    
+
     // Set up error handling for this specific image
     img.addEventListener('error', function() {
       if (!this.dataset.fallbackSet) {
@@ -271,22 +271,22 @@ function renderHubGrid(containerId, items, type) {
         this.src = SAFE_PLACEHOLDER;
       }
     });
-    
+
     thumb.innerHTML = `${badgeHtml}${editBtn}<div class="video-card-dur">${item.duration || type.toUpperCase()}</div>`;
     thumb.insertBefore(img, thumb.firstChild);
-    
+
     const body = document.createElement('div');
     body.className = 'video-card-body';
     body.innerHTML = `
       <div class="video-card-title" title="${title}">${title}</div>
       <div class="video-card-date">${dateStr}</div>
     `;
-    
+
     card.appendChild(thumb);
     card.appendChild(body);
     fragment.appendChild(card);
   });
-  
+
   // Clear the container and append the new content
   container.innerHTML = '';
   container.appendChild(fragment);
@@ -321,12 +321,12 @@ export async function openGameDetails(gameName) {
   if (heroContentEl) {
     // Create elements programmatically instead of using innerHTML
     heroContentEl.innerHTML = '';
-    
+
     const coverImg = document.createElement('img');
     coverImg.id = 'heroCover';
     coverImg.className = 'game-hero-cover';
     coverImg.src = game.cover;
-    
+
     // Set up error handling for this specific image
     coverImg.addEventListener('error', function() {
       if (!this.dataset.fallbackSet) {
@@ -334,7 +334,7 @@ export async function openGameDetails(gameName) {
         this.src = SAFE_PLACEHOLDER;
       }
     });
-    
+
     const mainDiv = document.createElement('div');
     mainDiv.className = 'game-hero-main';
     mainDiv.innerHTML = `
@@ -346,7 +346,7 @@ export async function openGameDetails(gameName) {
       ${steamBtnHtml}
       ${adminBtnsHtml}
     `;
-    
+
     const detailsDiv = document.createElement('div');
     detailsDiv.className = 'game-hero-details';
     detailsDiv.innerHTML = `
@@ -357,7 +357,7 @@ export async function openGameDetails(gameName) {
         <div class="game-meta-item"><span class="meta-label">Release</span><span id="heroRelease" class="meta-value">${escapeHtml(rel)}</span></div>
       </div>
     `;
-    
+
     heroContentEl.appendChild(coverImg);
     heroContentEl.appendChild(mainDiv);
     heroContentEl.appendChild(detailsDiv);
@@ -795,7 +795,7 @@ function renderPlayedGames(list) {
 
   // Use document fragment for better performance
   const fragment = document.createDocumentFragment();
-  
+
   list.forEach(g => {
     const isCurrent = currentGameName && (g.name || "").toLowerCase() === currentGameName.toLowerCase();
 
@@ -829,7 +829,7 @@ function renderPlayedGames(list) {
     card.appendChild(thumb);
     fragment.appendChild(card);
   });
-  
+
   // Clear the container and append the new content
   gamesPlayedEl.innerHTML = '';
   gamesPlayedEl.appendChild(fragment);
@@ -871,10 +871,10 @@ export function handleGameCardClick(el) {
   if(!gameInfoModalEl) return;
 
   document.getElementById("gameInfoTitle").innerText = el.dataset.name;
-  
+
   const coverImg = document.getElementById("gameInfoCover");
   coverImg.src = el.dataset.cover;
-  
+
   // Set up error handling for this specific image
   coverImg.addEventListener('error', function() {
     if (!this.dataset.fallbackSet) {
@@ -882,7 +882,7 @@ export function handleGameCardClick(el) {
       this.src = SAFE_PLACEHOLDER;
     }
   });
-  
+
   document.getElementById("gameInfoText").innerText = el.dataset.desc || "No description available.";
 
   const btn = document.getElementById("gameSteamBtn");
