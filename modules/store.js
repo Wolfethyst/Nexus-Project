@@ -240,8 +240,11 @@ function renderRedeemDrawer(groups) {
     }).join("");
   }).join("");
 
-  redeemContentEl.innerHTML = html || `<div style="grid-column:1/-1;text-align:center;color:#666;font-size:12px;font-style:italic;">No redeems available.</div>`; 
-  if (ttsCostLabelEl && ttsRedeemCost != null) { ttsCostLabelEl.textContent = `${ttsRedeemCost} `; }
+    redeemContentEl.innerHTML = html || `<div style="grid-column:1/-1;text-align:center;color:#666;font-size:12px;font-style:italic;">No redeems available.</div>`; 
+    // Expose TTS redeem info globally for older code paths and dynamic imports
+    window.ttsRedeemId = ttsRedeemId;
+    window.ttsRedeemCost = ttsRedeemCost;
+    if (ttsCostLabelEl && ttsRedeemCost != null) { ttsCostLabelEl.textContent = `${ttsRedeemCost} `; }
 }
 
 export async function loadRedeems() { 
@@ -521,3 +524,6 @@ if (openSubBtn) {
         toggleSubModal(true);
     });
 }
+
+// Backwards-compatible accessor for dynamic imports
+export function getTtsRedeemId() { return ttsRedeemId; }
