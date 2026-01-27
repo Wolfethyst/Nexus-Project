@@ -670,17 +670,32 @@ window.refreshGameMetadata = async function(gameName) {
     if (data && data.ok) {
       alert(`Updated!\n\nDeveloper: ${data.data.developer}\nRelease: ${data.data.release_date}`);
 
-      const game = allPlayedGames.find(g => g.name === gameName);
-      if(game) {
-        game.summary = data.data.summary;
-        game.developer = data.data.developer;
-        game.publisher = data.data.publisher;
-        game.release_date = data.data.release_date;
-        game.steam_url = data.data.steam_url;
-        if (data.data.cover) game.cover = data.data.cover;
+      // Refresh the local played store so the UI reflects backend changes immediately
+      try {
+        const playedResp = await apiGet('/played');
+        const playedData = playedResp.data || { games: [] };
+        allPlayedGames = (playedData.games || []).map((g, i) => ({ ...g, __index: i }));
+      } catch (e) {
+        console.warn('Failed to refresh played list after metadata update', e);
       }
 
-      openGameDetails(gameName);
+      // Find the updated game in-memory and apply latest fields (if present)
+      const updatedGame = allPlayedGames.find(g => g.name === gameName);
+      if (updatedGame) {
+        updatedGame.summary = data.data.summary || updatedGame.summary;
+        updatedGame.developer = data.data.developer || updatedGame.developer;
+        updatedGame.publisher = data.data.publisher || updatedGame.publisher;
+        updatedGame.release_date = data.data.release_date || updatedGame.release_date;
+        updatedGame.steam_url = data.data.steam_url || updatedGame.steam_url;
+        if (data.data.cover) updatedGame.cover = data.data.cover;
+        // Re-render UI
+        renderHubGames();
+        // Only open details if the DOM element exists
+        if (document.getElementById('hub-details-view')) openGameDetails(gameName);
+      } else {
+        // If the game wasn't in-memory, re-render hub so new entry appears
+        renderHubGames();
+      }
     } else {
       alert("Could not find game info on IGDB.");
     }
