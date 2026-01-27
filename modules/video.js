@@ -366,7 +366,9 @@ export async function openGameDetails(gameName) {
   const heroBg = document.getElementById('heroBg');
   if (heroBg) {
     // Don't set the background image if it's the same as the cover to avoid loading it twice
-    if (game.cover !== heroBg.style.backgroundImage?.match(/url$$"(.+?)"$$/)?.[1]) {
+    // Normalize matching for background-image url(...) and avoid malformed regex
+    const bgMatch = heroBg.style.backgroundImage?.match(/url\(['"]?(.+?)['"]?\)/);
+    if (game.cover !== bgMatch?.[1]) {
       heroBg.style.backgroundImage = `url('${game.cover}')`;
     }
   }
