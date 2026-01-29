@@ -8,6 +8,24 @@ const API_BASE = "https://data.wolfethyst.tv";
 // We use a specific asset path we know exists or a simple placeholder.
 const SAFE_PLACEHOLDER = "https://data.wolfethyst.tv/assets/nexus_icon";
 
+// Helper: set an <img> src only after the new image loads successfully
+function setImageWhenLoaded(imgEl, url) {
+  if (!imgEl || !url) return;
+  try {
+    const tester = new Image();
+    tester.onload = () => {
+      try {
+        imgEl.dataset.fallbackSet = "false";
+        imgEl.src = url;
+      } catch (e) {}
+    };
+    tester.onerror = () => {
+      // keep existing image on error
+    };
+    tester.src = url;
+  } catch (e) {}
+}
+
 let allPlayedGames = [];
 let vodsData = [];
 let activeGameVods = [];
@@ -686,11 +704,37 @@ window.refreshGameMetadata = async function(gameName, opts = {}) {
         updatedGame.publisher = data.data.publisher || updatedGame.publisher;
         updatedGame.release_date = data.data.release_date || updatedGame.release_date;
         updatedGame.steam_url = data.data.steam_url || updatedGame.steam_url;
-        if (data.data.cover) updatedGame.cover = data.data.cover;
-        // Re-render UI
-        renderHubGames();
-        // Only open details if the DOM element exists
-        if (document.getElementById('hub-details-view')) openGameDetails(gameName);
+
+        // If there's a new cover, preload it and only swap in on successful load.
+        if (data.data.cover) {
+          const newCover = data.data.cover;
+          // Preload and apply to both now-playing and hero (if present)
+          try {
+            const tester = new Image();
+            tester.onload = () => {
+              try {
+                updatedGame.cover = newCover;
+                const nowImg = document.getElementById('gameCoverImage');
+                const heroImg = document.getElementById('heroCover');
+                if (nowImg) setImageWhenLoaded(nowImg, newCover);
+                if (heroImg) setImageWhenLoaded(heroImg, newCover);
+                renderHubGames();
+                if (document.getElementById('hub-details-view')) openGameDetails(gameName);
+              } catch (e) { renderHubGames(); }
+            };
+            tester.onerror = () => { renderHubGames(); };
+            tester.src = newCover;
+          } catch (e) {
+            // Fallback: set cover and re-render
+            updatedGame.cover = data.data.cover;
+            renderHubGames();
+            if (document.getElementById('hub-details-view')) openGameDetails(gameName);
+          }
+        } else {
+          // No cover change — re-render and open details
+          renderHubGames();
+          if (document.getElementById('hub-details-view')) openGameDetails(gameName);
+        }
       } else {
         // If the game wasn't in-memory, re-render hub so new entry appears
         renderHubGames();
@@ -875,7 +919,11 @@ export function updatePlayedGamesList(gameName) {
         this.src = SAFE_PLACEHOLDER;
       }
     });
-    coverImg.src = allPlayedGames[0].cover;
+    // Only replace the now-playing cover when the new image loads successfully.
+    const firstCover = allPlayedGames[0].cover;
+    if (firstCover && !firstCover.includes('placeholder.com')) {
+      setImageWhenLoaded(coverImg, firstCover);
+    }
   }
 
   renderPlayedGames(allPlayedGames);
