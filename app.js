@@ -1,23 +1,6 @@
-// src/app.js
-import * as Config from './modules/config.js';
-import * as Auth from './modules/auth.js';
-import * as Chat from './modules/chat.js';
-import * as Store from './modules/store.js';
-import * as Video from './modules/video.js';
-import * as Admin from './modules/admin.js';
-
-// --- 1. EXPOSE FUNCTIONS TO WINDOW (For HTML onclick) ---
-window.setTheme = Auth.setTheme;
-window.toggleDecorations = Auth.toggleDecorations;
-
-window.buyItem = Store.buyItem;
-window.equipItem = Store.equipItem;
-window.toggleTipModal = Store.toggleTipModal;
-window.selectTipAmount = Store.selectTipAmount;
-window.toggleSubModal = Store.toggleSubModal;
-window.renderSubCarousel = Store.renderSubCarousel;
-window.handleRedeemClick = Store.handleRedeemClick;
-window.toggleStoreSort = Store.toggleStoreSort;
+// Legacy `app.js` removed — this stub prevents accidental runtime imports.
+// The app now uses ES modules under `/modules/*.js` and no longer requires this file.
+console.warn('Legacy app.js stub loaded — please remove references if present.');
 window.switchMarketTab = Store.switchMarketTab;
 
 window.replyToUser = Chat.replyToUser;
@@ -77,7 +60,13 @@ document.body.addEventListener("click", (e) => {
                 const gameLabel = document.getElementById("streamGameLabel");
                 if (titleLabel) titleLabel.textContent = title;
                 if (gameLabel) gameLabel.textContent = game ? `Playing: ${game}` : "";
-                if(game) Video.updatePlayedGamesList(game);
+                    if(game) {
+                        Video.updatePlayedGamesList(game);
+                        // Trigger a metadata refresh so newly-set games auto-populate IGDB metadata
+                        try {
+                            if (window.refreshGameMetadata) window.refreshGameMetadata(game);
+                        } catch (e) { console.warn('Auto-refresh metadata failed', e); }
+                    }
                 btn.innerText = "Saved"; setTimeout(() => btn.innerText = "Save Info", 2000); 
             } catch (e) { btn.innerText = "Error"; } 
         })();

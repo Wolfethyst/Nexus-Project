@@ -32,10 +32,14 @@ window.toggleMobileStore = function() {
     document.body.classList.toggle('show-mobile-store');
     
     // Ensure we render the store contents when opening
-    // (We safely call the global renderStore function from app.js)
+    // Try global `renderStore` first, otherwise dynamically import the ES module
     if (document.body.classList.contains('show-mobile-store')) {
         if (typeof renderStore === 'function') {
             renderStore();
+        } else {
+            import('./modules/store.js').then(mod => {
+                if (typeof mod.renderStore === 'function') mod.renderStore();
+            }).catch(() => {});
         }
     }
 };
