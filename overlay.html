@@ -18,21 +18,7 @@
     color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
   }
 
-  #initScreen {
-    position: fixed; inset: 0; z-index: 9999;
-    background: rgba(0,0,0,0.8);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer;
-    transition: opacity 0.5s ease;
-  }
-  #initScreen.hidden { opacity: 0; pointer-events: none; }
-  .init-btn {
-    padding: 20px 40px; border: 2px solid var(--accent); border-radius: 8px;
-    background: rgba(0,0,0,0.5); color: #fff; font-family: Cinzel, serif; font-size: 24px;
-    box-shadow: 0 0 20px var(--accent);
-    animation: pulseBtn 2s infinite;
-  }
-  @keyframes pulseBtn { 0%{box-shadow:0 0 20px var(--accent)} 50%{box-shadow:0 0 40px var(--accent)} 100%{box-shadow:0 0 20px var(--accent)} }
+  /* init screen removed for Meld integration */
 
   .cornerGlow{
     position:absolute;bottom:0;right:0;width:70vw;height:70vh;
@@ -104,9 +90,7 @@
 
 <body>
 
-<div id="initScreen" onclick="enableAudio()">
-  <div class="init-btn">Click to Initialize Nexus Audio</div>
-</div>
+<!-- init screen removed for Meld integration -->
 
 <div class="overlay-root" id="overlayRoot">
   <div class="cornerGlow"></div>
@@ -136,7 +120,6 @@ const OVERLAY_HIDE_DELAY_MS = 3000;
 /** ============== ELEMENTS =================== **/
 const overlayRoot = document.getElementById("overlayRoot");
 const captionEl   = document.getElementById("captionText");
-const initScreen  = document.getElementById("initScreen");
 
 /** ============ STATE / QUEUE ================ **/
 let chatWs = null;
@@ -153,7 +136,6 @@ const delay = (ms) => new Promise(res => setTimeout(res, ms));
 function enableAudio() {
   if (audioEnabled) return;
   audioEnabled = true;
-  initScreen.classList.add("hidden");
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
   ctx.resume().then(() => console.log("[Nexus] Audio Engine Started"));
 }
