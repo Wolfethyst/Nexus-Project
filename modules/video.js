@@ -655,8 +655,9 @@ export function toggleMainView(mode) {
 }
 
 // --- FOLDER MANAGEMENT ---
-window.refreshGameMetadata = async function(gameName) {
-  const btn = document.activeElement;
+window.refreshGameMetadata = async function(gameName, opts = {}) {
+  const silent = !!opts.silent;
+  const btn = silent ? null : document.activeElement;
   const oldText = btn ? btn.innerText : "↻ Info";
 
   if(btn) {
@@ -668,8 +669,6 @@ window.refreshGameMetadata = async function(gameName) {
     const { data } = await apiPost('/played/refresh-metadata', { name: gameName });
 
     if (data && data.ok) {
-      alert(`Updated!\n\nDeveloper: ${data.data.developer}\nRelease: ${data.data.release_date}`);
-
       // Refresh the local played store so the UI reflects backend changes immediately
       try {
         const playedResp = await apiGet('/played');
@@ -697,11 +696,10 @@ window.refreshGameMetadata = async function(gameName) {
         renderHubGames();
       }
     } else {
-      alert("Could not find game info on IGDB.");
+      console.warn('Could not find game info on IGDB.');
     }
   } catch(e) {
-    console.error(e);
-    alert("Error refreshing metadata.");
+    console.error('Error refreshing metadata.', e);
   } finally {
     if(btn) {
       btn.innerText = oldText;

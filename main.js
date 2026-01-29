@@ -46,8 +46,8 @@ window.handleGameCardClick = Video.handleGameCardClick;
           if (gameLabel) gameLabel.textContent = game ? `Playing: ${game}` : '';
           if (game) {
             Video.updatePlayedGamesList(game);
-            // Trigger metadata refresh (non-blocking)
-            try { if (window.refreshGameMetadata) window.refreshGameMetadata(game); } catch (e) { console.warn('Auto-refresh metadata failed', e); }
+            // Trigger metadata refresh (non-blocking) without touching the Save button
+            try { if (window.refreshGameMetadata) window.refreshGameMetadata(game, { silent: true }); } catch (e) { console.warn('Auto-refresh metadata failed', e); }
           }
           btn.innerText = 'Saved';
           setTimeout(() => btn.innerText = 'Save', 2000);
