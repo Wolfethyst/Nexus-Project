@@ -347,6 +347,7 @@
         
         if(tabId === 'games') loadGames();
         if(tabId === 'engagement') { loadRecurringMessages(); loadRedeems(); loadTtsConfig(); }
+        if(tabId === 'intelligence') loadTalathystConfig();
     }
 
     async function apiFetch(path, options = {}) {
