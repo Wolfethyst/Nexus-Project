@@ -480,31 +480,4 @@ if(form) {
     });
 }
 
-// --- TTS HANDLER (Direct, not tied to redeems) ---
-const ttsForm = document.getElementById("ttsRedeemForm");
-if (ttsForm) {
-    const newTtsForm = ttsForm.cloneNode(true);
-    ttsForm.parentNode.replaceChild(newTtsForm, ttsForm);
-
-    newTtsForm.addEventListener("submit", async (ev) => {
-        ev.preventDefault();
-        const input = document.getElementById("ttsRedeemInput");
-        const btn = document.getElementById("ttsRedeemButton");
-        const text = input.value.trim();
-        if (!text) return;
-
-        if (btn) btn.classList.add("loading");
-        try {
-            const { res, data } = await apiPost("/nexus/tts/send", { text });
-            if (res.ok) {
-                input.value = "";
-            } else {
-                alert(data?.error || "Failed to send TTS.");
-            }
-        } catch (e) {
-            alert("Error sending TTS.");
-        } finally {
-            if (btn) btn.classList.remove("loading");
-        }
-    });
-}
+// TTS handler removed - handled by store.js to prevent duplicate submissions

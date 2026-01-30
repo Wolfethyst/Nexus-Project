@@ -298,6 +298,11 @@ function connectWebSocket() {
         enqueueEvent({ type: "tts", text: rawText, voiceId: null });
       }
     }
+    
+    // -- REDEEM EVENTS WITH SOUND (Fallback for audio-only redeems) --
+    if (data.type === "redeem" && data.redeem && data.redeem.sound) {
+      playAlertSound({ key: data.redeem.sound });
+    }
   };
 
   chatWs.onclose = () => setTimeout(connectWebSocket, 5000);
