@@ -480,43 +480,31 @@ if(form) {
     });
 }
 
-// --- TTS REDEEM HANDLER ---
+// --- TTS HANDLER (Direct, not tied to redeems) ---
 const ttsForm = document.getElementById("ttsRedeemForm");
-if(ttsForm) {
+if (ttsForm) {
     const newTtsForm = ttsForm.cloneNode(true);
     ttsForm.parentNode.replaceChild(newTtsForm, ttsForm);
 
-    newTtsForm.addEventListener("submit", async (ev) => { 
-        ev.preventDefault(); 
-        
-        const { handleRedeemClick, getTtsRedeemId } = await import('./store.js');
-        // If your store logic saves the ID somewhere globally or we can fetch it:
-        // For now, let's assume store.js handles the lookup or we skip if unknown.
-        // A common pattern is `window.ttsRedeemId` if set by store.js
-        
-        // IMPORTANT: If you don't have this export in store.js yet, ensure you add it 
-        // or expose `window.ttsRedeemId` in `store.js` when redeems load.
-        // As a fallback, I'll check the window object if the import fails to find the getter.
-        const ttsId = (getTtsRedeemId && getTtsRedeemId()) || window.ttsRedeemId;
-
-        if (!ttsId) {
-            alert("TTS Redeem ID not found. Please wait for redeems to load.");
-            return;
-        }
-
+    newTtsForm.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
         const input = document.getElementById("ttsRedeemInput");
         const btn = document.getElementById("ttsRedeemButton");
-        const text = input.value.trim(); 
-        
-        if (text) { 
-            if(btn) btn.classList.add("loading"); 
-            
-            const success = await handleRedeemClick(ttsId, null, text); 
-            
-            if (success) { 
-                input.value = ""; 
+        const text = input.value.trim();
+        if (!text) return;
+
+        if (btn) btn.classList.add("loading");
+        try {
+            const { res, data } = await apiPost("/nexus/tts/send", { text });
+            if (res.ok) {
+                input.value = "";
+            } else {
+                alert(data?.error || "Failed to send TTS.");
             }
-            if(btn) btn.classList.remove("loading");
-        } 
+        } catch (e) {
+            alert("Error sending TTS.");
+        } finally {
+            if (btn) btn.classList.remove("loading");
+        }
     });
 }
