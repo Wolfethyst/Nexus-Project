@@ -252,20 +252,7 @@ async function processQueue() {
             const readingTime = (item.text.length * 100) + 2000;
             setTimeout(() => { if (resolveCurrentAudio) { resolveCurrentAudio(); resolveCurrentAudio = null; } }, Math.min(readingTime, 10000));
         });
-    } 
-    else if (item.type === "redeem") {
-        // Visual text for regular redeems
-        const user = item.userDisplayName || "Someone";
-        const redeemName = item.redeemName || "Redeemed Item";
-        await typeOut(`${user} redeemed\n${redeemName}`);
-        
-        // Play sound if exists
-        if (item.sound) {
-            await playAlertSound(item.sound);
-        }
-        // Keep visible for a moment
-        await delay(OVERLAY_HIDE_DELAY_MS);
-    }
+  }
     
     await delay(500); // small pause between events
   }
@@ -288,9 +275,6 @@ function connectWebSocket() {
   chatWs.onmessage = (ev) => {
     let data;
     try { data = JSON.parse(ev.data); } catch { return; }
-
-    // Log everything for debugging
-    if (data.type === "redeem") console.log("[Nexus Debug] Redeem Event:", data);
     
     // -- TTS AUDIO DATA --
     if (data.type === "tts_play_data" && data.audioData) {
@@ -300,29 +284,18 @@ function connectWebSocket() {
         return;
     }
 
-    // -- REDEEMS --
-    if (data.type === "redeem" && data.redeem) {
-      triggerVisualFlash(); 
-      
-      const r = data.redeem;
-      const soundKey = r.soundKey || r.sound || data.sound;
-      
-      const key = r.key || r.id || "";
-      const isTTS = (key && key.includes("tts")) || key === "nexus_tts";
+    // -- AUDIO REDEEMS (Sound only, no visual) --
+    if (data.type === "redeem" && data.sound) {
+      playAlertSound(data.sound);
+      return;
+    }
 
-      if (isTTS) {
-          const rawText = (data.input || "").toString().trim();
-          if (rawText) {
-              enqueueEvent({ type: "tts", text: rawText, voiceId: null });
-          }
-      } else {
-          // It's a normal redeem (visual + sound)
-          enqueueEvent({ 
-              type: "redeem", 
-              userDisplayName: data.user ? data.user.display : "User",
-              redeemName: r.name || "Item",
-              sound: soundKey ? { key: soundKey } : null
-          });
+    // -- DIRECT TTS EVENTS (Visual + Audio) --
+    if (data.type === "tts") {
+      const rawText = (data.input || "").toString().trim();
+      if (rawText) {
+        triggerVisualFlash();
+        enqueueEvent({ type: "tts", text: rawText, voiceId: null });
       }
     }
   };
