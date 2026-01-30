@@ -255,6 +255,29 @@
                 </div>
             </div>
         </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h2>TTS Settings</h2>
+            <div class="form-row">
+                <div style="flex:1; display:flex; align-items:flex-end; gap:10px;">
+                    <label style="margin:0; cursor:pointer;"><input id="tts-enabled" type="checkbox" checked> Enabled</label>
+                </div>
+                <div style="width:180px;">
+                    <label>Cooldown (seconds)</label>
+                    <input id="tts-cooldown" type="number" min="0" value="10">
+                </div>
+                <div style="width:180px;">
+                    <label>Max Characters</label>
+                    <input id="tts-maxchars" type="number" min="1" max="500" value="200">
+                </div>
+                <div style="flex:0.5; align-self:flex-end;">
+                    <button id="tts-save-btn" class="btn" style="width:100%;">Save</button>
+                </div>
+            </div>
+            <p style="font-size:12px; color:#aaa; margin-top:10px;">
+                Applies to all TTS requests immediately. Cooldown is enforced per user.
+            </p>
+        </div>
     </div>
 
     <div id="tab-economy" class="view-section">
@@ -323,7 +346,7 @@
         event.target.classList.add('active');
         
         if(tabId === 'games') loadGames();
-        if(tabId === 'engagement') { loadRecurringMessages(); loadRedeems(); }
+        if(tabId === 'engagement') { loadRecurringMessages(); loadRedeems(); loadTtsConfig(); }
     }
 
     async function apiFetch(path, options = {}) {
@@ -356,6 +379,7 @@
             }
             loadStreamInfo();
             loadTalathystConfig();
+            loadTtsConfig();
         } catch(e) { console.error(e); }
     })();
 
@@ -624,6 +648,31 @@
         await apiFetch("/nexus/redeems/delete", { method:"POST", body: { id: document.getElementById("redeem-id").value } });
         loadRedeems();
         document.getElementById("clear-redeem-btn").click();
+    };
+
+    // --- TTS SETTINGS ---
+    async function loadTtsConfig() {
+        try {
+            const data = await apiFetch("/admin/tts/config");
+            const cfg = data.config || {};
+            document.getElementById("tts-enabled").checked = cfg.enabled !== false;
+            document.getElementById("tts-cooldown").value = cfg.cooldownSeconds ?? 10;
+            document.getElementById("tts-maxchars").value = cfg.maxChars ?? 200;
+        } catch (e) {
+            console.warn("Failed to load TTS config", e);
+        }
+    }
+
+    document.getElementById("tts-save-btn").onclick = async () => {
+        const payload = {
+            enabled: document.getElementById("tts-enabled").checked,
+            cooldownSeconds: parseInt(document.getElementById("tts-cooldown").value, 10),
+            maxChars: parseInt(document.getElementById("tts-maxchars").value, 10)
+        };
+        try {
+            await apiFetch("/admin/tts/config", { method: "POST", body: payload });
+            alert("TTS settings saved");
+        } catch (e) { alert("Save Error: " + e.message); }
     };
 
     // --- INTELLIGENCE ---
