@@ -247,15 +247,44 @@ function renderRedeemDrawer(groups) {
     if (ttsCostLabelEl && ttsRedeemCost != null) { ttsCostLabelEl.textContent = `${ttsRedeemCost} `; }
 }
 
-export async function loadRedeems() { 
+export async function loadRedeems() {
     const redeemContentEl = document.getElementById("redeemContent");
-    if (!redeemContentEl) return; 
-    try { 
-        const { res, data } = await apiGet("/nexus/redeems"); 
-        if (!res.ok) { redeemContentEl.innerHTML = "Unable to load redeems."; return; } 
-        const groups = normalizeRedeemList(data); 
-        renderRedeemDrawer(groups); 
-    } catch (err) { redeemContentEl.innerHTML = "Failed to load redeems."; } 
+    if (!redeemContentEl) return;
+    let ttsLoaded = false;
+    // 1. Load standard redeems
+    try {
+        const { res, data } = await apiGet("/nexus/redeems");
+        if (!res.ok) { redeemContentEl.innerHTML = "Unable to load redeems."; return; }
+        const groups = normalizeRedeemList(data);
+        renderRedeemDrawer(groups);
+    } catch (err) { redeemContentEl.innerHTML = "Failed to load redeems."; }
+
+    // 2. Load TTS redeems separately and set ttsRedeemId/ttsRedeemCost
+    try {
+        const { res, data } = await apiGet("/nexus/tts-redeems");
+        if (res.ok && Array.isArray(data.redeems) && data.redeems.length > 0) {
+            // Use the first TTS redeem found
+            const tts = data.redeems[0];
+            window.ttsRedeemId = tts.id;
+            window.ttsRedeemCost = tts.cost;
+            ttsRedeemId = tts.id;
+            ttsRedeemCost = tts.cost;
+            const ttsCostLabelEl = document.getElementById("ttsCostLabel");
+            if (ttsCostLabelEl) ttsCostLabelEl.textContent = `${ttsRedeemCost} `;
+            ttsLoaded = true;
+        }
+    } catch (err) {
+        // Ignore TTS load errors for now
+    }
+    // If no TTS loaded, clear the label and ID
+    if (!ttsLoaded) {
+        window.ttsRedeemId = null;
+        window.ttsRedeemCost = null;
+        ttsRedeemId = null;
+        ttsRedeemCost = null;
+        const ttsCostLabelEl = document.getElementById("ttsCostLabel");
+        if (ttsCostLabelEl) ttsCostLabelEl.textContent = "";
+    }
 }
 
 export async function handleRedeemClick(redeemId, el, explicitInput) {
