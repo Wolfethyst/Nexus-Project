@@ -18,6 +18,50 @@
     color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
   }
 
+  /* Audio Enable Overlay */
+  #audioPrompt {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+    transition: opacity 300ms ease-out;
+  }
+  #audioPrompt.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .prompt-content {
+    text-align: center;
+    padding: 40px;
+    background: linear-gradient(135deg, rgba(159, 108, 255, 0.2), rgba(60, 20, 120, 0.3));
+    border: 2px solid rgba(159, 108, 255, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(159, 108, 255, 0.3);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+  .prompt-content h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 32px;
+    margin: 0 0 16px 0;
+    color: #9f6cff;
+    text-shadow: 0 0 20px rgba(159, 108, 255, 0.8);
+  }
+  .prompt-content p {
+    font-size: 18px;
+    margin: 0;
+    color: #e9d9ff;
+    opacity: 0.9;
+  }
+
   /* init screen removed for Meld integration */
 
   .cornerGlow{
@@ -90,6 +134,14 @@
 
 <body>
 
+<!-- Audio Enable Prompt -->
+<div id="audioPrompt">
+  <div class="prompt-content">
+    <h1>🔊 Audio Ready</h1>
+    <p>Click anywhere to enable TTS & sound alerts</p>
+  </div>
+</div>
+
 <!-- init screen removed for Meld integration -->
 
 <div class="overlay-root" id="overlayRoot">
@@ -136,8 +188,18 @@ const delay = (ms) => new Promise(res => setTimeout(res, ms));
 function enableAudio() {
   if (audioEnabled) return;
   audioEnabled = true;
+  console.log("[Nexus] Audio Engine Enabled");
+  
+  // Create AudioContext to unlock audio on iOS/Safari
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  ctx.resume().then(() => console.log("[Nexus] Audio Engine Started"));
+  ctx.resume().then(() => console.log("[Nexus] AudioContext Started"));
+  
+  // Hide the prompt
+  const prompt = document.getElementById("audioPrompt");
+  if (prompt) {
+    prompt.classList.add("hidden");
+    setTimeout(() => prompt.remove(), 300);
+  }
 }
 
 function showOverlay() { overlayRoot.classList.add("visible"); }
@@ -347,6 +409,38 @@ function connectWebSocket() {
 }
 
 connectWebSocket();
+
+// OBS Browser Source Auto-unlock: Try to enable audio immediately
+// This works when OBS "Control audio via OBS" is enabled
+(async function autoUnlockAudio() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    await ctx.resume();
+    
+    // Play a silent audio buffer to fully unlock audio
+    const buffer = ctx.createBuffer(1, 1, 22050);
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.start();
+    
+    audioEnabled = true;
+    console.log("[Nexus] Audio auto-unlocked for OBS");
+    
+    // Hide the prompt since audio is working
+    const prompt = document.getElementById("audioPrompt");
+    if (prompt) {
+      prompt.classList.add("hidden");
+      setTimeout(() => prompt.remove(), 300);
+    }
+  } catch (e) {
+    console.warn("[Nexus] Audio auto-unlock failed, waiting for user interaction:", e);
+  }
+})();
+
+// Fallback: Enable audio on any click/touch (if auto-unlock fails)
+document.addEventListener('click', enableAudio);
+document.addEventListener('touchstart', enableAudio);
 </script>
 </body>
 </html>
