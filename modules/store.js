@@ -344,11 +344,40 @@ export async function handleRedeemClick(redeemId, el, explicitInput) {
   }
 }
 
-// Redeem UI Listeners
+// TTS UI Listener (decoupled from redeems)
 const ttsRedeemFormEl = document.getElementById("ttsRedeemForm");
 const ttsRedeemInputEl = document.getElementById("ttsRedeemInput");
 const ttsRedeemButton = document.getElementById("ttsRedeemButton");
-if (ttsRedeemFormEl) { ttsRedeemFormEl.addEventListener("submit", async (ev) => { ev.preventDefault(); if (!ttsRedeemId) return; const text = ttsRedeemInputEl.value.trim(); if (text) { if(ttsRedeemButton) ttsRedeemButton.innerText = "Sending..."; const success = await handleRedeemClick(ttsRedeemId, null, text); if (success) { ttsRedeemInputEl.value = ""; if(ttsRedeemButton) { ttsRedeemButton.innerText = "Sent!"; ttsRedeemButton.style.backgroundColor = "#4ff"; ttsRedeemButton.style.color = "#000"; setTimeout(() => { ttsRedeemButton.innerText = "Send"; ttsRedeemButton.style.backgroundColor = ""; ttsRedeemButton.style.color = ""; }, 2000); } } else { if(ttsRedeemButton) ttsRedeemButton.innerText = "Send"; } } }); }
+if (ttsRedeemFormEl) {
+    ttsRedeemFormEl.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        const text = ttsRedeemInputEl.value.trim();
+        if (!text) return;
+        if (ttsRedeemButton) ttsRedeemButton.innerText = "Sending...";
+        try {
+            const { res, data } = await apiPost("/nexus/tts/send", { text });
+            if (res.ok) {
+                ttsRedeemInputEl.value = "";
+                if (ttsRedeemButton) {
+                    ttsRedeemButton.innerText = "Sent!";
+                    ttsRedeemButton.style.backgroundColor = "#4ff";
+                    ttsRedeemButton.style.color = "#000";
+                    setTimeout(() => {
+                        ttsRedeemButton.innerText = "Send";
+                        ttsRedeemButton.style.backgroundColor = "";
+                        ttsRedeemButton.style.color = "";
+                    }, 2000);
+                }
+            } else {
+                alert(data?.error || "Failed to send TTS.");
+                if (ttsRedeemButton) ttsRedeemButton.innerText = "Send";
+            }
+        } catch (e) {
+            alert("Error sending TTS.");
+            if (ttsRedeemButton) ttsRedeemButton.innerText = "Send";
+        }
+    });
+}
 const redeemChip = document.getElementById("redeemChip"); const redeemDrawer = document.getElementById("redeemDrawer");
 if (redeemChip && redeemDrawer) { redeemChip.addEventListener("click", (e) => { e.stopPropagation(); redeemDrawer.classList.toggle("open"); }); document.addEventListener("click", (e) => { if (redeemDrawer.classList.contains("open")) { if (!redeemDrawer.contains(e.target) && !redeemChip.contains(e.target)) { redeemDrawer.classList.remove("open"); } } }); }
 
