@@ -16,6 +16,7 @@ window.handleVideoClick = Video.handleVideoClick;
 window.openHubHome = Video.openHubHome;
 window.switchHubTab = Video.switchHubTab;
 window.handleGameCardClick = Video.handleGameCardClick;
+window.handleRedeemClick = Store.handleRedeemClick;
 
 // Initialize app data
 (async function init() {
