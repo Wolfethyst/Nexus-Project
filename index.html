@@ -128,7 +128,22 @@
 
             <div class="stream-wrapper" id="streamPanel">
                 <div class="streamOuter">
-                    <iframe id="stream-player" src="https://customer-gc5hjo8ti1eiebgs.cloudflarestream.com/b58b43ebaa1f57a6f55f861b9b366726/iframe" allow="autoplay; picture-in-picture;" allowfullscreen="true"></iframe>
+                    <video id="stream-player" controls autoplay playsinline style="width:100%;height:100%;background:#000;"></video>
+                    <script>
+                      document.addEventListener('DOMContentLoaded', function() {
+                        var video = document.getElementById('stream-player');
+                        var hlsUrl = 'https://customer-gc5hjo8ti1eiebgs.cloudflarestream.com/b58b43ebaa1f57a6f55f861b9b366726/manifest/video.m3u8?protocol=llhlsbeta';
+                        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                          video.src = hlsUrl;
+                        } else if (window.Hls) {
+                          var hls = new Hls();
+                          hls.loadSource(hlsUrl);
+                          hls.attachMedia(video);
+                        } else {
+                          video.outerHTML = '<div style="color:white;padding:20px;">Your browser does not support HLS playback.</div>';
+                        }
+                      });
+                    </script>
                 </div>
             </div>
 
