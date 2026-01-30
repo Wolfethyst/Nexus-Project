@@ -511,15 +511,24 @@ export async function playVideo(item, type) {
       const proxyResponse = await fetch(`${API_BASE}/stream/proxy?id=${item.id}`);
       const proxyData = await proxyResponse.json();
 
-      if (proxyData.type === "youtube_embed") {
-        // Use YouTube embed as fallback
+      if (proxyData.type === "invidious_embed" || proxyData.type === "youtube_embed") {
+        // Use Invidious embed (better compatibility) with YouTube fallback
         const iframe = document.createElement('iframe');
         iframe.src = proxyData.embedUrl;
         iframe.style.width = '100%';
         iframe.style.height = '100%';
         iframe.style.border = 'none';
         iframe.allowFullscreen = true;
-        iframe.allow = "autoplay; encrypted-media";
+        iframe.allow = "autoplay; encrypted-media; picture-in-picture";
+        
+        // If Invidious fails to load, try YouTube fallback
+        if (proxyData.fallbackUrl) {
+          iframe.onerror = () => {
+            console.log("Invidious failed, trying YouTube fallback");
+            iframe.src = proxyData.fallbackUrl;
+          };
+        }
+        
         wrapper.appendChild(iframe);
       } else if (proxyData.url) {
         // Use proxied video URL
@@ -534,14 +543,21 @@ export async function playVideo(item, type) {
       }
     } catch (e) {
       console.error("Proxy failed, using direct embed", e);
-      // Direct YouTube embed as final fallback
+      // Invidious direct embed as fallback
       const iframe = document.createElement('iframe');
-      iframe.src = `https://www.youtube.com/embed/${item.id}?autoplay=1&rel=0`;
+      iframe.src = `https://inv.tux.pizza/embed/${item.id}?autoplay=1&quality=dash`;
       iframe.style.width = '100%';
       iframe.style.height = '100%';
       iframe.style.border = 'none';
       iframe.allowFullscreen = true;
-      iframe.allow = "autoplay; encrypted-media";
+      iframe.allow = "autoplay; encrypted-media; picture-in-picture";
+      
+      // YouTube as final fallback
+      iframe.onerror = () => {
+        console.log("Invidious failed, trying YouTube");
+        iframe.src = `https://www.youtube.com/embed/${item.id}?autoplay=1&rel=0`;
+      };
+      
       wrapper.appendChild(iframe);
     }
 
