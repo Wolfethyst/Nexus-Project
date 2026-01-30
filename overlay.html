@@ -286,7 +286,7 @@ function connectWebSocket() {
 
     // -- AUDIO REDEEMS (Sound only, no visual) --
     if (data.type === "redeem" && data.sound) {
-      playAlertSound(data.sound);
+      playAlertSound({ key: data.sound });
       return;
     }
 
@@ -297,11 +297,6 @@ function connectWebSocket() {
         triggerVisualFlash();
         enqueueEvent({ type: "tts", text: rawText, voiceId: null });
       }
-    }
-    
-    // -- REDEEM EVENTS WITH SOUND (Fallback for audio-only redeems) --
-    if (data.type === "redeem" && data.redeem && data.redeem.sound) {
-      playAlertSound({ key: data.redeem.sound });
     }
   };
 
