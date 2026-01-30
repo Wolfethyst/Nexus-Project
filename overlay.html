@@ -223,7 +223,11 @@ async function playAlertSound(sound) {
 // --- QUEUE & COMMANDS ---
 
 function sendTtsCommand(text, voiceId) {
-    if (!chatWs || chatWs.readyState !== WebSocket.OPEN) return;
+    if (!chatWs || chatWs.readyState !== WebSocket.OPEN) {
+        console.warn("[TTS] WebSocket not ready, cannot send command");
+        return;
+    }
+    console.log("[TTS] Sending tts_command to backend:", text.substring(0, 50) + "...");
     chatWs.send(JSON.stringify({ type: "tts_command", text, voiceId: null }));
 }
 
@@ -278,7 +282,9 @@ function connectWebSocket() {
     
     // -- TTS AUDIO DATA --
     if (data.type === "tts_play_data" && data.audioData) {
+        console.log("[TTS] Received audio data, playing...");
         playBase64Audio(data.audioData).then(() => {
+            console.log("[TTS] Audio playback complete");
             if (resolveCurrentAudio) { resolveCurrentAudio(); resolveCurrentAudio = null; }
         });
         return;
@@ -294,6 +300,7 @@ function connectWebSocket() {
     if (data.type === "tts") {
       const rawText = (data.input || "").toString().trim();
       if (rawText) {
+        console.log("[TTS] Received TTS event, queueing:", rawText.substring(0, 50) + "...");
         triggerVisualFlash();
         enqueueEvent({ type: "tts", text: rawText, voiceId: null });
       }
