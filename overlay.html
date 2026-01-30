@@ -172,8 +172,7 @@ async function typeOut(text) {
 
 function playBase64Audio(base64Data) {
     if (!audioEnabled) { 
-        console.warn("[TTS] Audio blocked (click overlay)"); 
-        return Promise.resolve(); 
+        console.warn("[TTS] Audio not yet enabled (click overlay to enable) - attempting playback anyway");
     }
     
     console.log(`[TTS] Decoding base64 audio (${base64Data.length} chars)...`);
