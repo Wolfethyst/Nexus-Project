@@ -171,20 +171,57 @@ async function typeOut(text) {
 // --- AUDIO PLAYERS ---
 
 function playBase64Audio(base64Data) {
-    if (!audioEnabled) { console.warn("[TTS] Audio blocked (click overlay)"); return Promise.resolve(); }
+    if (!audioEnabled) { 
+        console.warn("[TTS] Audio blocked (click overlay)"); 
+        return Promise.resolve(); 
+    }
+    
+    console.log(`[TTS] Decoding base64 audio (${base64Data.length} chars)...`);
+    
     return new Promise((resolve) => {
         try {
             const binaryString = atob(base64Data);
             const len = binaryString.length;
+            console.log(`[TTS] Binary size: ${len} bytes`);
+            
             const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) { bytes[i] = binaryString.charCodeAt(i); }
+            for (let i = 0; i < len; i++) { 
+                bytes[i] = binaryString.charCodeAt(i); 
+            }
+            
             const blob = new Blob([bytes], { type: 'audio/mpeg' });
+            console.log(`[TTS] Created blob: ${blob.size} bytes, type: ${blob.type}`);
+            
             const url = URL.createObjectURL(blob);
             const audio = new Audio(url);
-            audio.onended = () => { URL.revokeObjectURL(url); resolve(); };
-            audio.onerror = () => { URL.revokeObjectURL(url); resolve(); };
-            audio.play().catch(() => resolve());
-        } catch(e) { resolve(); }
+            
+            audio.onloadedmetadata = () => {
+                console.log(`[TTS] Audio loaded: duration=${audio.duration}s`);
+            };
+            
+            audio.onended = () => { 
+                console.log("[TTS] Audio ended naturally");
+                URL.revokeObjectURL(url); 
+                resolve(); 
+            };
+            
+            audio.onerror = (e) => { 
+                console.error("[TTS] Audio playback error:", e, audio.error);
+                URL.revokeObjectURL(url); 
+                resolve(); 
+            };
+            
+            audio.volume = 1.0; // Ensure volume is max
+            audio.play()
+                .then(() => console.log("[TTS] Audio.play() started successfully"))
+                .catch((err) => {
+                    console.error("[TTS] Audio.play() failed:", err);
+                    resolve();
+                });
+        } catch(e) { 
+            console.error("[TTS] Base64 decode error:", e);
+            resolve(); 
+        }
     });
 }
 
