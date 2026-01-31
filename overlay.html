@@ -207,16 +207,6 @@
     0%, 100% { box-shadow: 0 0 25px rgba(159, 108, 255, 0.6); }
     50% { box-shadow: 0 0 40px rgba(159, 108, 255, 0.9); }
   }
-  .alert-icon {
-    font-size: 80px;
-    filter: drop-shadow(0 0 30px rgba(159, 108, 255, 0.9));
-    animation: iconBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  @keyframes iconBounce {
-    0% { transform: scale(0.3) rotate(-20deg); }
-    50% { transform: scale(1.15) rotate(5deg); }
-    100% { transform: scale(1) rotate(0deg); }
-  }
   .alert-title {
     font-family: 'Cinzel', serif;
     font-size: 32px;
@@ -386,7 +376,6 @@ async function showTwitchAlert(type, data) {
   const alertBox = document.createElement('div');
   alertBox.className = 'alert-box';
   
-  let icon = '⭐';
   let title = 'Alert';
   let message = '';
   let soundUrl = null;
@@ -395,8 +384,7 @@ async function showTwitchAlert(type, data) {
   
   switch(type) {
     case 'follow':
-      icon = '💜';
-      title = 'NEW FOLLOWER';
+      title = 'New Follower';
       userName = data.user_name;
       userId = data.user_id;
       message = `<span class="alert-highlight">${userName}</span> is now following!`;
@@ -404,8 +392,7 @@ async function showTwitchAlert(type, data) {
       break;
       
     case 'subscribe':
-      icon = '🌟';
-      title = 'NEW SUBSCRIBER';
+      title = 'New Subscriber';
       userName = data.user_name;
       userId = data.user_id;
       const tier = data.tier === '3000' ? 'Tier 3' : data.tier === '2000' ? 'Tier 2' : 'Tier 1';
@@ -414,8 +401,7 @@ async function showTwitchAlert(type, data) {
       break;
       
     case 'subscription.gift':
-      icon = '🎁';
-      title = 'GIFT SUB';
+      title = 'Gift Sub';
       userName = data.user_name;
       userId = data.user_id;
       message = `<span class="alert-highlight">${userName}</span> gifted ${data.total} sub${data.total > 1 ? 's' : ''}!`;
@@ -423,8 +409,7 @@ async function showTwitchAlert(type, data) {
       break;
       
     case 'cheer':
-      icon = '💎';
-      title = 'BITS';
+      title = 'Bits';
       userName = data.user_name;
       userId = data.user_id;
       message = `<span class="alert-highlight">${userName}</span> cheered ${data.bits} bits!`;
@@ -432,8 +417,7 @@ async function showTwitchAlert(type, data) {
       break;
       
     case 'raid':
-      icon = '⚔️';
-      title = 'RAID';
+      title = 'Raid';
       userName = data.from_broadcaster_user_name;
       userId = data.from_broadcaster_user_id;
       message = `<span class="alert-highlight">${userName}</span> raided with ${data.viewers} viewers!`;
@@ -441,8 +425,7 @@ async function showTwitchAlert(type, data) {
       break;
       
     case 'channel_points':
-      icon = '✨';
-      title = 'CHANNEL POINTS';
+      title = 'Channel Points';
       userName = data.user_name;
       userId = data.user_id;
       message = `<span class="alert-highlight">${userName}</span> redeemed ${data.reward.title}!`;
@@ -473,7 +456,6 @@ async function showTwitchAlert(type, data) {
   alertBox.innerHTML = `
     <div class="alert-content">
       ${avatarHtml}
-      <div class="alert-icon">${icon}</div>
       <h2 class="alert-title">${title}</h2>
       <p class="alert-message">${message}</p>
     </div>
