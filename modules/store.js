@@ -15,6 +15,84 @@ let currentSubIndex = 0;
 let selectedTipAmount = null;
 let currentTipMethod = "card";
 
+const redeemCooldowns = new Map();
+let redeemCooldownTimer = null;
+let ttsCooldownUntil = 0;
+let ttsCooldownTimer = null;
+
+function formatCountdown(ms) {
+    const total = Math.max(0, Math.ceil(ms / 1000));
+    const m = Math.floor(total / 60);
+    const s = String(total % 60).padStart(2, "0");
+    return m > 0 ? `${m}:${s}` : `0:${s}`;
+}
+
+function updateRedeemCooldownUI() {
+    const now = Date.now();
+    redeemCooldowns.forEach((until, redeemId) => {
+        const remaining = until - now;
+        const card = document.querySelector(`.redeemCard[data-redeem-id="${redeemId}"]`);
+        if (!card) return;
+        const overlay = card.querySelector(".redeemCooldown");
+        const label = card.querySelector(".redeemCooldownText");
+        if (remaining <= 0) {
+            redeemCooldowns.delete(redeemId);
+            card.classList.remove("cooldown");
+            if (overlay) overlay.classList.add("hidden");
+            if (label) label.textContent = "";
+            return;
+        }
+        card.classList.add("cooldown");
+        if (overlay) overlay.classList.remove("hidden");
+        if (label) label.textContent = `Cooldown ${formatCountdown(remaining)}`;
+    });
+
+    if (redeemCooldowns.size === 0 && redeemCooldownTimer) {
+        clearInterval(redeemCooldownTimer);
+        redeemCooldownTimer = null;
+    }
+}
+
+function setRedeemCooldown(redeemId, seconds) {
+    const until = Date.now() + (Math.max(0, Number(seconds) || 0) * 1000);
+    if (until <= Date.now()) return;
+    redeemCooldowns.set(redeemId, until);
+    updateRedeemCooldownUI();
+    if (!redeemCooldownTimer) {
+        redeemCooldownTimer = setInterval(updateRedeemCooldownUI, 500);
+    }
+}
+
+function updateTtsCooldownUI() {
+    if (!ttsRedeemButton) return;
+    const remaining = ttsCooldownUntil - Date.now();
+    if (remaining <= 0) {
+        ttsCooldownUntil = 0;
+        ttsRedeemButton.classList.remove("cooldown");
+        ttsRedeemButton.dataset.label = "➜";
+        ttsRedeemButton.disabled = false;
+        if (ttsCooldownTimer) {
+            clearInterval(ttsCooldownTimer);
+            ttsCooldownTimer = null;
+        }
+        return;
+    }
+    ttsRedeemButton.disabled = true;
+    ttsRedeemButton.classList.add("cooldown");
+    ttsRedeemButton.dataset.label = formatCountdown(remaining);
+}
+
+function setTtsCooldown(seconds) {
+    const until = Date.now() + (Math.max(0, Number(seconds) || 0) * 1000);
+    if (until <= Date.now()) return;
+    ttsCooldownUntil = until;
+    updateTtsCooldownUI();
+    if (!ttsCooldownTimer) {
+        ttsCooldownTimer = setInterval(updateTtsCooldownUI, 500);
+    }
+}
+
+
 // --- LEADERBOARD ---
 export async function loadLeaderboard() {
   const { res, data } = await apiGet("/leaderboard");
@@ -227,7 +305,8 @@ function renderRedeemDrawer(groups) {
 
       // Updated "Card" HTML - NO BUTTON, CLICKABLE WRAPPER
       return `
-      <div class="redeemCard" onclick="handleRedeemClick('${escapeHtml(id)}', this)">
+      <div class="redeemCard" data-redeem-id="${escapeHtml(id)}" onclick="handleRedeemClick('${escapeHtml(id)}', this)">
+        <div class="redeemCooldown hidden"><div class="redeemCooldownText"></div></div>
         <div class="redeemTop">
             <div class="redeemName">${escapeHtml(name)}</div>
             <div class="redeemIcon">${typeIcon}</div>
@@ -245,6 +324,9 @@ function renderRedeemDrawer(groups) {
     window.ttsRedeemId = ttsRedeemId;
     window.ttsRedeemCost = ttsRedeemCost;
     if (ttsCostLabelEl && ttsRedeemCost != null) { ttsCostLabelEl.textContent = `${ttsRedeemCost} `; }
+
+    // Refresh cooldown overlays after re-render
+    updateRedeemCooldownUI();
 }
 
 export async function loadRedeems() {
@@ -304,6 +386,11 @@ export async function handleRedeemClick(redeemId, el, explicitInput) {
       }
   }
   
+  if (redeemCooldowns.has(redeemId)) {
+      updateRedeemCooldownUI();
+      return false;
+  }
+
   try { 
       const { res, data } = await apiPost("/nexus/redeems/redeem", { redeemId, input: explicitInput }); 
       
@@ -316,6 +403,9 @@ export async function handleRedeemClick(redeemId, el, explicitInput) {
       }
 
       if (!res.ok) { 
+          if (res.status === 429 && data?.retryAfterSeconds) {
+              setRedeemCooldown(redeemId, data.retryAfterSeconds);
+          }
           alert(data?.error || "Failed."); 
           return false; 
       } else { 
@@ -328,6 +418,8 @@ export async function handleRedeemClick(redeemId, el, explicitInput) {
                el.textContent = "Used!";
                setTimeout(() => el.textContent = originalText, 1500);
           }
+          const redeemed = nexusRedeems.find(r => String(r.__id) === String(redeemId));
+          if (redeemed?.cooldownSeconds) setRedeemCooldown(redeemId, redeemed.cooldownSeconds);
           loadLeaderboard(); 
           return true; 
       } 
@@ -369,6 +461,9 @@ if (ttsRedeemFormEl) {
                     }, 2000);
                 }
             } else {
+                if (res.status === 429 && data?.retryAfterSeconds) {
+                    setTtsCooldown(data.retryAfterSeconds);
+                }
                 alert(data?.error || "Failed to send TTS.");
                 if (ttsRedeemButton) ttsRedeemButton.innerText = "Send";
             }

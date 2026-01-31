@@ -334,6 +334,15 @@ header {
     font-size: 16px;
     display: block;
 }
+#ttsRedeemButton.cooldown {
+    width: auto;
+    padding: 0 8px;
+    font-size: 11px;
+}
+#ttsRedeemButton.cooldown::after {
+    content: attr(data-label);
+    font-size: 11px;
+}
 
 .redeems-wrapper {
     flex: 1; min-width: 0; display: flex; flex-direction: column;
@@ -389,6 +398,26 @@ header {
 /* Loading/Success States */
 .redeemCard.loading { opacity: 0.5; pointer-events: none; cursor: wait; }
 .redeemCard.success { border-color: var(--success); background: rgba(114, 255, 176, 0.1); }
+.redeemCard.cooldown { pointer-events: none; opacity: 0.7; }
+
+.redeemCooldown {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 5, 20, 0.7);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    z-index: 2;
+}
+.redeemCooldown.hidden { display: none; }
+.redeemCooldownText {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    text-shadow: 0 0 10px rgba(181,123,255,0.6);
+}
 
 /* Card Internals */
 .redeemTop {

@@ -267,6 +267,7 @@
                 <div class="form-row">
                     <div style="flex:2;"><label>Name</label><input id="redeem-name"></div>
                     <div style="flex:1;"><label>Cost</label><input id="redeem-cost" type="number"></div>
+                    <div style="flex:1;"><label>Cooldown (s)</label><input id="redeem-cooldown" type="number" min="0"></div>
                 </div>
 
                 <label>Sound File (R2 Bucket)</label>
@@ -647,6 +648,7 @@
                     document.getElementById("redeem-id").value = r.id;
                     document.getElementById("redeem-name").value = r.name;
                     document.getElementById("redeem-cost").value = r.cost;
+                    document.getElementById("redeem-cooldown").value = r.cooldownSeconds || 0;
                     document.getElementById("redeem-soundKey").value = r.sound || ""; // soundKey maps to 'sound'
                     document.getElementById("delete-redeem-btn").style.display = "block";
                 };
@@ -659,6 +661,7 @@
         document.getElementById("redeem-id").value = "";
         document.getElementById("redeem-name").value = "";
         document.getElementById("redeem-cost").value = "";
+        document.getElementById("redeem-cooldown").value = "";
         document.getElementById("redeem-soundKey").value = "";
         document.getElementById("delete-redeem-btn").style.display = "none";
     };
@@ -668,6 +671,7 @@
             id: document.getElementById("redeem-id").value || undefined,
             name: document.getElementById("redeem-name").value,
             cost: parseInt(document.getElementById("redeem-cost").value),
+            cooldownSeconds: parseInt(document.getElementById("redeem-cooldown").value, 10) || 0,
             type: "redeem",
             soundKey: document.getElementById("redeem-soundKey").value,
             category: "Featured", enabled: true
