@@ -399,10 +399,13 @@ function showTwitchAlert(type, data) {
 
 async function getTwitchAccessToken() {
   try {
-    const response = await fetch(`${API_BASE}/auth/session`, { credentials: 'include' });
-    const session = await response.json();
-    if (session.twitch && session.twitch.access) {
-      return session.twitch.access;
+    const response = await fetch(`${API_BASE}/twitch/eventsub-token`, { credentials: 'include' });
+    const data = await response.json();
+    if (data.accessToken) {
+      return data.accessToken;
+    }
+    if (data.error) {
+      console.warn('[Twitch] ' + data.error);
     }
   } catch (e) {
     console.error('[Twitch] Failed to get access token:', e);
