@@ -32,7 +32,7 @@ export function formatCompact(n) { return n >= INFINITE_POINTS ? "∞" : (n >= 1
 export function getDisplayName(u) { return u?.display || u?.displayName || u?.name || u?.username || u?.login || "User"; }
 
 export async function apiJson(path, options = {}) {
-  const timeoutMs = Number(options.timeoutMs || 15000);
+  const timeoutMs = Number(options.timeoutMs || 8000);
   const finalOptions = { credentials: "include", ...options };
 
   if (finalOptions.body && !(finalOptions.headers && finalOptions.headers["Content-Type"])) {
