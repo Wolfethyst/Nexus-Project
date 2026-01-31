@@ -7,16 +7,18 @@ import * as Video from './modules/video.js';
 import * as Admin from './modules/admin.js';
 
 const loaderEl = document.getElementById('appLoader');
-const LOADER_MAX_WAIT_MS = 15000;
+const LOADER_MAX_WAIT_MS = 8000;
+const IMAGE_WAIT_MS = 2000;
+const STREAM_WAIT_MS = 3000;
 
 function hideLoader() {
   if (!loaderEl) return;
   loaderEl.classList.add('hidden');
 }
 
-const waitForWindowLoad = () => new Promise(resolve => {
-  if (document.readyState === 'complete') return resolve();
-  window.addEventListener('load', () => resolve(), { once: true });
+const waitForDomReady = () => new Promise(resolve => {
+  if (document.readyState !== 'loading') return resolve();
+  document.addEventListener('DOMContentLoaded', () => resolve(), { once: true });
 });
 
 const waitForFonts = async () => {
@@ -31,7 +33,7 @@ const waitForImages = async () => {
   const images = Array.from(document.images || []);
   if (!images.length) return;
 
-  await Promise.all(images.map(img => {
+  const imagePromises = images.map(img => {
     if (img.complete) {
       return img.decode ? img.decode().catch(() => {}) : Promise.resolve();
     }
@@ -47,7 +49,12 @@ const waitForImages = async () => {
       img.addEventListener('load', done, { once: true });
       img.addEventListener('error', resolve, { once: true });
     });
-  }));
+  });
+
+  await Promise.race([
+    Promise.all(imagePromises),
+    new Promise(resolve => setTimeout(resolve, IMAGE_WAIT_MS))
+  ]);
 };
 
 const waitForStreamReady = () => new Promise(resolve => {
@@ -66,13 +73,13 @@ const waitForStreamReady = () => new Promise(resolve => {
 
   video.addEventListener('loadeddata', finish, { once: true });
   video.addEventListener('error', finish, { once: true });
-  setTimeout(finish, 8000);
+  setTimeout(finish, STREAM_WAIT_MS);
 });
 
 async function finalizeLoader() {
   if (!loaderEl) return;
   const fullWait = (async () => {
-    await Promise.all([waitForWindowLoad(), waitForFonts()]);
+    await Promise.all([waitForDomReady(), waitForFonts()]);
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     await Promise.all([waitForImages(), waitForStreamReady()]);
   })();
