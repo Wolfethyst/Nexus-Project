@@ -575,9 +575,6 @@
         if(target) {
             titleObserver.observe(target, { subtree: true, characterData: true, childList: true });
         }
-        // FORCE LOADER REMOVAL IN CASE OF ERROR
-        const loader = document.getElementById('appLoader');
-        if(loader) loader.classList.add('hidden');
     }, 1000);
 
     // [UPDATED] Robust View Switcher

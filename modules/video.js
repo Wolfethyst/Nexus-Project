@@ -97,10 +97,7 @@ export async function loadVideoData() {
   }
 
   const heavyLifting = Promise.all([
-    loadGames().then(() => {
-      if (currentGameName) updatePlayedGamesList(currentGameName);
-      else renderHubGames();
-    }),
+    loadGames(),
     loadStreamTitle(),
     loadClips(),
     loadVods().then(() => {
@@ -110,8 +107,6 @@ export async function loadVideoData() {
 
   await heavyLifting;
 
-  const loader = document.getElementById("appLoader");
-  if(loader) setTimeout(() => loader.classList.add("hidden"), 500);
 }
 
 async function loadGames() {

@@ -6,6 +6,76 @@ import * as Store from './modules/store.js';
 import * as Video from './modules/video.js';
 import * as Admin from './modules/admin.js';
 
+const loaderEl = document.getElementById('appLoader');
+
+function hideLoader() {
+  if (!loaderEl) return;
+  loaderEl.classList.add('hidden');
+}
+
+const waitForWindowLoad = () => new Promise(resolve => {
+  if (document.readyState === 'complete') return resolve();
+  window.addEventListener('load', () => resolve(), { once: true });
+});
+
+const waitForFonts = async () => {
+  try {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  } catch (e) {
+    // ignore font load failures
+  }
+};
+
+const waitForImages = async () => {
+  const images = Array.from(document.images || []);
+  if (!images.length) return;
+
+  await Promise.all(images.map(img => {
+    if (img.complete) {
+      return img.decode ? img.decode().catch(() => {}) : Promise.resolve();
+    }
+
+    return new Promise(resolve => {
+      const done = () => {
+        if (img.decode) {
+          img.decode().catch(() => {}).finally(resolve);
+        } else {
+          resolve();
+        }
+      };
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', resolve, { once: true });
+    });
+  }));
+};
+
+const waitForStreamReady = () => new Promise(resolve => {
+  const video = document.getElementById('stream-player');
+  if (!video) return resolve();
+  if (video.readyState >= 2) return resolve();
+
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    video.removeEventListener('loadeddata', finish);
+    video.removeEventListener('error', finish);
+    resolve();
+  };
+
+  video.addEventListener('loadeddata', finish, { once: true });
+  video.addEventListener('error', finish, { once: true });
+  setTimeout(finish, 8000);
+});
+
+async function finalizeLoader() {
+  if (!loaderEl) return;
+  await Promise.all([waitForWindowLoad(), waitForFonts()]);
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  await Promise.all([waitForImages(), waitForStreamReady()]);
+  hideLoader();
+}
+
 // Expose a small set of globals (kept minimal)
 window.setTheme = Auth.setTheme;
 window.toggleDecorations = Auth.toggleDecorations;
@@ -65,4 +135,5 @@ window.handleRedeemClick = Store.handleRedeemClick;
     Chat.connectDashboardChatWS();
 
   } catch (e) { console.error('Init failed', e); }
+  finally { await finalizeLoader(); }
 })();
