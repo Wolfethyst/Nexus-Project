@@ -201,6 +201,42 @@
     </div>
 
     <div id="tab-engagement" class="view-section">
+        <h2>Alerts & Notifications</h2>
+        <div class="card">
+            <label>Twitch Alert Settings</label>
+            <p style="color:var(--text-muted);font-size:12px;margin-bottom:15px;">
+                Toggle which Twitch events trigger on-stream alerts
+            </p>
+            <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:15px;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input type="checkbox" id="alert-follow" checked>
+                    <span>💜 Follows</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input type="checkbox" id="alert-subscribe" checked>
+                    <span>🌟 Subscriptions</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input type="checkbox" id="alert-gift" checked>
+                    <span>🎁 Gift Subs</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input type="checkbox" id="alert-cheer" checked>
+                    <span>💎 Cheers/Bits</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input type="checkbox" id="alert-raid" checked>
+                    <span>⚔️ Raids</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input type="checkbox" id="alert-channel_points" checked>
+                    <span>✨ Channel Points</span>
+                </label>
+            </div>
+            <button id="save-alerts-btn" class="btn" style="margin-top:20px;width:100%;">Save Alert Settings</button>
+        </div>
+
+        <h2 style="margin-top:30px;">Engagement Tools</h2>
         <div class="grid-2">
             <div class="card">
                 <h2>Timed Messages</h2>
@@ -346,7 +382,7 @@
         event.target.classList.add('active');
         
         if(tabId === 'games') loadGames();
-        if(tabId === 'engagement') { loadRecurringMessages(); loadRedeems(); loadTtsConfig(); }
+        if(tabId === 'engagement') { loadRecurringMessages(); loadRedeems(); loadTtsConfig(); loadAlertSettings(); }
         if(tabId === 'intelligence') loadTalathystConfig();
     }
 
@@ -673,6 +709,37 @@
         try {
             await apiFetch("/admin/tts/config", { method: "POST", body: payload });
             alert("TTS settings saved");
+        } catch (e) { alert("Save Error: " + e.message); }
+    };
+
+    // --- ALERT SETTINGS ---
+    async function loadAlertSettings() {
+        try {
+            const data = await apiFetch("/admin/alerts/config");
+            const cfg = data.config || {};
+            document.getElementById("alert-follow").checked = cfg.follow !== false;
+            document.getElementById("alert-subscribe").checked = cfg.subscribe !== false;
+            document.getElementById("alert-gift").checked = cfg.gift !== false;
+            document.getElementById("alert-cheer").checked = cfg.cheer !== false;
+            document.getElementById("alert-raid").checked = cfg.raid !== false;
+            document.getElementById("alert-channel_points").checked = cfg.channel_points !== false;
+        } catch (e) {
+            console.warn("Failed to load alert settings", e);
+        }
+    }
+
+    document.getElementById("save-alerts-btn").onclick = async () => {
+        const payload = {
+            follow: document.getElementById("alert-follow").checked,
+            subscribe: document.getElementById("alert-subscribe").checked,
+            gift: document.getElementById("alert-gift").checked,
+            cheer: document.getElementById("alert-cheer").checked,
+            raid: document.getElementById("alert-raid").checked,
+            channel_points: document.getElementById("alert-channel_points").checked
+        };
+        try {
+            await apiFetch("/admin/alerts/config", { method: "POST", body: payload });
+            alert("Alert settings saved");
         } catch (e) { alert("Save Error: " + e.message); }
     };
 

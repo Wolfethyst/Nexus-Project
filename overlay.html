@@ -136,16 +136,35 @@
     pointer-events: none;
   }
   .alert-box {
-    min-width: 500px;
-    padding: 30px 40px;
-    background: linear-gradient(135deg, rgba(145, 70, 255, 0.95), rgba(100, 50, 200, 0.95));
-    border: 3px solid rgba(200, 150, 255, 0.8);
-    border-radius: 20px;
-    box-shadow: 0 0 60px rgba(145, 70, 255, 0.8), inset 0 0 40px rgba(200, 150, 255, 0.3);
+    min-width: 550px;
+    padding: 35px 45px;
+    background: linear-gradient(135deg, rgba(60, 20, 120, 0.95), rgba(40, 15, 80, 0.95));
+    border: 2px solid rgba(159, 108, 255, 0.6);
+    border-radius: 16px;
+    box-shadow: 0 0 80px rgba(159, 108, 255, 0.6), 
+                0 0 120px rgba(120, 60, 255, 0.4),
+                inset 0 0 60px rgba(159, 108, 255, 0.15);
     text-align: center;
     opacity: 0;
-    transform: scale(0.8) translateY(-50px);
-    animation: alertSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transform: scale(0.85) translateY(-60px);
+    animation: alertSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    backdrop-filter: blur(12px);
+    position: relative;
+    overflow: hidden;
+  }
+  .alert-box::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(159, 108, 255, 0.15) 0%, transparent 70%);
+    animation: alertGlow 3s ease-in-out infinite;
+  }
+  @keyframes alertGlow {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(10%, 10%); }
   }
   @keyframes alertSlideIn {
     to {
@@ -154,52 +173,86 @@
     }
   }
   .alert-box.hiding {
-    animation: alertSlideOut 0.4s ease-in forwards;
+    animation: alertSlideOut 0.5s ease-in forwards;
   }
   @keyframes alertSlideOut {
     to {
       opacity: 0;
-      transform: scale(0.9) translateY(-30px);
+      transform: scale(0.9) translateY(-40px);
     }
   }
+  .alert-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+  .alert-user {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 5px;
+  }
+  .alert-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 3px solid rgba(159, 108, 255, 0.8);
+    box-shadow: 0 0 25px rgba(159, 108, 255, 0.6);
+    animation: avatarPulse 2s ease-in-out infinite;
+  }
+  @keyframes avatarPulse {
+    0%, 100% { box-shadow: 0 0 25px rgba(159, 108, 255, 0.6); }
+    50% { box-shadow: 0 0 40px rgba(159, 108, 255, 0.9); }
+  }
   .alert-icon {
-    font-size: 72px;
-    margin-bottom: 15px;
-    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
-    animation: iconBounce 0.6s ease-out;
+    font-size: 80px;
+    filter: drop-shadow(0 0 30px rgba(159, 108, 255, 0.9));
+    animation: iconBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   @keyframes iconBounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
+    0% { transform: scale(0.3) rotate(-20deg); }
+    50% { transform: scale(1.15) rotate(5deg); }
+    100% { transform: scale(1) rotate(0deg); }
   }
   .alert-title {
     font-family: 'Cinzel', serif;
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 700;
     color: #fff;
-    text-shadow: 0 0 30px rgba(255, 255, 255, 0.9), 0 2px 4px rgba(0, 0, 0, 0.5);
-    margin: 0 0 10px 0;
-    letter-spacing: 0.05em;
+    text-shadow: 0 0 40px rgba(159, 108, 255, 1), 
+                 0 0 20px rgba(255, 255, 255, 0.8),
+                 0 3px 6px rgba(0, 0, 0, 0.6);
+    margin: 0;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
   .alert-message {
-    font-size: 20px;
-    color: #f0e6ff;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    font-size: 22px;
+    color: #e9d9ff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5),
+                 0 0 20px rgba(159, 108, 255, 0.4);
     margin: 0;
     line-height: 1.4;
   }
   .alert-highlight {
-    color: #ffeb3b;
+    color: #c9a0ff;
     font-weight: 600;
-    text-shadow: 0 0 15px rgba(255, 235, 59, 0.8);
+    font-size: 26px;
+    text-shadow: 0 0 25px rgba(201, 160, 255, 0.9),
+                 0 0 15px rgba(255, 255, 255, 0.6);
   }
 
   @media (max-width:1200px){
     .caption-wrap{right:5%;bottom:calc(5% + 360px);max-width:90vw}
-    .alert-box { min-width: 300px; padding: 20px 30px; }
-    .alert-icon { font-size: 56px; }
-    .alert-title { font-size: 22px; }
-    .alert-message { font-size: 16px; }
+    .alert-box { min-width: 350px; padding: 25px 30px; }
+    .alert-avatar { width: 60px; height: 60px; }
+    .alert-icon { font-size: 64px; }
+    .alert-title { font-size: 24px; }
+    .alert-message { font-size: 18px; }
+    .alert-highlight { font-size: 20px; }
   }
 </style>
 </head>
@@ -261,7 +314,15 @@ let processingQueue = false;
 let audioEnabled = false; 
 const talaQueue = [];
 let resolveCurrentAudio = null;
-const activeAlerts = []; 
+const activeAlerts = [];
+const alertSettings = {
+  follow: true,
+  subscribe: true,
+  gift: true,
+  cheer: true,
+  raid: true,
+  channel_points: true
+}; 
 
 /** ============== HELPERS ==================== **/
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
@@ -314,7 +375,14 @@ async function typeOut(text) {
 
 // --- TWITCH ALERTS ---
 
-function showTwitchAlert(type, data) {
+async function showTwitchAlert(type, data) {
+  // Check if alert type is enabled
+  const settingKey = type === 'subscription.gift' ? 'gift' : type;
+  if (alertSettings[settingKey] === false) {
+    console.log(`[Alert] ${type} alerts disabled, skipping`);
+    return;
+  }
+  
   const alertBox = document.createElement('div');
   alertBox.className = 'alert-box';
   
@@ -322,56 +390,93 @@ function showTwitchAlert(type, data) {
   let title = 'Alert';
   let message = '';
   let soundUrl = null;
+  let userName = '';
+  let userId = '';
   
   switch(type) {
     case 'follow':
       icon = '💜';
       title = 'NEW FOLLOWER';
-      message = `<span class="alert-highlight">${data.user_name}</span> is now following!`;
+      userName = data.user_name;
+      userId = data.user_id;
+      message = `<span class="alert-highlight">${userName}</span> is now following!`;
       soundUrl = null; // Add your follow sound URL here
       break;
       
     case 'subscribe':
       icon = '🌟';
       title = 'NEW SUBSCRIBER';
+      userName = data.user_name;
+      userId = data.user_id;
       const tier = data.tier === '3000' ? 'Tier 3' : data.tier === '2000' ? 'Tier 2' : 'Tier 1';
-      message = `<span class="alert-highlight">${data.user_name}</span> subscribed at ${tier}!`;
+      message = `<span class="alert-highlight">${userName}</span> subscribed at ${tier}!`;
       soundUrl = null; // Add your sub sound URL here
       break;
       
     case 'subscription.gift':
       icon = '🎁';
       title = 'GIFT SUB';
-      message = `<span class="alert-highlight">${data.user_name}</span> gifted ${data.total} sub${data.total > 1 ? 's' : ''}!`;
+      userName = data.user_name;
+      userId = data.user_id;
+      message = `<span class="alert-highlight">${userName}</span> gifted ${data.total} sub${data.total > 1 ? 's' : ''}!`;
       soundUrl = null;
       break;
       
     case 'cheer':
       icon = '💎';
       title = 'BITS';
-      message = `<span class="alert-highlight">${data.user_name}</span> cheered ${data.bits} bits!`;
+      userName = data.user_name;
+      userId = data.user_id;
+      message = `<span class="alert-highlight">${userName}</span> cheered ${data.bits} bits!`;
       soundUrl = null; // Add your bits sound URL here
       break;
       
     case 'raid':
       icon = '⚔️';
       title = 'RAID';
-      message = `<span class="alert-highlight">${data.from_broadcaster_user_name}</span> raided with ${data.viewers} viewers!`;
+      userName = data.from_broadcaster_user_name;
+      userId = data.from_broadcaster_user_id;
+      message = `<span class="alert-highlight">${userName}</span> raided with ${data.viewers} viewers!`;
       soundUrl = null; // Add your raid sound URL here
       break;
       
     case 'channel_points':
       icon = '✨';
       title = 'CHANNEL POINTS';
-      message = `<span class="alert-highlight">${data.user_name}</span> redeemed ${data.reward.title}!`;
+      userName = data.user_name;
+      userId = data.user_id;
+      message = `<span class="alert-highlight">${userName}</span> redeemed ${data.reward.title}!`;
       soundUrl = null;
       break;
   }
   
+  // Fetch user avatar
+  let avatarHtml = '';
+  if (userId && twitchAccessToken) {
+    try {
+      const userResponse = await fetch(`https://api.twitch.tv/helix/users?id=${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${twitchAccessToken}`,
+          'Client-Id': await getTwitchClientId()
+        }
+      });
+      const userData = await userResponse.json();
+      if (userData.data && userData.data[0]) {
+        const avatarUrl = userData.data[0].profile_image_url;
+        avatarHtml = `<div class="alert-user"><img class="alert-avatar" src="${avatarUrl}" alt="${userName}"></div>`;
+      }
+    } catch (e) {
+      console.warn('[Alert] Failed to fetch avatar:', e);
+    }
+  }
+  
   alertBox.innerHTML = `
-    <div class="alert-icon">${icon}</div>
-    <h2 class="alert-title">${title}</h2>
-    <p class="alert-message">${message}</p>
+    <div class="alert-content">
+      ${avatarHtml}
+      <div class="alert-icon">${icon}</div>
+      <h2 class="alert-title">${title}</h2>
+      <p class="alert-message">${message}</p>
+    </div>
   `;
   
   alertContainer.appendChild(alertBox);
@@ -494,11 +599,11 @@ async function subscribeToTwitchEvents() {
   
   console.log('[Twitch EventSub] Subscribing to events for broadcaster:', broadcasterId);
   
-  // Subscribe to follow events
+  // Subscribe to follow events (version 2)
   await createEventSubSubscription('channel.follow', {
     broadcaster_user_id: broadcasterId,
     moderator_user_id: broadcasterId
-  });
+  }, '2');
   
   // Subscribe to subscription events
   await createEventSubSubscription('channel.subscribe', {
@@ -526,7 +631,7 @@ async function subscribeToTwitchEvents() {
   });
 }
 
-async function createEventSubSubscription(type, condition) {
+async function createEventSubSubscription(type, condition, version = '1') {
   try {
     const response = await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
       method: 'POST',
@@ -537,7 +642,7 @@ async function createEventSubSubscription(type, condition) {
       },
       body: JSON.stringify({
         type: type,
-        version: '1',
+        version: version,
         condition: condition,
         transport: {
           method: 'websocket',
@@ -781,6 +886,20 @@ function connectWebSocket() {
 
 connectWebSocket();
 connectTwitchEventSub();
+
+// Load alert settings from backend
+(async function loadAlertSettings() {
+  try {
+    const response = await fetch(`${API_BASE}/admin/alerts/config`, { credentials: 'include' });
+    const data = await response.json();
+    if (data.config) {
+      Object.assign(alertSettings, data.config);
+      console.log('[Alerts] Settings loaded:', alertSettings);
+    }
+  } catch (e) {
+    console.warn('[Alerts] Failed to load settings, using defaults:', e);
+  }
+})();
 
 // OBS Browser Source Auto-unlock: Try to enable audio immediately
 // This works when OBS "Control audio via OBS" is enabled
