@@ -450,6 +450,9 @@ if (ttsRedeemFormEl) {
             const { res, data } = await apiPost("/nexus/tts/send", { text });
             if (res.ok) {
                 ttsRedeemInputEl.value = "";
+                if (data?.cooldownSeconds) {
+                    setTtsCooldown(data.cooldownSeconds);
+                }
                 if (ttsRedeemButton) {
                     ttsRedeemButton.innerText = "Sent!";
                     ttsRedeemButton.style.backgroundColor = "#4ff";
