@@ -205,35 +205,82 @@
         <div class="card">
             <label>Twitch Alert Settings</label>
             <p style="color:var(--text-muted);font-size:12px;margin-bottom:15px;">
-                Toggle which Twitch events trigger on-stream alerts
+                Toggle which Twitch events trigger on-stream alerts and configure sounds
             </p>
-            <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:15px;">
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                    <input type="checkbox" id="alert-follow" checked>
-                    <span>💜 Follows</span>
-                </label>
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                    <input type="checkbox" id="alert-subscribe" checked>
-                    <span>🌟 Subscriptions</span>
-                </label>
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                    <input type="checkbox" id="alert-gift" checked>
-                    <span>🎁 Gift Subs</span>
-                </label>
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                    <input type="checkbox" id="alert-cheer" checked>
-                    <span>💎 Cheers/Bits</span>
-                </label>
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                    <input type="checkbox" id="alert-raid" checked>
-                    <span>⚔️ Raids</span>
-                </label>
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                    <input type="checkbox" id="alert-channel_points" checked>
-                    <span>✨ Channel Points</span>
-                </label>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="border-bottom:1px solid var(--card-border);padding-bottom:12px;">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:8px;">
+                        <input type="checkbox" id="alert-follow" checked>
+                        <span style="font-weight:600;">💜 Follows</span>
+                    </label>
+                    <div class="form-row">
+                        <input id="alert-follow-sound" placeholder="sounds/follow.mp3" style="flex:2;" list="r2-files-list-alerts">
+                        <button class="btn secondary" style="flex:0.8; padding: 6px 5px; font-size:10px;" onclick="uploadAlertSound('follow')">📂 Upload</button>
+                        <button class="btn success" style="flex:0.5; padding: 6px 5px;" onclick="testAlertAudio('follow')">▶</button>
+                    </div>
+                </div>
+                <div style="border-bottom:1px solid var(--card-border);padding-bottom:12px;">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:8px;">
+                        <input type="checkbox" id="alert-subscribe" checked>
+                        <span style="font-weight:600;">🌟 Subscriptions</span>
+                    </label>
+                    <div class="form-row">
+                        <input id="alert-subscribe-sound" placeholder="sounds/subscribe.mp3" style="flex:2;" list="r2-files-list-alerts">
+                        <button class="btn secondary" style="flex:0.8; padding: 6px 5px; font-size:10px;" onclick="uploadAlertSound('subscribe')">📂 Upload</button>
+                        <button class="btn success" style="flex:0.5; padding: 6px 5px;" onclick="testAlertAudio('subscribe')">▶</button>
+                    </div>
+                </div>
+                <div style="border-bottom:1px solid var(--card-border);padding-bottom:12px;">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:8px;">
+                        <input type="checkbox" id="alert-gift" checked>
+                        <span style="font-weight:600;">🎁 Gift Subs</span>
+                    </label>
+                    <div class="form-row">
+                        <input id="alert-gift-sound" placeholder="sounds/gift.mp3" style="flex:2;" list="r2-files-list-alerts">
+                        <button class="btn secondary" style="flex:0.8; padding: 6px 5px; font-size:10px;" onclick="uploadAlertSound('gift')">📂 Upload</button>
+                        <button class="btn success" style="flex:0.5; padding: 6px 5px;" onclick="testAlertAudio('gift')">▶</button>
+                    </div>
+                </div>
+                <div style="border-bottom:1px solid var(--card-border);padding-bottom:12px;">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:8px;">
+                        <input type="checkbox" id="alert-cheer" checked>
+                        <span style="font-weight:600;">💎 Cheers/Bits</span>
+                    </label>
+                    <div class="form-row">
+                        <input id="alert-cheer-sound" placeholder="sounds/cheer.mp3" style="flex:2;" list="r2-files-list-alerts">
+                        <button class="btn secondary" style="flex:0.8; padding: 6px 5px; font-size:10px;" onclick="uploadAlertSound('cheer')">📂 Upload</button>
+                        <button class="btn success" style="flex:0.5; padding: 6px 5px;" onclick="testAlertAudio('cheer')">▶</button>
+                    </div>
+                </div>
+                <div style="border-bottom:1px solid var(--card-border);padding-bottom:12px;">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:8px;">
+                        <input type="checkbox" id="alert-raid" checked>
+                        <span style="font-weight:600;">⚔️ Raids</span>
+                    </label>
+                    <div class="form-row">
+                        <input id="alert-raid-sound" placeholder="sounds/raid.mp3" style="flex:2;" list="r2-files-list-alerts">
+                        <button class="btn secondary" style="flex:0.8; padding: 6px 5px; font-size:10px;" onclick="uploadAlertSound('raid')">📂 Upload</button>
+                        <button class="btn success" style="flex:0.5; padding: 6px 5px;" onclick="testAlertAudio('raid')">▶</button>
+                    </div>
+                </div>
+                <div style="padding-bottom:12px;">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:8px;">
+                        <input type="checkbox" id="alert-channel_points" checked>
+                        <span style="font-weight:600;">✨ Channel Points</span>
+                    </label>
+                    <div class="form-row">
+                        <input id="alert-channel_points-sound" placeholder="sounds/points.mp3" style="flex:2;" list="r2-files-list-alerts">
+                        <button class="btn secondary" style="flex:0.8; padding: 6px 5px; font-size:10px;" onclick="uploadAlertSound('channel_points')">📂 Upload</button>
+                        <button class="btn success" style="flex:0.5; padding: 6px 5px;" onclick="testAlertAudio('channel_points')">▶</button>
+                    </div>
+                </div>
             </div>
-            <button id="save-alerts-btn" class="btn" style="margin-top:20px;width:100%;">Save Alert Settings</button>
+            <datalist id="r2-files-list-alerts"></datalist>
+            <input type="file" id="alert-sound-upload-input" accept="audio/*" style="display:none;">
+            <div style="margin-top:15px;display:flex;gap:10px;">
+                <button id="save-alerts-btn" class="btn" style="flex:1;">Save Alert Settings</button>
+                <button class="btn secondary" onclick="scanR2FilesForAlerts()">🔄 Scan Files</button>
+            </div>
         </div>
 
         <h2 style="margin-top:30px;">Engagement Tools</h2>
@@ -479,6 +526,61 @@
         const url = `${API_BASE}/redeems/sound/${encodeURIComponent(filename)}`;
         const audio = new Audio(url);
         audio.play().catch(e => alert("Play error: " + e.message));
+    };
+
+    // --- ALERT SOUND UPLOAD ---
+    let currentAlertType = null;
+    window.uploadAlertSound = (alertType) => {
+        currentAlertType = alertType;
+        document.getElementById("alert-sound-upload-input").click();
+    };
+
+    document.getElementById("alert-sound-upload-input").onchange = async () => {
+        const file = document.getElementById("alert-sound-upload-input").files[0];
+        if(!file || !currentAlertType) return;
+        
+        const fd = new FormData();
+        fd.append("file", file);
+        
+        try {
+            const data = await apiFetch("/admin/upload/sound", { method: "POST", body: fd });
+            const key = data.key || data.filename || data.url;
+            if(key) {
+                document.getElementById(`alert-${currentAlertType}-sound`).value = key;
+                alert("Sound uploaded!");
+            } else {
+                throw new Error("No key returned");
+            }
+        } catch(e) {
+            alert("Upload Failed: " + e.message);
+        }
+        currentAlertType = null;
+    };
+
+    window.testAlertAudio = (alertType) => {
+        const filename = document.getElementById(`alert-${alertType}-sound`).value.trim();
+        if(!filename) return alert("No sound file set.");
+        const url = `${API_BASE}/redeems/sound/${encodeURIComponent(filename)}`;
+        const audio = new Audio(url);
+        audio.play().catch(e => alert("Play error: " + e.message));
+    };
+
+    window.scanR2FilesForAlerts = async () => {
+        try {
+            const { files } = await apiFetch("/admin/files/list");
+            const datalist = document.getElementById("r2-files-list-alerts");
+            datalist.innerHTML = "";
+            if (files && files.length) {
+                files.forEach(file => {
+                    const opt = document.createElement("option");
+                    opt.value = file;
+                    datalist.appendChild(opt);
+                });
+                alert(`Found ${files.length} files in Bucket.`);
+            } else {
+                alert("No files found or bucket not connected.");
+            }
+        } catch(e) { alert("Scan Error: " + e.message); }
     };
 
     // --- STREAM ---
@@ -727,6 +829,12 @@
             document.getElementById("alert-cheer").checked = cfg.cheer !== false;
             document.getElementById("alert-raid").checked = cfg.raid !== false;
             document.getElementById("alert-channel_points").checked = cfg.channel_points !== false;
+            document.getElementById("alert-follow-sound").value = cfg.followSound || "";
+            document.getElementById("alert-subscribe-sound").value = cfg.subscribeSound || "";
+            document.getElementById("alert-gift-sound").value = cfg.giftSound || "";
+            document.getElementById("alert-cheer-sound").value = cfg.cheerSound || "";
+            document.getElementById("alert-raid-sound").value = cfg.raidSound || "";
+            document.getElementById("alert-channel_points-sound").value = cfg.channelPointsSound || "";
         } catch (e) {
             console.warn("Failed to load alert settings", e);
         }
@@ -739,7 +847,13 @@
             gift: document.getElementById("alert-gift").checked,
             cheer: document.getElementById("alert-cheer").checked,
             raid: document.getElementById("alert-raid").checked,
-            channel_points: document.getElementById("alert-channel_points").checked
+            channel_points: document.getElementById("alert-channel_points").checked,
+            followSound: document.getElementById("alert-follow-sound").value.trim(),
+            subscribeSound: document.getElementById("alert-subscribe-sound").value.trim(),
+            giftSound: document.getElementById("alert-gift-sound").value.trim(),
+            cheerSound: document.getElementById("alert-cheer-sound").value.trim(),
+            raidSound: document.getElementById("alert-raid-sound").value.trim(),
+            channelPointsSound: document.getElementById("alert-channel_points-sound").value.trim()
         };
         try {
             await apiFetch("/admin/alerts/config", { method: "POST", body: payload });
