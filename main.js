@@ -7,6 +7,7 @@ import * as Video from './modules/video.js';
 import * as Admin from './modules/admin.js';
 
 const loaderEl = document.getElementById('appLoader');
+const LOADER_MAX_WAIT_MS = 15000;
 
 function hideLoader() {
   if (!loaderEl) return;
@@ -70,9 +71,17 @@ const waitForStreamReady = () => new Promise(resolve => {
 
 async function finalizeLoader() {
   if (!loaderEl) return;
-  await Promise.all([waitForWindowLoad(), waitForFonts()]);
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-  await Promise.all([waitForImages(), waitForStreamReady()]);
+  const fullWait = (async () => {
+    await Promise.all([waitForWindowLoad(), waitForFonts()]);
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    await Promise.all([waitForImages(), waitForStreamReady()]);
+  })();
+
+  await Promise.race([
+    fullWait,
+    new Promise(resolve => setTimeout(resolve, LOADER_MAX_WAIT_MS))
+  ]);
+
   hideLoader();
 }
 

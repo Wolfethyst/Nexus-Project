@@ -32,14 +32,31 @@ export function formatCompact(n) { return n >= INFINITE_POINTS ? "∞" : (n >= 1
 export function getDisplayName(u) { return u?.display || u?.displayName || u?.name || u?.username || u?.login || "User"; }
 
 export async function apiJson(path, options = {}) {
+  const timeoutMs = Number(options.timeoutMs || 15000);
   const finalOptions = { credentials: "include", ...options };
+
   if (finalOptions.body && !(finalOptions.headers && finalOptions.headers["Content-Type"])) {
     finalOptions.headers = { ...(finalOptions.headers || {}), "Content-Type": "application/json" };
   }
-  const res = await fetch(`${API}${path}`, finalOptions);
-  let data = null;
-  try { data = await res.json(); } catch { data = null; }
-  return { res, data };
+
+  let controller = null;
+  let timeoutId = null;
+  if (!finalOptions.signal) {
+    controller = new AbortController();
+    finalOptions.signal = controller.signal;
+    timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  }
+
+  try {
+    const res = await fetch(`${API}${path}`, finalOptions);
+    let data = null;
+    try { data = await res.json(); } catch { data = null; }
+    return { res, data };
+  } catch (e) {
+    return { res: { ok: false, status: 0, statusText: "Network error" }, data: null, error: e };
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
 }
 
 export function apiGet(path) { return apiJson(path); }

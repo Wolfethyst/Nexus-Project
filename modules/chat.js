@@ -1,5 +1,5 @@
 // src/modules/chat.js
-import { API, State, DECO_DURATIONS, apiPost, escapeHtml, getDisplayName, formatCompact } from './config.js';
+import { API, State, DECO_DURATIONS, apiGet, apiPost, escapeHtml, getDisplayName, formatCompact } from './config.js';
 
 let chatWs = null;
 let brainrotWords = [];
@@ -98,7 +98,9 @@ export function removeMessagesForUser(userId) {
 
 export async function applyActiveTimeouts() {
     try {
-        const { data } = await fetch(`${API}/mods/bans`).then(r=>r.json());
+        if (!State.isModOrOwner) return;
+        const { res, data } = await apiGet("/mods/bans");
+        if (!res?.ok) return;
         if (!data || !data.bans) return;
         const now = Date.now();
         data.bans.forEach(ban => {
