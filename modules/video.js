@@ -2,6 +2,7 @@
 import { apiGet, apiPost, escapeHtml, PLACEHOLDER_IMG, CLOUDFLARE_CUSTOMER, State } from './config.js';
 import { openVodEditModal } from './admin.js';
 import { addSystemMessage } from './chat.js';
+import { initCloudflarePlayer, destroyCloudflarePlayer, isCloudflareStream, getCloudflareVideoId } from './cloudflare-player.js';
 
 const API_BASE = "https://data.wolfethyst.tv";
 // [FIX] A known working image to stop the loop.
@@ -569,6 +570,24 @@ export async function playVideo(item, type) {
     return;
   }
 
+  // --- CLOUDFLARE STREAM LOGIC ---
+  if (isCloudflareStream(item)) {
+    const cloudflareId = getCloudflareVideoId(item);
+    if (cloudflareId) {
+      mainVideoPlayer.style.display = 'none';
+      const qualitySelect = document.getElementById('videoQualitySelect');
+      if(qualitySelect) qualitySelect.style.display = 'block';
+
+      try {
+        await initCloudflarePlayer(cloudflareId, videoParent);
+        return;
+      } catch (error) {
+        console.error('Failed to load Cloudflare Stream player, falling back to URL method', error);
+        // Fall through to native player logic if URL is available
+      }
+    }
+  }
+
   // --- NATIVE / BUNNY LOGIC ---
   if (item.url) {
     mainVideoPlayer.style.display = 'block';
@@ -611,10 +630,13 @@ export function closeVideoStage() {
   if(stage) stage.classList.add('hidden');
 
   // CLEANUP
-  ['nexus-bunny-embed', 'nexus-youtube-embed', 'nexus-odysee-embed'].forEach(id => {
+  ['nexus-bunny-embed', 'nexus-youtube-embed', 'nexus-odysee-embed', 'nexus-cloudflare-embed'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.remove();
   });
+
+  // Destroy Cloudflare player
+  destroyCloudflarePlayer();
 
   if (youtubePlayerInstance) {
     try {

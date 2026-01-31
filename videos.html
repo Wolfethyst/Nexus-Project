@@ -5,6 +5,7 @@
   <title>Nexus – Video Hub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+  <script defer src="https://embed.cloudflarestream.com/embed/ujsnowflakes.min.js"></script>
   <style>
     :root {
       --bg: #090013;
@@ -182,6 +183,12 @@
             <div id="meta-date" class="meta-date">--</div>
           </div>
           <button class="btn" onclick="closePlayer()">Close Player</button>
+      </div>
+      <div style="margin-top: 16px;">
+        <label for="videoQualitySelect" style="display: block; font-size: 0.9rem; margin-bottom: 6px; color: var(--muted);">Quality:</label>
+        <select id="videoQualitySelect" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.9rem; display: none;">
+          <option value="auto">Auto (Recommended)</option>
+        </select>
       </div>
       <div class="actions">
         <a id="btn-download" href="#" class="btn primary" download>Download</a>

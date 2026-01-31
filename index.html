@@ -118,11 +118,16 @@
                     </div>
                 </div>
 
-                <div class="adminOnly admin-controls-area">
-                    <input id="streamTitleInput" type="text" placeholder="Title..." class="panelInput" style="width: 200px;">
-                    <input id="streamGameInput" type="text" placeholder="Game..." class="panelInput" style="width: 120px;">
-                    <button id="streamTitleSaveBtn" class="panelSmallBtn">Save</button>
-                    <button id="clipBtn" class="panelSmallBtn">🎬 Clip</button>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <select id="qualitySelect" style="padding: 6px 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; font-size: 13px; cursor: pointer;">
+                        <option value="auto">Auto</option>
+                    </select>
+                    <div class="adminOnly admin-controls-area">
+                        <input id="streamTitleInput" type="text" placeholder="Title..." class="panelInput" style="width: 200px;">
+                        <input id="streamGameInput" type="text" placeholder="Game..." class="panelInput" style="width: 120px;">
+                        <button id="streamTitleSaveBtn" class="panelSmallBtn">Save</button>
+                        <button id="clipBtn" class="panelSmallBtn">🎬 Clip</button>
+                    </div>
                 </div>
             </div>
 
@@ -133,9 +138,11 @@
                       <div id="offline-message" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:#222;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5em;z-index:2;">Stream is offline</div>
                     </div>
                     <script>
+                      let hlsInstance = null;
                       document.addEventListener('DOMContentLoaded', function() {
                         var video = document.getElementById('stream-player');
                         var offlineMsg = document.getElementById('offline-message');
+                        var qualitySelect = document.getElementById('qualitySelect');
                         var hlsUrl = 'https://customer-gc5hjo8ti1eiebgs.cloudflarestream.com/b58b43ebaa1f57a6f55f861b9b366726/manifest/video.m3u8?protocol=llhlsbeta';
                         var showOffline = function() {
                           video.style.display = 'none';
@@ -153,10 +160,57 @@
                             else hideOffline();
                           });
                         } else if (window.Hls) {
-                          var hls = new Hls();
-                          hls.loadSource(hlsUrl);
-                          hls.attachMedia(video);
-                          hls.on(Hls.Events.ERROR, function(event, data) {
+                          hlsInstance = new Hls();
+                          hlsInstance.loadSource(hlsUrl);
+                          hlsInstance.attachMedia(video);
+                          
+                          // Populate quality selector when manifest is parsed
+                          hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                            var levels = hlsInstance.levels;
+                            qualitySelect.innerHTML = '<option value="auto">Auto</option>';
+                            
+                            // Extract unique resolutions and sort descending
+                            var resolutions = [];
+                            levels.forEach(function(level, index) {
+                              if (level.height) {
+                                resolutions.push({
+                                  height: level.height,
+                                  index: index,
+                                  label: level.height + 'p'
+                                });
+                              }
+                            });
+                            
+                            // Sort by height descending (1440p, 1080p, 720p, etc.)
+                            resolutions.sort(function(a, b) { return b.height - a.height; });
+                            
+                            // Remove duplicates
+                            var seen = {};
+                            resolutions = resolutions.filter(function(res) {
+                              if (seen[res.height]) return false;
+                              seen[res.height] = true;
+                              return true;
+                            });
+                            
+                            // Add options to dropdown
+                            resolutions.forEach(function(res) {
+                              var option = document.createElement('option');
+                              option.value = res.index;
+                              option.textContent = res.label;
+                              qualitySelect.appendChild(option);
+                            });
+                          });
+                          
+                          // Handle quality selection
+                          qualitySelect.addEventListener('change', function() {
+                            if (this.value === 'auto') {
+                              hlsInstance.currentLevel = -1; // -1 means auto
+                            } else {
+                              hlsInstance.currentLevel = parseInt(this.value);
+                            }
+                          });
+                          
+                          hlsInstance.on(Hls.Events.ERROR, function(event, data) {
                             if (data.fatal) showOffline();
                           });
                           video.addEventListener('loadeddata', function() {
