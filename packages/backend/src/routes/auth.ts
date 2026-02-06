@@ -125,7 +125,7 @@ router.get('/logto/login', async (c) => {
     expirationTtl: 300,
   });
 
-  const redirectUri = `${new URL(c.req.url).origin}/api/auth/logto/callback`;
+  const redirectUri = 'https://nexus.wolfethyst.tv/api/auth/logto/callback';
 
   const authUrl = new URL(`${endpoint}/oidc/auth`);
   authUrl.searchParams.set('client_id', clientId);
@@ -164,7 +164,7 @@ router.get('/logto/callback', async (c) => {
     const endpoint = c.env.LOGTO_ENDPOINT;
     const clientId = c.env.LOGTO_CLIENT_ID;
     const clientSecret = c.env.LOGTO_CLIENT_SECRET;
-    const redirectUri = `${new URL(c.req.url).origin}/api/auth/logto/callback`;
+    const redirectUri = 'https://nexus.wolfethyst.tv/api/auth/logto/callback';
 
     // Exchange code for tokens
     const tokenResponse = await fetch(`${endpoint}/oidc/token`, {
