@@ -11,35 +11,10 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
-  const isOwner = user?.roles?.includes('owner') ?? false;
-
   return (
-    <header className="bg-nexus-dark border-b border-purple-500/20 p-4">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link to="/" className="font-display text-2xl font-bold text-nexus-accent hover:text-nexus-accent-hover transition">
-            NEXUS
-          </Link>
-          
-          <nav className="flex items-center gap-6">
-            <Link to="/" className="text-sm hover:text-nexus-accent transition">
-              Home
-            </Link>
-            {user && (
-              <>
-                <Link to="/profile" className="text-sm hover:text-nexus-accent transition">
-                  Profile
-                </Link>
-                {isOwner && (
-                  <Link to="/owner" className="text-sm hover:text-nexus-accent transition">
-                    Owner Panel
-                  </Link>
-                )}
-              </>
-            )}
-          </nav>
-        </div>
-
+    <header className="bg-nexus-dark border-b border-purple-500/20 px-8 py-4">
+      <div className="flex items-center justify-between">
+        {/* LEFT - Sign In / User Profile */}
         <div className="flex items-center gap-4">
           {user ? (
             <div className="flex items-center gap-3">
@@ -47,25 +22,30 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
                 <img
                   src={user.avatar}
                   alt={user.displayName}
-                  className="w-10 h-10 rounded-full"
+                  className="w-8 h-8 rounded-full"
                 />
               )}
-              <span className="text-sm">{user.displayName}</span>
+              <span className="text-sm text-primary">{user.displayName}</span>
               {onLogout && (
                 <button
                   onClick={onLogout}
-                  className="text-xs text-muted hover:text-primary transition"
+                  className="ml-2 px-3 py-1 text-xs bg-white/10 border border-white/20 rounded hover:bg-white/20 transition"
                 >
                   Logout
                 </button>
               )}
             </div>
           ) : (
-            <a href="/api/auth/twitch/login" className="btn-primary text-sm">
+            <a href="/api/auth/twitch/login" className="px-4 py-2 bg-purple-500/20 border border-purple-500 text-purple-200 rounded font-bold text-sm hover:bg-purple-500/30 transition">
               Sign in
             </a>
           )}
         </div>
+
+        {/* RIGHT - NEXUS Brand */}
+        <Link to="/" className="font-['Cinzel'] text-2xl font-bold text-purple-400 hover:text-purple-300 transition">
+          NEXUS
+        </Link>
       </div>
     </header>
   );

@@ -8,6 +8,8 @@ import storeRouter from './routes/store';
 import profileRouter from './routes/profile';
 import ownerRouter from './routes/owner';
 import redeemsRouter from './routes/redeems';
+import { chat } from './routes/chat';
+import { getLeaderboard } from './lib';
 
 export type Env = {
   Bindings: {
@@ -55,6 +57,19 @@ app.route('/store', storeRouter);
 app.route('/nexus/profile', profileRouter);
 app.route('/owner', ownerRouter);
 app.route('/redeems', redeemsRouter);
+app.route('/chat', chat);
+
+// Leaderboard endpoint (public)
+app.get('/leaderboard', async (c) => {
+  try {
+    const limit = parseInt(c.req.query('limit') || '50');
+    const leaderboard = await getLeaderboard(c.env, limit);
+    return c.json({ ok: true, leaderboard });
+  } catch (error: any) {
+    console.error('Leaderboard error:', error);
+    return c.json({ error: 'Failed to fetch leaderboard' }, 500);
+  }
+});
 
 // 404
 app.notFound((c) => {

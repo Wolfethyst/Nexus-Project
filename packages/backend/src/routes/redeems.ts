@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import type { Env } from '../index.js';
+import { chargePointsForRedeem, addPoints } from '../lib.js';
 
 const router = new Hono<Env>();
 
@@ -63,16 +64,12 @@ router.post('/redeem', async (c) => {
       }
     }
     
-    // Check user points
-    const pointsStr = await c.env.POINTS.get(`points:${userId}`) || '0';
-    const points = parseInt(pointsStr);
+    // Deduct points using lib function
+    const chargeResult = await chargePointsForRedeem(c.env, userId, redeem.cost);
     
-    if (points < redeem.cost) {
-      return c.json({ ok: false, error: 'Insufficient crystals' }, 400);
+    if (!chargeResult.ok) {
+      return c.json({ ok: false, error: chargeResult.error }, 400);
     }
-    
-    // Deduct points
-    await c.env.POINTS.put(`points:${userId}`, (points - redeem.cost).toString());
     
     // Set cooldown
     if (redeem.cooldown_seconds > 0) {
@@ -92,7 +89,7 @@ router.post('/redeem', async (c) => {
     return c.json({
       ok: true,
       soundFile: redeem.sound_file,
-      remainingPoints: points - redeem.cost
+      remainingPoints: chargeResult.pointsAfter
     });
     
   } catch (error: any) {
@@ -124,16 +121,12 @@ router.post('/tts', async (c) => {
   const TTS_COST = 250;
   
   try {
-    // Check user points
-    const pointsStr = await c.env.POINTS.get(`points:${userId}`) || '0';
-    const points = parseInt(pointsStr);
+    // Charge points using lib function
+    const chargeResult = await chargePointsForRedeem(c.env, userId, TTS_COST);
     
-    if (points < TTS_COST) {
-      return c.json({ ok: false, error: 'Insufficient crystals' }, 400);
+    if (!chargeResult.ok) {
+      return c.json({ ok: false, error: chargeResult.error }, 400);
     }
-    
-    // Deduct points
-    await c.env.POINTS.put(`points:${userId}`, (points - TTS_COST).toString());
     
     // TODO: Queue TTS message for processing
     // For now, just log it
@@ -141,7 +134,7 @@ router.post('/tts', async (c) => {
     
     return c.json({
       ok: true,
-      remainingPoints: points - TTS_COST
+      remainingPoints: chargeResult.pointsAfter
     });
     
   } catch (error: any) {

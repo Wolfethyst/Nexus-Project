@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { XMLParser } from 'fast-xml-parser';
 import type { Env } from '../index.js';
+import { getOwnerStats, getLeaderboard } from '../lib.js';
 
 const router = new Hono<Env>();
 
@@ -170,19 +171,26 @@ router.get('/stats', async (c) => {
   }
 
   try {
-    const [vodsResult, clipsResult, usersResult] = await Promise.all([
-      c.env.DB.prepare('SELECT COUNT(*) as count FROM streams').first(),
-      c.env.DB.prepare('SELECT COUNT(*) as count FROM clips').first(),
-      c.env.DB.prepare('SELECT COUNT(*) as count FROM users').first(),
-    ]);
-
-    return c.json({
-      vods: vodsResult?.count || 0,
-      clips: clipsResult?.count || 0,
-      users: usersResult?.count || 0
-    });
+    const stats = await getOwnerStats(c.env);
+    return c.json({ ok: true, ...stats });
   } catch (error: any) {
     return c.json({ error: 'Failed to fetch stats', details: error.message }, 500);
+  }
+});
+
+// GET /owner/leaderboard - Get leaderboard for owner
+router.get('/leaderboard', async (c) => {
+  const auth = await requireOwner(c);
+  if (!auth.ok) {
+    return c.json({ error: auth.error }, auth.status);
+  }
+
+  try {
+    const limit = parseInt(c.req.query('limit') || '50');
+    const leaderboard = await getLeaderboard(c.env, limit);
+    return c.json({ ok: true, leaderboard });
+  } catch (error: any) {
+    return c.json({ error: 'Failed to fetch leaderboard', details: error.message }, 500);
   }
 });
 

@@ -1,27 +1,49 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { ApiClient } from '../lib/api';
 
 interface LeaderboardEntry {
   rank: number;
-  username: string;
+  id: string;
+  displayName: string;
   points: number;
-  avatar?: string;
+  avatar?: string | null;
 }
 
 export const Leaderboard: React.FC = () => {
-  const entries: LeaderboardEntry[] = [
-    { rank: 1, username: 'TopViewer', points: 15420, avatar: '🥇' },
-    { rank: 2, username: 'StreamFan', points: 12350, avatar: '🥈' },
-    { rank: 3, username: 'NexusKing', points: 10890, avatar: '🥉' },
-    { rank: 4, username: 'ChatMaster', points: 8760, avatar: '👑' },
-    { rank: 5, username: 'VodWatcher', points: 7340, avatar: '⭐' },
-    { rank: 6, username: 'LoyalFan', points: 6820, avatar: '💎' },
-    { rank: 7, username: 'StreamSniper', points: 5940, avatar: '🎯' },
-    { rank: 8, username: 'ClipChamp', points: 5120, avatar: '🎬' },
-  ];
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Future: Fetch real leaderboard data from API
+    fetchLeaderboard();
   }, []);
+
+  const fetchLeaderboard = async () => {
+    try {
+      setLoading(true);
+      const response = await ApiClient.get<{ leaderboard: LeaderboardEntry[] }>('/leaderboard');
+      if (response.ok && response.data?.leaderboard) {
+        setEntries(response.data.leaderboard);
+      }
+    } catch (error) {
+      console.error('Failed to fetch leaderboard:', error);
+      setEntries([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="panel h-full">
+        <div className="panel-header">
+          <span>Crystals Leaderboard</span>
+        </div>
+        <div className="panel-body flex items-center justify-center">
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="panel h-full">
@@ -29,49 +51,65 @@ export const Leaderboard: React.FC = () => {
         <span>Crystals Leaderboard</span>
       </div>
 
-      <div className="panel-body flex flex-col gap-1.5">
-        {entries.map((entry) => (
-          <div
-            key={entry.rank}
-            className={`flex items-center justify-between p-2 rounded-md bg-white/5 border border-white/10 font-['Marcellus'] ${
-              entry.rank === 1
-                ? 'bg-gradient-to-r from-yellow-500/15 to-transparent border-l-4 border-l-yellow-500'
-                : ''
-            }`}
-          >
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div
-                className={`text-sm font-bold w-6 text-center ${
-                  entry.rank === 1
-                    ? 'text-yellow-400'
-                    : entry.rank === 2
-                    ? 'text-gray-300'
-                    : entry.rank === 3
-                    ? 'text-amber-600'
-                    : 'text-purple-400'
-                }`}
-              >
-                {entry.rank}
-              </div>
-              {entry.avatar && <div className="text-lg">{entry.avatar}</div>}
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-white truncate text-sm">
-                  {entry.username}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-bold text-purple-300">
-                {entry.points.toLocaleString()}
-              </span>
-              <img
-                src="https://data.wolfethyst.tv/assets/wolfe_crystal"
-                alt="crystals"
-                className="w-5 h-5"
-              />
-            </div>
+      <div className="panel-body flex flex-col gap-1.5 overflow-y-auto">
+        {entries.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-400 italic">No leaderboard data</p>
           </div>
-        ))}
+        ) : (
+          entries.map((entry) => (
+            <div
+              key={entry.id}
+              className={`flex items-center justify-between p-2 rounded-md bg-white/5 border border-white/10 font-['Marcellus'] transition-all ${
+                entry.rank === 1
+                  ? 'bg-gradient-to-r from-yellow-500/15 to-transparent border-l-4 border-l-yellow-500'
+                  : entry.rank === 2
+                  ? 'bg-gradient-to-r from-gray-300/10 to-transparent border-l-4 border-l-gray-300'
+                  : entry.rank === 3
+                  ? 'bg-gradient-to-r from-amber-600/10 to-transparent border-l-4 border-l-amber-600'
+                  : ''
+              }`}
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div
+                  className={`text-sm font-bold w-6 text-center ${
+                    entry.rank === 1
+                      ? 'text-yellow-400'
+                      : entry.rank === 2
+                      ? 'text-gray-300'
+                      : entry.rank === 3
+                      ? 'text-amber-600'
+                      : 'text-purple-400'
+                  }`}
+                >
+                  #{entry.rank}
+                </div>
+                {entry.avatar && (
+                  <img
+                    src={entry.avatar}
+                    alt={entry.displayName}
+                    className="w-6 h-6 rounded-full"
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-white truncate text-sm">
+                    {entry.displayName}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-bold text-purple-300">
+                  {entry.points.toLocaleString()}
+                </span>
+                <img
+                  src="https://data.wolfethyst.tv/assets/wolfe_crystal"
+                  alt="crystals"
+                  className="w-5 h-5"
+                />
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
