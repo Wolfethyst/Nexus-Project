@@ -15,10 +15,8 @@ export default {
           warning: '#fbbf24',
           error: '#ff4444',
         },
-        text: {
-          primary: '#e0e0e0',
-          muted: '#999',
-        }
+        primary: '#e0e0e0',
+        muted: '#999',
       },
       fontFamily: {
         display: ['Marcellus', 'serif'],
