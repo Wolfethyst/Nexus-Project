@@ -32,6 +32,10 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          LOGTO_CLIENT_SECRET: ${{ secrets.LOGTO_CLIENT_SECRET }}
+          LOGTO_COOKIE_SECRET: ${{ secrets.LOGTO_COOKIE_SECRET }}
         run: |
           cd packages/backend
+          echo "$LOGTO_CLIENT_SECRET" | npx wrangler secret put LOGTO_CLIENT_SECRET
+          echo "$LOGTO_COOKIE_SECRET" | npx wrangler secret put LOGTO_COOKIE_SECRET
           npx wrangler deploy
