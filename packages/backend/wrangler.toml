@@ -33,10 +33,3 @@ id = "40ed63a3a3ee400ba7b78f50a4559f4c"
 [[r2_buckets]]
 binding = "REDEEM_SOUNDS"
 bucket_name = "wolfethyst-redeems"
-
-[build]
-command = "pnpm -r build"
-cwd = "../.."
-
-[build.upload]
-main = "./dist/index.js"
