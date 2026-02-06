@@ -27,7 +27,12 @@ export const OwnerPage: React.FC = () => {
     setSyncResult(null);
     
     try {
-      const res = await ApiClient.post<{ ok: boolean; synced: number; skipped: number; total: number }>('/owner/youtube/sync', {});
+      const ownerToken = import.meta.env.VITE_OWNER_TOKEN;
+      const res = await ApiClient.post<{ ok: boolean; synced: number; skipped: number; total: number }>(
+        '/owner/youtube/sync',
+        {},
+        ownerToken ? { headers: { 'X-Owner-Token': ownerToken } } : undefined
+      );
       
       if (res.ok && res.data) {
         setSyncResult(res.data);

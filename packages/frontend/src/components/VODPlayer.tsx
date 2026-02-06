@@ -29,11 +29,9 @@ export const VODPlayer: React.FC<VODPlayerProps> = ({
 
   return (
     <div className="panel lg:col-span-3">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex-1">
-          <h3 className="font-heading font-semibold text-lg">{title}</h3>
-          <p className="text-xs text-muted capitalize">{provider} VOD</p>
-        </div>
+      <div className="flex items-center justify-between mb-3 pb-2 border-b border-purple-500/20">
+        <h3 className="font-semibold">{title}</h3>
+        <span className="text-xs text-muted capitalize">{provider} VOD</span>
         {onClose && (
           <button
             onClick={onClose}

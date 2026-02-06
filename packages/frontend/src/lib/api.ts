@@ -18,11 +18,16 @@ export class ApiClient {
     }
   }
 
-  static async post<T>(path: string, body: unknown): Promise<ApiResponse<T>> {
+  static async post<T>(
+    path: string,
+    body: unknown,
+    options?: { headers?: Record<string, string> }
+  ): Promise<ApiResponse<T>> {
     try {
+      const headers = { 'Content-Type': 'application/json', ...(options?.headers || {}) };
       const response = await fetch(`${API_BASE}${path}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify(body),
       });

@@ -22,6 +22,7 @@ export type Env = {
     YOUTUBE_CLIENT_ID: string;
     YOUTUBE_CLIENT_SECRET: string;
     YOUTUBE_CHANNEL_ID?: string;
+    OWNER_TOKEN?: string;
     JWT_SECRET: string;
   };
 };
@@ -34,7 +35,7 @@ app.use(
   cors({
     origin: '*',
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Owner-Token'],
     credentials: true,
   })
 );

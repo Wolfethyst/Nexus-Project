@@ -8,6 +8,11 @@ const OWNER_UUID = '7fea3331-7c36-49ac-975b-58de25ecf6ba';
 
 // Helper to check owner permission
 async function requireOwner(c: any) {
+  const ownerToken = c.req.header('X-Owner-Token') || c.req.header('Authorization')?.replace('Bearer ', '');
+  if (ownerToken && c.env.OWNER_TOKEN && ownerToken === c.env.OWNER_TOKEN) {
+    return { ok: true, session: { user: { id: OWNER_UUID } } };
+  }
+
   const sessionId = c.req.header('Cookie')?.match(/wolfesession=([^;]+)/)?.[1];
   if (!sessionId) {
     return { ok: false, status: 401, error: 'Not logged in' };
