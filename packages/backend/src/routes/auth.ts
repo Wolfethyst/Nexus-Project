@@ -112,30 +112,47 @@ async function getLogToUserInfo(
  * GET /auth/logto/login - Initiate LogTo OIDC flow
  */
 router.get('/logto/login', async (c) => {
-  const endpoint = c.env.LOGTO_ENDPOINT;
-  const clientId = c.env.LOGTO_CLIENT_ID;
+  try {
+    const endpoint = c.env.LOGTO_ENDPOINT;
+    const clientId = c.env.LOGTO_CLIENT_ID;
 
-  // Generate state and nonce for OIDC
-  const state = crypto.randomUUID();
-  const nonce = crypto.randomUUID();
+    console.log('LogTo login initiated:', { endpoint, clientId });
 
-  // Store state/nonce in KV temporarily (5 min expiry)
-  const stateKey = `logto:state:${state}`;
-  await c.env.SESSIONS.put(stateKey, JSON.stringify({ nonce }), {
-    expirationTtl: 300,
-  });
+    if (!endpoint || !clientId) {
+      console.error('Missing LogTo config:', { endpoint: !!endpoint, clientId: !!clientId });
+      return c.json({ error: 'LogTo not configured' }, 500);
+    }
 
-  const redirectUri = 'https://nexus.wolfethyst.tv/api/auth/logto/callback';
+    // Generate state and nonce for OIDC
+    const state = crypto.randomUUID();
+    const nonce = crypto.randomUUID();
 
-  const authUrl = new URL(`${endpoint}/oidc/auth`);
-  authUrl.searchParams.set('client_id', clientId);
-  authUrl.searchParams.set('redirect_uri', redirectUri);
-  authUrl.searchParams.set('response_type', 'code');
-  authUrl.searchParams.set('scope', 'openid profile email');
-  authUrl.searchParams.set('state', state);
-  authUrl.searchParams.set('nonce', nonce);
+    // Store state/nonce in KV temporarily (5 min expiry)
+    const stateKey = `logto:state:${state}`;
+    await c.env.SESSIONS.put(stateKey, JSON.stringify({ nonce }), {
+      expirationTtl: 300,
+    });
 
-  return c.redirect(authUrl.toString());
+    const redirectUri = 'https://nexus.wolfethyst.tv/api/auth/logto/callback';
+
+    const authUrl = new URL(`${endpoint}/oidc/auth`);
+    authUrl.searchParams.set('client_id', clientId);
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('scope', 'openid profile email');
+    authUrl.searchParams.set('state', state);
+    authUrl.searchParams.set('nonce', nonce);
+
+    console.log('Redirecting to:', authUrl.toString());
+
+    return c.redirect(authUrl.toString());
+  } catch (error) {
+    console.error('LogTo login error:', error);
+    return c.json({
+      error: 'Login failed',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    }, 500);
+  }
 });
 
 /**
@@ -146,11 +163,15 @@ router.get('/logto/callback', async (c) => {
   const state = c.req.query('state');
   const error = c.req.query('error');
 
+  console.log('LogTo callback received:', { code: !!code, state: !!state, error });
+
   if (error) {
+    console.error('LogTo authorization error:', error);
     return c.json({ error: `LogTo error: ${error}` }, 400);
   }
 
   if (!code || !state) {
+    console.error('Missing callback params:', { code: !!code, state: !!state });
     return c.json({ error: 'Missing code or state' }, 400);
   }
 
@@ -158,13 +179,22 @@ router.get('/logto/callback', async (c) => {
     // Verify state exists in KV
     const stateData = await c.env.SESSIONS.get(`logto:state:${state}`, 'json');
     if (!stateData) {
+      console.error('Invalid state token');
       return c.json({ error: 'Invalid state' }, 400);
     }
 
     const endpoint = c.env.LOGTO_ENDPOINT;
     const clientId = c.env.LOGTO_CLIENT_ID;
     const clientSecret = c.env.LOGTO_CLIENT_SECRET;
+
+    if (!endpoint || !clientId || !clientSecret) {
+      console.error('Missing LogTo secrets:', { endpoint: !!endpoint, clientId: !!clientId, clientSecret: !!clientSecret });
+      return c.json({ error: 'LogTo configuration error' }, 500);
+    }
+
     const redirectUri = 'https://nexus.wolfethyst.tv/api/auth/logto/callback';
+
+    console.log('Exchanging code for tokens...');
 
     // Exchange code for tokens
     const tokenResponse = await fetch(`${endpoint}/oidc/token`, {
@@ -182,17 +212,22 @@ router.get('/logto/callback', async (c) => {
     });
 
     if (!tokenResponse.ok) {
-      console.error('LogTo token exchange failed:', tokenResponse.status);
-      return c.json({ error: 'Token exchange failed' }, 500);
+      const errorBody = await tokenResponse.text();
+      console.error('LogTo token exchange failed:', { status: tokenResponse.status, body: errorBody });
+      return c.json({ error: 'Token exchange failed', details: errorBody }, 500);
     }
 
     const tokenData: LogToTokenResponse = await tokenResponse.json();
+    console.log('Token exchange successful');
 
     // Get user info
     const userInfo = await getLogToUserInfo(endpoint, tokenData.access_token);
     if (!userInfo) {
+      console.error('Failed to get user info');
       return c.json({ error: 'Failed to get user info' }, 500);
     }
+
+    console.log('User info retrieved:', { userId: userInfo.sub });
 
     // Create/update user in D1
     await ensureUserInD1(
@@ -231,6 +266,8 @@ router.get('/logto/callback', async (c) => {
       sameSite: 'Lax',
       path: '/',
     }));
+
+    console.log('Session created and cookie set, redirecting to home');
 
     // Redirect to home
     return c.redirect('https://nexus.wolfethyst.tv/');
