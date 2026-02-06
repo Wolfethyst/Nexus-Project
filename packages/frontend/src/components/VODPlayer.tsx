@@ -1,0 +1,54 @@
+import React from 'react';
+
+interface VODPlayerProps {
+  videoId: string;
+  title: string;
+  provider?: 'youtube' | 'twitch' | 'bunny';
+  onClose?: () => void;
+}
+
+export const VODPlayer: React.FC<VODPlayerProps> = ({
+  videoId,
+  title,
+  provider = 'youtube',
+  onClose
+}) => {
+  const getEmbedUrl = () => {
+    switch (provider) {
+      case 'youtube':
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+      case 'twitch':
+        return `https://player.twitch.tv/?video=${videoId}&parent=${window.location.hostname}&autoplay=true`;
+      default:
+        return '';
+    }
+  };
+
+  return (
+    <div className="panel lg:col-span-3">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex-1">
+          <h3 className="font-heading font-semibold text-lg">{title}</h3>
+          <p className="text-xs text-text-muted capitalize">{provider} VOD</p>
+        </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="text-text-muted hover:text-text-primary text-sm"
+          >
+            ✕ Close
+          </button>
+        )}
+      </div>
+      <div className="bg-black/40 rounded-lg overflow-hidden" style={{ aspectRatio: '16 / 9' }}>
+        <iframe
+          src={getEmbedUrl()}
+          className="w-full h-full"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    </div>
+  );
+};

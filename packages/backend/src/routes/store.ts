@@ -1,7 +1,7 @@
-import { Hono } from 'hono';
-import type { Env } from '../index';
+import { Hono, type Context } from 'hono';
+import type { Env } from '../index.js';
 
-const router = new Hono<{ Bindings: Env }>();
+const router = new Hono<Env>();
 
 // GET /store - List marketplace items
 router.get('/', async (c) => {

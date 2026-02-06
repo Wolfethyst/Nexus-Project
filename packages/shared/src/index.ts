@@ -29,6 +29,8 @@ export interface Video {
   title: string;
   duration?: string;
   url?: string;
+  videoUrl?: string;
+  platform?: 'youtube' | 'twitch' | 'bunny';
   thumbnail?: string;
   createdAt: string | number;
   type?: 'vod' | 'video' | 'clip';
@@ -94,6 +96,8 @@ export interface ChatMessage {
   id: string;
   userId: string;
   username: string;
+  displayName?: string;
+  nameColor?: string;
   content: string;
   timestamp: number;
   badges?: string[];

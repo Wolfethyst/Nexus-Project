@@ -5,11 +5,17 @@ import videosRouter from './routes/videos';
 import streamsRouter from './routes/streams';
 import clipsRouter from './routes/clips';
 import storeRouter from './routes/store';
+import profileRouter from './routes/profile';
+import ownerRouter from './routes/owner';
 
 export interface Env {
   DB: D1Database;
-  KV: KVNamespace;
-  R2: R2Bucket;
+  POINTS: KVNamespace;
+  SESSIONS: KVNamespace;
+  ASSETS: KVNamespace;
+  MODERATION: KVNamespace;
+  CLIPS: KVNamespace;
+  REDEEM_SOUNDS: R2Bucket;
   TWITCH_CLIENT_ID: string;
   TWITCH_CLIENT_SECRET: string;
   YOUTUBE_CLIENT_ID: string;
@@ -17,7 +23,7 @@ export interface Env {
   JWT_SECRET: string;
 }
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<Env>();
 
 // Middleware
 app.use(
@@ -41,6 +47,8 @@ app.route('/videos', videosRouter);
 app.route('/streams', streamsRouter);
 app.route('/clips', clipsRouter);
 app.route('/store', storeRouter);
+app.route('/nexus/profile', profileRouter);
+app.route('/owner', ownerRouter);
 
 // 404
 app.notFound((c) => {

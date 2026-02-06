@@ -24,7 +24,12 @@ export function useAuth() {
     })();
   }, [setSession, setLoading]);
 
-  return { session, isInitialized };
+  return { 
+    session, 
+    isInitialized,
+    isOwner: session?.roles?.includes('owner') ?? false,
+    isMod: session?.roles?.includes('mod') ?? false,
+  };
 }
 
 export function useIsModOrOwner() {

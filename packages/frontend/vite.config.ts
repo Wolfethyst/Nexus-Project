@@ -8,6 +8,10 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
   },
+  define: {
+    'import.meta.env.VITE_API_BASE': JSON.stringify(process.env.VITE_API_BASE || '/api'),
+    'import.meta.env.VITE_STREAM_HLS_URL': JSON.stringify(process.env.VITE_STREAM_HLS_URL || 'https://customer-gc5hjo8ti1eiebgs.cloudflarestream.com/c6f83f068cf1847b267b41c4689c85a1/manifest/video.m3u8?protocol=llhlsbeta'),
+  },
   server: {
     proxy: {
       '/api': {

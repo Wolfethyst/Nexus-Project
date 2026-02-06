@@ -1,11 +1,13 @@
 import React from 'react';
-import { Layout, StreamPlayer } from '../components';
-import { useAuth } from '../hooks';
-import { useAuthStore } from '../store';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Layout } from './components';
+import { HomePage, OwnerPage, ProfilePage } from './pages';
+import { useAuth } from './hooks';
+import { useAuthStore } from './store';
 
 export const App: React.FC = () => {
   const { session } = useAuthStore();
-  const { isInitialized } = useAuth();
+  const { isInitialized, isOwner } = useAuth();
 
   if (!isInitialized) {
     return (
@@ -19,33 +21,25 @@ export const App: React.FC = () => {
   }
 
   return (
-    <Layout 
-      user={session?.user}
-      onLogout={async () => {
-        const { logout } = useAuthStore.getState();
-        await logout();
-      }}
-    >
-      <div className="space-y-6">
-        <section>
-          <h2 className="font-heading text-2xl font-bold mb-4">Welcome to Nexus v2</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-            <div className="panel lg:col-span-1">
-              <h3 className="font-semibold mb-2">Live Status</h3>
-              <p className="text-sm text-text-muted">● Live</p>
-              <p className="text-xs text-text-muted mt-1">Low latency HLS</p>
-            </div>
-            <StreamPlayer />
-            <div className="panel lg:col-span-1">
-              <h3 className="font-semibold mb-2">Total VODs</h3>
-              <p className="text-2xl font-bold text-nexus-accent">--</p>
-              <h3 className="font-semibold mb-2 mt-4">Total Clips</h3>
-              <p className="text-2xl font-bold text-nexus-accent">--</p>
-            </div>
-          </div>
-        </section>
-      </div>
-    </Layout>
+    <BrowserRouter>
+      <Layout 
+        user={session?.user}
+        onLogout={async () => {
+          const { logout } = useAuthStore.getState();
+          await logout();
+        }}
+      >
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route 
+            path="/owner" 
+            element={isOwner ? <OwnerPage /> : <Navigate to="/" replace />} 
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Layout>
+    </BrowserRouter>
   );
 };
 
