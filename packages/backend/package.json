@@ -5,8 +5,8 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "wrangler dev",
-    "build": "tsc && wrangler publish",
-    "deploy": "wrangler publish",
+    "build": "tsc",
+    "deploy": "wrangler deploy",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
