@@ -7,7 +7,7 @@
     "dev": "wrangler dev",
     "build": "tsc",
     "deploy": "wrangler deploy",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --build --force"
   },
   "dependencies": {
     "hono": "^3.11.1"
