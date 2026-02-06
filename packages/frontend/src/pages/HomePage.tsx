@@ -122,7 +122,7 @@ export const HomePage: React.FC = () => {
             <p className="text-center text-muted">No VODs available</p>
           </div>
         )
-      ))}
+      )}
     </div>
   );
 };
