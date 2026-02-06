@@ -72,7 +72,7 @@ export const StreamPlayer: React.FC = () => {
     <div className="panel lg:col-span-3">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold">Live Stream</h3>
-        <span className="text-xs text-text-muted">Cloudflare Stream</span>
+        <span className="text-xs text-muted">Cloudflare Stream</span>
       </div>
       <div className="bg-black/40 rounded-lg overflow-hidden relative" style={{ aspectRatio: '16 / 9' }}>
         {streamUrl ? (
@@ -87,7 +87,7 @@ export const StreamPlayer: React.FC = () => {
             controlsList="nodownload noplaybackrate noremoteplayback"
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-sm text-text-muted">
+          <div className="flex items-center justify-center h-full text-sm text-muted">
             Stream URL not configured
           </div>
         )}

@@ -37,7 +37,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onPlay }) => {
         <h3 className="font-heading font-semibold line-clamp-2 text-sm">
           {video.title}
         </h3>
-        <p className="text-xs text-text-muted mt-1">{dateStr}</p>
+        <p className="text-xs text-muted mt-1">{dateStr}</p>
       </div>
     </div>
   );

@@ -14,6 +14,10 @@ export default {
           success: '#72ffb0',
           warning: '#fbbf24',
           error: '#ff4444',
+        },
+        text: {
+          primary: '#e0e0e0',
+          muted: '#999',
         }
       },
       fontFamily: {

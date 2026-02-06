@@ -47,7 +47,7 @@ export const OwnerPage: React.FC = () => {
       <Layout user={session?.user}>
         <div className="text-center py-20">
           <h1 className="text-2xl font-bold text-red-500">Access Denied</h1>
-          <p className="text-text-muted mt-2">Owner access required</p>
+          <p className="text-muted mt-2">Owner access required</p>
         </div>
       </Layout>
     );
@@ -61,15 +61,15 @@ export const OwnerPage: React.FC = () => {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="panel">
-            <h3 className="text-sm text-text-muted mb-1">Total VODs</h3>
+            <h3 className="text-sm text-muted mb-1">Total VODs</h3>
             <p className="text-3xl font-bold text-nexus-accent">{stats.vods}</p>
           </div>
           <div className="panel">
-            <h3 className="text-sm text-text-muted mb-1">Total Clips</h3>
+            <h3 className="text-sm text-muted mb-1">Total Clips</h3>
             <p className="text-3xl font-bold text-nexus-accent">{stats.clips}</p>
           </div>
           <div className="panel">
-            <h3 className="text-sm text-text-muted mb-1">Total Users</h3>
+            <h3 className="text-sm text-muted mb-1">Total Users</h3>
             <p className="text-3xl font-bold text-nexus-accent">{stats.users}</p>
           </div>
         </div>
@@ -79,7 +79,7 @@ export const OwnerPage: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="font-semibold text-lg">YouTube Video Sync</h2>
-              <p className="text-sm text-text-muted">Import your YouTube videos as VODs</p>
+              <p className="text-sm text-muted">Import your YouTube videos as VODs</p>
             </div>
             <button
               onClick={handleYouTubeSync}

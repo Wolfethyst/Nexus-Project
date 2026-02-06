@@ -13,7 +13,7 @@
   }
 
   body {
-    @apply bg-nexus-dark text-text-primary antialiased;
+    @apply bg-nexus-dark text-primary antialiased;
   }
 }
 
@@ -23,7 +23,7 @@
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-nexus-dark border border-nexus-accent text-text-primary rounded font-medium hover:bg-nexus-dark/80 transition-colors;
+    @apply px-4 py-2 bg-nexus-dark border border-nexus-accent text-primary rounded font-medium hover:bg-nexus-dark/80 transition-colors;
   }
 
   .modal {

@@ -14,7 +14,7 @@ export const App: React.FC = () => {
       <div className="flex items-center justify-center h-screen bg-nexus-dark">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-nexus-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-text-muted">Initializing Nexus...</p>
+          <p className="text-muted">Initializing Nexus...</p>
         </div>
       </div>
     );

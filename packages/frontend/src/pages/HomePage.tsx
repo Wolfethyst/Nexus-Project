@@ -39,7 +39,7 @@ export const HomePage: React.FC = () => {
         />
       ) : selectedVOD ? (
         <div className="panel">
-          <p className="text-center text-text-muted">Video URL not available</p>
+          <p className="text-center text-muted">Video URL not available</p>
           <button onClick={() => setSelectedVOD(null)} className="btn-secondary mt-4">Close</button>
         </div>
       ) : (
@@ -49,8 +49,8 @@ export const HomePage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
               <div className="panel lg:col-span-1">
                 <h3 className="font-semibold mb-2">Live Status</h3>
-                <p className="text-sm text-text-muted">● Live</p>
-                <p className="text-xs text-text-muted mt-1">Low latency HLS</p>
+                <p className="text-sm text-muted">● Live</p>
+                <p className="text-xs text-muted mt-1">Low latency HLS</p>
               </div>
               <StreamPlayer />
               <div className="panel lg:col-span-1">

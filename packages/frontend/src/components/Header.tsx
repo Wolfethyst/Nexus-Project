@@ -54,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
               {onLogout && (
                 <button
                   onClick={onLogout}
-                  className="text-xs text-text-muted hover:text-text-primary transition"
+                  className="text-xs text-muted hover:text-primary transition"
                 >
                   Logout
                 </button>

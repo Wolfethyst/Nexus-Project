@@ -76,7 +76,7 @@ export const ProfilePage: React.FC = () => {
             className="w-full px-4 py-2 bg-nexus-dark border border-gray-700 rounded-lg focus:border-nexus-accent focus:outline-none"
             placeholder={session?.user?.username || 'Your display name'}
           />
-          <p className="text-xs text-text-muted mt-1">{profile.displayName.length}/25 characters</p>
+          <p className="text-xs text-muted mt-1">{profile.displayName.length}/25 characters</p>
         </div>
 
         <div>
@@ -97,7 +97,7 @@ export const ProfilePage: React.FC = () => {
               placeholder="#ffffff"
             />
           </div>
-          <p className="text-xs text-text-muted mt-1">This color will appear in chat next to your name</p>
+          <p className="text-xs text-muted mt-1">This color will appear in chat next to your name</p>
         </div>
 
         <div>
@@ -110,7 +110,7 @@ export const ProfilePage: React.FC = () => {
             className="w-full px-4 py-2 bg-nexus-dark border border-gray-700 rounded-lg focus:border-nexus-accent focus:outline-none"
             placeholder="they/them"
           />
-          <p className="text-xs text-text-muted mt-1">{profile.pronouns.length}/15 characters</p>
+          <p className="text-xs text-muted mt-1">{profile.pronouns.length}/15 characters</p>
         </div>
 
         {message && (

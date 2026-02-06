@@ -32,12 +32,12 @@ export const VODPlayer: React.FC<VODPlayerProps> = ({
       <div className="flex items-center justify-between mb-3">
         <div className="flex-1">
           <h3 className="font-heading font-semibold text-lg">{title}</h3>
-          <p className="text-xs text-text-muted capitalize">{provider} VOD</p>
+          <p className="text-xs text-muted capitalize">{provider} VOD</p>
         </div>
         {onClose && (
           <button
             onClick={onClose}
-            className="text-text-muted hover:text-text-primary text-sm"
+            className="text-muted hover:text-primary text-sm"
           >
             ✕ Close
           </button>
