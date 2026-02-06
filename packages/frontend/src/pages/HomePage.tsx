@@ -34,6 +34,7 @@ export const HomePage: React.FC = () => {
         <VODPlayer
           videoUrl={selectedVOD.videoUrl}
           title={selectedVOD.title}
+          date={selectedVOD.createdAt}
           provider={selectedVOD.platform === 'youtube' ? 'youtube' : selectedVOD.platform === 'twitch' ? 'twitch' : 'youtube'}
           onClose={() => setSelectedVOD(null)}
         />
