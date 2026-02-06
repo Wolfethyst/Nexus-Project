@@ -1,16 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { StreamPlayer, VideoCard, VODPlayer, Chat, Leaderboard } from '../components';
-import { useVideoStore } from '../store';
+import { useVideoStore, useAuthStore } from '../store';
 import { useVideoData } from '../hooks/useVideo';
 import { ApiClient } from '../lib/api';
 import type { Video } from '@nexus/shared';
-
-interface Stats {
-  vodCount: number;
-  clipCount: number;
-  userCount: number;
-}
 
 interface StreamInfo {
   title: string;
@@ -21,38 +15,59 @@ interface StreamInfo {
 export const HomePage: React.FC = () => {
   useVideoData(); // Load VODs from backend
   const { vods } = useVideoStore();
-  const [stats, setStats] = useState<Stats>({ vodCount: 0, clipCount: 0, userCount: 0 });
+  const { session } = useAuthStore();
   const [streamInfo, setStreamInfo] = useState<StreamInfo>({ title: 'Stream Title Loading...', game: '', live: false });
   const [selectedVOD, setSelectedVOD] = useState<Video | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<'live' | 'vods'>('live');
   const [ttsMessage, setTtsMessage] = useState('');
   const [ttsLoading, setTtsLoading] = useState(false);
+  
+  // Admin editable stream info
+  const [editTitle, setEditTitle] = useState('');
+  const [editGame, setEditGame] = useState('');
+  const [savingStream, setSavingStream] = useState(false);
+  
+  const isOwner = session?.roles?.includes('owner') ?? false;
+  const isMod = session?.roles?.includes('mod') ?? false;
+  const canEdit = isOwner || isMod;
 
   useEffect(() => {
-    loadStats();
     loadStreamInfo();
   }, []);
-
-  const loadStats = async () => {
-    try {
-      const response = await ApiClient.get<Stats>('/owner/stats');
-      if (response.ok && response.data) {
-        setStats(response.data);
-      }
-    } catch (error) {
-      console.error('Failed to load stats:', error);
-    }
-  };
 
   const loadStreamInfo = async () => {
     try {
       const response = await ApiClient.get<StreamInfo>('/streams/now');
       if (response.ok && response.data) {
         setStreamInfo(response.data);
+        setEditTitle(response.data.title);
+        setEditGame(response.data.game);
       }
     } catch (error) {
       console.error('Failed to load stream info:', error);
+    }
+  };
+
+  const handleSaveStreamInfo = async () => {
+    if (!canEdit) return;
+    
+    setSavingStream(true);
+    try {
+      const ownerToken = import.meta.env.VITE_OWNER_TOKEN;
+      const response = await ApiClient.post(
+        '/streams/title',
+        { title: editTitle, game: editGame },
+        ownerToken ? { headers: { 'X-Owner-Token': ownerToken } } : undefined
+      );
+
+      if (response.ok) {
+        setStreamInfo({ ...streamInfo, title: editTitle, game: editGame });
+      }
+    } catch (error) {
+      console.error('Failed to update stream info:', error);
+    } finally {
+      setSavingStream(false);
     }
   };
 
@@ -120,20 +135,50 @@ export const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* V1 Three-Column Grid: 320px | 1fr | 380px */}
+      {/* V1 Three-Column Grid: 320px (LEFT) | 1fr (CENTER) | 380px (RIGHT for CHAT) */}
       <div className="flex-1 grid grid-cols-[320px_1fr_380px] gap-5 px-5 pb-5 overflow-hidden h-full min-h-0">
-        {/* Left Column - Chat */}
-        <div className="h-full overflow-hidden">
-          <Chat />
+        {/* LEFT COLUMN - Now Playing Card + Leaderboard */}
+        <div className="h-full flex flex-col gap-5 overflow-hidden">
+          {/* Now Playing Card */}
+          <div className="relative rounded-xl overflow-hidden aspect-[2/3] border border-purple-500/20 shadow-xl flex-shrink-0">
+            <img
+              src="https://images.igdb.com/igdb/image/upload/t_cover_big/co85cg.jpg"
+              className="w-full h-full object-cover"
+              alt="Game Cover"
+              onError={(e) => {
+                e.currentTarget.src = 'https://data.wolfethyst.tv/assets/nexus_icon.png';
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0b0014] via-transparent to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <div className="text-[10px] text-purple-400 uppercase mb-1">Current Session</div>
+              <div className="font-['Cinzel'] text-[22px] leading-tight text-white mb-1 drop-shadow-lg">
+                {streamInfo.game || 'Loading...'}
+              </div>
+              <div className="font-['Marcellus'] text-[13px] text-gray-300">
+                {streamInfo.title}
+              </div>
+              <div className="mt-1.5 text-xs font-bold flex items-center gap-2">
+                <span className={streamInfo.live ? 'text-purple-400' : 'text-gray-500'}>
+                  {streamInfo.live ? '● Live' : '● Offline'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Leaderboard */}
+          <div className="flex-1 overflow-hidden">
+            <Leaderboard />
+          </div>
         </div>
 
-        {/* Center Column - Stream/VODs */}
+        {/* CENTER COLUMN - Stream/VODs */}
         <div className="h-full overflow-hidden">
           {activeTab === 'live' ? (
             <div className="panel h-full flex flex-col">
               {/* Stream Info Bar */}
               <div className="flex-shrink-0 bg-black/30 border-b border-white/10 p-4 backdrop-blur-md">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <h2 className="font-['Cinzel'] text-base font-bold text-white truncate shadow-sm">
                       {streamInfo.title}
@@ -148,6 +193,36 @@ export const HomePage: React.FC = () => {
                       </span>
                     </div>
                   </div>
+                  
+                  {/* Admin Controls */}
+                  {canEdit && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        placeholder="Title..."
+                        className="w-[200px] bg-black/50 border border-white/20 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-purple-500"
+                      />
+                      <input
+                        type="text"
+                        value={editGame}
+                        onChange={(e) => setEditGame(e.target.value)}
+                        placeholder="Game..."
+                        className="w-[120px] bg-black/50 border border-white/20 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-purple-500"
+                      />
+                      <button
+                        onClick={handleSaveStreamInfo}
+                        disabled={savingStream}
+                        className="bg-white/10 border border-white/20 text-white px-3 py-1.5 rounded text-xs hover:bg-white/20 transition disabled:opacity-50"
+                      >
+                        {savingStream ? '...' : 'Save'}
+                      </button>
+                      <button className="bg-white/10 border border-white/20 text-white px-3 py-1.5 rounded text-xs hover:bg-white/20 transition">
+                        🎬 Clip
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -248,9 +323,9 @@ export const HomePage: React.FC = () => {
           )}
         </div>
 
-        {/* Right Column - Leaderboard */}
+        {/* RIGHT COLUMN - Chat */}
         <div className="h-full overflow-hidden">
-          <Leaderboard />
+          <Chat />
         </div>
       </div>
     </div>

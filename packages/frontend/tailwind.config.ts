@@ -10,13 +10,13 @@ export default {
       colors: {
         nexus: {
           dark: '#0f0519',
-          accent: '#a855f7',
+          accent: '#d57bff',
           success: '#72ffb0',
           warning: '#fbbf24',
           error: '#ff4444',
         },
-        primary: '#e0e0e0',
-        muted: '#999',
+        primary: '#f4eaff',
+        muted: '#cdb8d9',
       },
       fontFamily: {
         display: ['Marcellus', 'serif'],
