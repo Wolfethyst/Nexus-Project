@@ -8,6 +8,10 @@ OWNER_TOKEN = ""
 
 [env.production]
 routes = [{ pattern = "nexus.wolfethyst.tv/api/*", zone_id = "81845f9b6a8496a989cbe0ba6a78ddc7" }]
+vars = {
+  LOGTO_ENDPOINT = "https://z8v2lq.logto.app",
+  LOGTO_CLIENT_ID = "dcgw6slrct4czm8ltgsl"
+}
 
 [[d1_databases]]
 binding = "DB"
