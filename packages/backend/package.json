@@ -1,0 +1,21 @@
+{
+  "name": "@nexus/backend",
+  "version": "2.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "tsc && wrangler publish",
+    "deploy": "wrangler publish",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^3.11.1",
+    "hono-auth-jwt": "^1.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20231121.0",
+    "typescript": "workspace:*",
+    "wrangler": "^3.17.1"
+  }
+}

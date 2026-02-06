@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --text-primary: #e0e0e0;
+    --text-muted: #999;
+    --bg-primary: #0f0519;
+    --bg-secondary: #1a0f28;
+    --accent: #a855f7;
+    --success: #72ffb0;
+  }
+
+  body {
+    @apply bg-nexus-dark text-text-primary antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-nexus-accent text-white rounded font-medium hover:bg-purple-600 transition-colors;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-nexus-dark border border-nexus-accent text-text-primary rounded font-medium hover:bg-nexus-dark/80 transition-colors;
+  }
+
+  .modal {
+    @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm;
+  }
+
+  .panel {
+    @apply bg-nexus-dark border border-purple-500/20 rounded-lg p-4;
+  }
+}

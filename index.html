@@ -576,26 +576,6 @@
             titleObserver.observe(target, { subtree: true, characterData: true, childList: true });
         }
     }, 1000);
-
-    // [UPDATED] Robust View Switcher
-    window.toggleMainView = (mode) => {
-        document.querySelectorAll('.live-view').forEach(el => el.classList.toggle('hidden', mode !== 'live'));
-        document.querySelectorAll('.video-view').forEach(el => el.classList.toggle('hidden', mode !== 'video'));
-        
-        const marketPanel = document.getElementById('marketplacePanel');
-        if (marketPanel) marketPanel.classList.add('hidden');
-        
-        const liveBtn = document.getElementById('viewBtnLive');
-        const videoBtn = document.getElementById('viewBtnVideo');
-        const storeBtn = document.getElementById('viewBtnStore'); // Might be null now
-
-        if (liveBtn) liveBtn.classList.toggle('active', mode === 'live');
-        if (videoBtn) videoBtn.classList.toggle('active', mode === 'video');
-        if (storeBtn) storeBtn.classList.remove('active');
-    };
-
-    // Initialize
-    toggleMainView('live');
   </script>
 </body>
 </html>

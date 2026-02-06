@@ -92,16 +92,31 @@ async function finalizeLoader() {
   hideLoader();
 }
 
-// Expose a small set of globals (kept minimal)
+// --- EXPOSE GLOBALS (all functions needed by onclick handlers in HTML) ---
+// Auth
 window.setTheme = Auth.setTheme;
 window.toggleDecorations = Auth.toggleDecorations;
+
+// Admin
 window.openVodEditModal = Admin.openVodEditModal;
+
+// Video
+window.toggleMainView = Video.toggleMainView;
 window.openGameDetails = Video.openGameDetails;
 window.playVideo = Video.playVideo;
 window.handleVideoClick = Video.handleVideoClick;
 window.openHubHome = Video.openHubHome;
 window.switchHubTab = Video.switchHubTab;
 window.handleGameCardClick = Video.handleGameCardClick;
+window.shareActiveVideo = Video.shareActiveVideo;
+window.closeVideoStage = Video.closeVideoStage;
+
+// Store
+window.switchMarketTab = Store.switchMarketTab;
+window.toggleStoreSort = Store.toggleStoreSort;
+window.toggleTipModal = Store.toggleTipModal;
+window.selectTipAmount = Store.selectTipAmount;
+window.renderStore = Store.renderStore;
 window.handleRedeemClick = Store.handleRedeemClick;
 
 // Initialize app data
@@ -146,9 +161,11 @@ window.handleRedeemClick = Store.handleRedeemClick;
       });
     }
 
-    // Additional global wiring for mobile toggle that expects renderStore
-    window.renderStore = Store.renderStore;
+    // Additional setup
     Chat.connectDashboardChatWS();
+    
+    // Initialize main view
+    Video.toggleMainView('live');
 
   } catch (e) { console.error('Init failed', e); }
   finally { await finalizeLoader(); }
