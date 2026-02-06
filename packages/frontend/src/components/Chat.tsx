@@ -6,6 +6,7 @@ interface ChatMessage {
   message: string;
   color: string;
   timestamp: Date;
+  avatar?: string;
 }
 
 export const Chat: React.FC = () => {
@@ -14,7 +15,7 @@ export const Chat: React.FC = () => {
       id: '1',
       username: 'System',
       message: 'Welcome to Nexus chat!',
-      color: '#a855f7',
+      color: '#d57bff',
       timestamp: new Date(),
     },
   ]);
@@ -46,49 +47,62 @@ export const Chat: React.FC = () => {
   };
 
   return (
-    <div className="glass-sidebar flex flex-col h-[calc(100vh-140px)]">
-      <div className="mb-4 pb-4 border-b border-purple-500/20">
-        <h3 className="font-heading text-xl font-bold text-nexus-accent">Live Chat</h3>
-        <p className="text-xs text-muted mt-1">{messages.length} messages</p>
+    <div className="panel h-full">
+      <div className="panel-header">
+        <span>Live Chat</span>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2 scrollbar-thin">
+      <div className="panel-body flex flex-col gap-2">
         {messages.map((msg) => (
-          <div key={msg.id} className="animate-fadeIn">
-            <div className="flex items-baseline gap-2">
-              <span
-                className="font-semibold text-sm"
-                style={{ color: msg.color }}
-              >
-                {msg.username}
-              </span>
-              <span className="text-xs text-muted">
-                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
+          <div
+            key={msg.id}
+            className="flex gap-2 p-2 rounded-md bg-white/5 border-l-2 border-transparent hover:bg-white/10 animate-fadeIn"
+          >
+            {msg.avatar && (
+              <img
+                src={msg.avatar}
+                alt={msg.username}
+                className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-baseline gap-2">
+                <span
+                  className="font-bold text-sm"
+                  style={{ color: msg.color }}
+                >
+                  {msg.username}
+                </span>
+                <span className="text-xs text-muted">
+                  {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+              <p className="text-sm text-gray-200 break-words font-['Marcellus'] leading-relaxed">
+                {msg.message}
+              </p>
             </div>
-            <p className="text-sm text-primary mt-1">{msg.message}</p>
           </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSendMessage} className="mt-auto">
-        <div className="flex gap-2">
+      <div className="flex-shrink-0 p-4 bg-black/20 border-t border-purple-500/20">
+        <form onSubmit={handleSendMessage} className="w-full">
           <input
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Send a message..."
-            className="flex-1 bg-nexus-dark/50 border border-purple-500/30 rounded-lg px-3 py-2 text-sm text-primary placeholder-muted focus:outline-none focus:border-nexus-accent transition-colors"
+            className="w-full px-4 py-3 rounded-full bg-black/30 border border-white/15 text-white placeholder-gray-400 outline-none focus:border-purple-500 focus:bg-black/50 transition-colors font-['Marcellus']"
+            autoComplete="off"
           />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-nexus-accent text-white rounded-lg font-medium hover:bg-purple-600 transition-colors text-sm"
-          >
-            Send
+        </form>
+        <div className="mt-3 flex gap-2">
+          <button className="flex-1 bg-purple-900/15 border border-purple-500 text-purple-200 py-2 rounded text-xs font-bold uppercase hover:bg-purple-900/35 transition-colors">
+            💎 Tip
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

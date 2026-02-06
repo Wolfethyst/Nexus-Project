@@ -14,62 +14,64 @@ export const Leaderboard: React.FC = () => {
     { rank: 3, username: 'NexusKing', points: 10890, avatar: '🥉' },
     { rank: 4, username: 'ChatMaster', points: 8760, avatar: '👑' },
     { rank: 5, username: 'VodWatcher', points: 7340, avatar: '⭐' },
+    { rank: 6, username: 'LoyalFan', points: 6820, avatar: '💎' },
+    { rank: 7, username: 'StreamSniper', points: 5940, avatar: '🎯' },
+    { rank: 8, username: 'ClipChamp', points: 5120, avatar: '🎬' },
   ];
 
   useEffect(() => {
     // Future: Fetch real leaderboard data from API
   }, []);
 
-  const getRankColor = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return 'text-yellow-400';
-      case 2:
-        return 'text-gray-300';
-      case 3:
-        return 'text-amber-600';
-      default:
-        return 'text-nexus-accent';
-    }
-  };
-
   return (
-    <div className="glass-sidebar flex flex-col h-[calc(100vh-140px)]">
-      <div className="mb-4 pb-4 border-b border-purple-500/20">
-        <h3 className="font-heading text-xl font-bold text-nexus-accent">Leaderboard</h3>
-        <p className="text-xs text-muted mt-1">Top viewers this month</p>
+    <div className="panel h-full">
+      <div className="panel-header">
+        <span>Crystals Leaderboard</span>
       </div>
 
-      <div className="space-y-3 overflow-y-auto pr-2 scrollbar-thin">
+      <div className="panel-body flex flex-col gap-1.5">
         {entries.map((entry) => (
           <div
             key={entry.rank}
-            className="glass-card hover:scale-[1.02] cursor-pointer"
+            className={`flex items-center justify-between p-2 rounded-md bg-white/5 border border-white/10 font-['Marcellus'] ${
+              entry.rank === 1
+                ? 'bg-gradient-to-r from-yellow-500/15 to-transparent border-l-4 border-l-yellow-500'
+                : ''
+            }`}
           >
-            <div className="flex items-center gap-3">
-              <div className={`text-2xl font-bold w-8 ${getRankColor(entry.rank)}`}>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div
+                className={`text-sm font-bold w-6 text-center ${
+                  entry.rank === 1
+                    ? 'text-yellow-400'
+                    : entry.rank === 2
+                    ? 'text-gray-300'
+                    : entry.rank === 3
+                    ? 'text-amber-600'
+                    : 'text-purple-400'
+                }`}
+              >
                 {entry.rank}
               </div>
-              <div className="text-2xl">{entry.avatar}</div>
+              {entry.avatar && <div className="text-lg">{entry.avatar}</div>}
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-primary truncate">
+                <p className="font-semibold text-white truncate text-sm">
                   {entry.username}
-                </p>
-                <p className="text-xs text-muted">
-                  {entry.points.toLocaleString()} points
                 </p>
               </div>
             </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-bold text-purple-300">
+                {entry.points.toLocaleString()}
+              </span>
+              <img
+                src="https://data.wolfethyst.tv/assets/wolfe_crystal"
+                alt="crystals"
+                className="w-5 h-5"
+              />
+            </div>
           </div>
         ))}
-      </div>
-
-      <div className="mt-4 pt-4 border-t border-purple-500/20">
-        <div className="glass-card text-center">
-          <p className="text-sm text-muted">Your Rank</p>
-          <p className="text-2xl font-bold text-nexus-accent mt-1">#42</p>
-          <p className="text-xs text-muted mt-1">3,245 points</p>
-        </div>
       </div>
     </div>
   );

@@ -48,93 +48,119 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="h-full flex flex-col">
       {/* Tab Navigation */}
-      <div className="flex justify-center gap-4">
-        <button
-          onClick={() => { setActiveTab('live'); setSelectedVOD(null); setSearchParams({}); }}
-          className={`px-8 py-3 rounded-xl font-heading font-bold transition-all duration-300 ${
-            activeTab === 'live'
-              ? 'glass-card bg-nexus-accent/30 text-white border-nexus-accent/50 shadow-lg shadow-nexus-accent/20'
-              : 'glass-card text-gray-400 hover:bg-purple-500/10'
-          }`}
-        >
-          🔴 LIVE
-        </button>
-        <button
-          onClick={() => setActiveTab('vods')}
-          className={`px-8 py-3 rounded-xl font-heading font-bold transition-all duration-300 ${
-            activeTab === 'vods'
-              ? 'glass-card bg-nexus-accent/30 text-white border-nexus-accent/50 shadow-lg shadow-nexus-accent/20'
-              : 'glass-card text-gray-400 hover:bg-purple-500/10'
-          }`}
-        >
-          📺 VODS
-        </button>
+      <div className="flex items-center justify-center py-4">
+        <div className="flex gap-1 bg-black/30 p-1 rounded-full border border-white/10">
+          <button
+            onClick={() => { setActiveTab('live'); setSelectedVOD(null); setSearchParams({}); }}
+            className={`px-6 py-2 rounded-full font-['Cinzel'] text-xs font-bold uppercase transition-all ${
+              activeTab === 'live'
+                ? 'bg-purple-500 text-black shadow-lg shadow-purple-500/50'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            LIVE
+          </button>
+          <button
+            onClick={() => setActiveTab('vods')}
+            className={`px-6 py-2 rounded-full font-['Cinzel'] text-xs font-bold uppercase transition-all ${
+              activeTab === 'vods'
+                ? 'bg-purple-500 text-black shadow-lg shadow-purple-500/50'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            VODS
+          </button>
+        </div>
       </div>
 
-      {/* Three Column Layout */}
-      {activeTab === 'live' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          {/* Left Sidebar - Chat */}
-          <div className="lg:col-span-3">
-            <Chat />
-          </div>
-
-          {/* Center - Stream Player */}
-          <div className="lg:col-span-6 space-y-4">
-            <div className="glass-panel">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="font-heading text-2xl font-bold text-nexus-accent">Live Stream</h2>
-                  <p className="text-sm text-muted flex items-center gap-2 mt-1">
-                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                    Live • Low latency HLS
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted">Total VODs</p>
-                  <p className="text-2xl font-bold text-nexus-accent">{stats.vodCount}</p>
-                </div>
-              </div>
-              <StreamPlayer />
-            </div>
-
-            {/* Stream Info Panel */}
-            <div className="glass-panel">
-              <h3 className="font-heading text-lg font-bold mb-3">Stream Stats</h3>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <p className="text-2xl font-bold text-nexus-accent">{stats.vodCount}</p>
-                  <p className="text-xs text-muted mt-1">Total VODs</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-nexus-success">{stats.clipCount}</p>
-                  <p className="text-xs text-muted mt-1">Total Clips</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-purple-400">{stats.userCount}</p>
-                  <p className="text-xs text-muted mt-1">Viewers</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Sidebar - Leaderboard */}
-          <div className="lg:col-span-3">
-            <Leaderboard />
-          </div>
+      {/* V1 Three-Column Grid: 320px | 1fr | 380px */}
+      <div className="flex-1 grid grid-cols-[320px_1fr_380px] gap-5 px-5 pb-5 overflow-hidden h-full min-h-0">
+        {/* Left Column - Chat */}
+        <div className="h-full overflow-hidden">
+          <Chat />
         </div>
-      ) : selectedVOD && selectedVOD.videoUrl ? (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          {/* Left Sidebar - Chat */}
-          <div className="lg:col-span-3">
-            <Chat />
-          </div>
 
-          {/* Center - VOD Player */}
-          <div className="lg:col-span-6">
-            <div className="glass-panel">
+        {/* Center Column - Stream/VODs */}
+        <div className="h-full overflow-hidden">
+          {activeTab === 'live' ? (
+            <div className="panel h-full flex flex-col">
+              {/* Stream Info Bar */}
+              <div className="flex-shrink-0 bg-black/30 border-b border-white/10 p-4 backdrop-blur-md">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="font-['Cinzel'] text-base font-bold text-white truncate shadow-sm">
+                      Stream Title Loading...
+                    </h2>
+                    <div className="flex items-center gap-2 mt-1 text-xs">
+                      <span className="bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/30 text-purple-300">
+                        Game Name
+                      </span>
+                      <span className="text-red-500 font-bold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                        Live
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stream Player */}
+              <div className="flex-shrink-0 w-full aspect-video bg-black">
+                <StreamPlayer />
+              </div>
+
+              {/* Stream Interactions */}
+              <div className="flex-1 bg-black/40 border-t border-white/10 p-4 overflow-y-auto">
+                <div className="flex gap-5">
+                  <div className="w-72 flex-shrink-0 border-r border-white/10 pr-5">
+                    <div className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-2">
+                      Text-To-Speech
+                    </div>
+                    <form className="flex flex-col gap-2">
+                      <textarea
+                        placeholder="Type message..."
+                        maxLength={150}
+                        className="w-full bg-black/50 border border-white/20 rounded-lg p-3 text-white text-sm resize-none h-20 focus:outline-none focus:border-purple-500"
+                      />
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs">
+                          Cost: <span className="text-purple-400 font-bold">250</span>{' '}
+                          <img
+                            src="https://data.wolfethyst.tv/assets/wolfe_crystal"
+                            alt="crystal"
+                            className="inline w-3.5 h-3.5"
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          className="px-4 py-1.5 bg-purple-500/20 border border-purple-500 text-purple-200 rounded text-xs font-bold hover:bg-purple-500/30 transition"
+                        >
+                          ➜
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                  <div className="flex-1">
+                    <div className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-2">
+                      Quick Redeems
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {/* Placeholder redeem cards */}
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-center hover:border-purple-500/50 transition cursor-pointer">
+                        <div className="text-2xl mb-1">🎉</div>
+                        <div className="text-xs text-white font-bold">Celebration</div>
+                        <div className="text-xs text-purple-400 mt-1">500 💎</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : selectedVOD && selectedVOD.videoUrl ? (
+            <div className="panel h-full">
               <VODPlayer
                 videoUrl={selectedVOD.videoUrl}
                 title={selectedVOD.title}
@@ -143,51 +169,42 @@ export const HomePage: React.FC = () => {
                 onClose={handleCloseVOD}
               />
             </div>
-          </div>
-
-          {/* Right Sidebar - Leaderboard */}
-          <div className="lg:col-span-3">
-            <Leaderboard />
-          </div>
-        </div>
-      ) : selectedVOD ? (
-        <div className="glass-panel max-w-2xl mx-auto">
-          <p className="text-center text-muted">Video URL not available</p>
-          <button onClick={handleCloseVOD} className="btn-secondary mt-4 mx-auto block">Close</button>
-        </div>
-      ) : (
-        vods.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            {/* Left Sidebar - Chat */}
-            <div className="lg:col-span-3">
-              <Chat />
-            </div>
-
-            {/* Center - VOD Grid */}
-            <div className="lg:col-span-6">
-              <div className="glass-panel">
-                <h2 className="font-heading text-2xl font-bold mb-4 text-nexus-accent">All VODs</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {vods.map((video: Video) => (
-                    <div key={video.id} onClick={() => setSelectedVOD(video)}>
-                      <VideoCard video={video} onPlay={() => setSelectedVOD(video)} />
-                    </div>
-                  ))}
-                </div>
+          ) : selectedVOD ? (
+            <div className="panel h-full flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-gray-400 mb-4">Video URL not available</p>
+                <button onClick={handleCloseVOD} className="btn-secondary">Close</button>
               </div>
             </div>
-
-            {/* Right Sidebar - Leaderboard */}
-            <div className="lg:col-span-3">
-              <Leaderboard />
+          ) : (
+            <div className="panel h-full flex flex-col">
+              <div className="panel-header">
+                <span>All VODs</span>
+              </div>
+              <div className="panel-body">
+                {vods.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-3">
+                    {vods.map((video: Video) => (
+                      <div key={video.id} onClick={() => setSelectedVOD(video)}>
+                        <VideoCard video={video} onPlay={() => setSelectedVOD(video)} />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-400 italic">No VODs available</p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="glass-panel max-w-2xl mx-auto">
-            <p className="text-center text-muted">No VODs available</p>
-          </div>
-        )
-      )}
+          )}
+        </div>
+
+        {/* Right Column - Leaderboard */}
+        <div className="h-full overflow-hidden">
+          <Leaderboard />
+        </div>
+      </div>
     </div>
   );
 };
