@@ -24,7 +24,14 @@ jobs:
       - name: Build shared package
         run: pnpm -r --filter @nexus/shared build
 
-      - run: pnpm type-check
+      - name: Type check shared
+        run: pnpm -r --filter @nexus/shared type-check
+
+      - name: Type check backend
+        run: pnpm -r --filter @nexus/backend type-check
+
+      - name: Type check frontend
+        run: pnpm -r --filter @nexus/frontend type-check
 
       - name: Lint Frontend
         run: pnpm -r --filter @nexus/frontend lint
