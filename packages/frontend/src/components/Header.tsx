@@ -3,14 +3,17 @@ import { Link } from 'react-router-dom';
 
 interface HeaderProps {
   user?: {
-    displayName: string;
+    display?: string;
+    displayName?: string;
     avatar?: string;
     roles?: string[];
   };
   onLogout?: () => void;
+  activeTab?: 'live' | 'vods';
+  onTabChange?: (tab: 'live' | 'vods') => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
+export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'live', onTabChange }) => {
   return (
     <header className="bg-nexus-dark border-b border-purple-500/20 px-8 py-4">
       <div className="flex items-center justify-between">
@@ -21,11 +24,11 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
               {user.avatar && (
                 <img
                   src={user.avatar}
-                  alt={user.displayName}
+                  alt={user.display || user.displayName || 'User'}
                   className="w-8 h-8 rounded-full"
                 />
               )}
-              <span className="text-sm text-primary">{user.displayName}</span>
+              <span className="text-sm text-primary">{user.display || user.displayName || 'User'}</span>
               {onLogout && (
                 <button
                   onClick={onLogout}
@@ -40,6 +43,30 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
               Sign in
             </a>
           )}
+        </div>
+
+        {/* CENTER - Tab Navigation */}
+        <div className="absolute left-1/2 transform -translate-x-1/2 flex gap-1 bg-black/30 p-1 rounded-full border border-white/10">
+          <button
+            onClick={() => onTabChange?.('live')}
+            className={`px-6 py-2 rounded-full font-['Cinzel'] text-xs font-bold uppercase transition-all ${
+              activeTab === 'live'
+                ? 'bg-purple-500 text-black shadow-lg shadow-purple-500/50'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            LIVE
+          </button>
+          <button
+            onClick={() => onTabChange?.('vods')}
+            className={`px-6 py-2 rounded-full font-['Cinzel'] text-xs font-bold uppercase transition-all ${
+              activeTab === 'vods'
+                ? 'bg-purple-500 text-black shadow-lg shadow-purple-500/50'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            VODS
+          </button>
         </div>
 
         {/* RIGHT - NEXUS Brand */}

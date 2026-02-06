@@ -3,6 +3,7 @@ import type { ApiResponse } from '@nexus/shared';
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 export class ApiClient {
+  static baseURL = API_BASE;
   static async get<T>(path: string): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(`${API_BASE}${path}`, {

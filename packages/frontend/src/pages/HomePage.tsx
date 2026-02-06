@@ -12,14 +12,18 @@ interface StreamInfo {
   live: boolean;
 }
 
-export const HomePage: React.FC = () => {
+interface HomePageProps {
+  activeTab: 'live' | 'vods';
+  onTabChange: (tab: 'live' | 'vods') => void;
+}
+
+export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) => {
   useVideoData(); // Load VODs from backend
   const { vods } = useVideoStore();
   const { session } = useAuthStore();
   const [streamInfo, setStreamInfo] = useState<StreamInfo>({ title: 'Stream Title Loading...', game: '', live: false });
   const [selectedVOD, setSelectedVOD] = useState<Video | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<'live' | 'vods'>('live');
   const [ttsMessage, setTtsMessage] = useState('');
   const [ttsLoading, setTtsLoading] = useState(false);
   
@@ -94,13 +98,13 @@ export const HomePage: React.FC = () => {
   useEffect(() => {
     const vodId = searchParams.get('vod');
     if (vodId) {
-      setActiveTab('vods');
+      onTabChange('vods');
       const matchingVOD = vods.find(v => v.videoUrl?.includes(vodId) || v.videoId === vodId || v.id === vodId);
       if (matchingVOD) {
         setSelectedVOD(matchingVOD);
       }
     }
-  }, [searchParams, vods]);
+  }, [searchParams, vods, onTabChange]);
 
   const handleCloseVOD = () => {
     setSelectedVOD(null);
@@ -109,34 +113,8 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Tab Navigation */}
-      <div className="flex items-center justify-center py-4">
-        <div className="flex gap-1 bg-black/30 p-1 rounded-full border border-white/10">
-          <button
-            onClick={() => { setActiveTab('live'); setSelectedVOD(null); setSearchParams({}); }}
-            className={`px-6 py-2 rounded-full font-['Cinzel'] text-xs font-bold uppercase transition-all ${
-              activeTab === 'live'
-                ? 'bg-purple-500 text-black shadow-lg shadow-purple-500/50'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            LIVE
-          </button>
-          <button
-            onClick={() => setActiveTab('vods')}
-            className={`px-6 py-2 rounded-full font-['Cinzel'] text-xs font-bold uppercase transition-all ${
-              activeTab === 'vods'
-                ? 'bg-purple-500 text-black shadow-lg shadow-purple-500/50'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            VODS
-          </button>
-        </div>
-      </div>
-
       {/* V1 Three-Column Grid: 320px (LEFT) | 1fr (CENTER) | 380px (RIGHT for CHAT) */}
-      <div className="flex-1 grid grid-cols-[320px_1fr_380px] gap-5 px-5 pb-5 overflow-hidden h-full min-h-0">
+      <div className="flex-1 grid grid-cols-[320px_1fr_380px] gap-5 px-5 py-5 overflow-hidden h-full min-h-0">
         {/* LEFT COLUMN - Now Playing Card + Leaderboard */}
         <div className="h-full flex flex-col gap-5 overflow-hidden">
           {/* Now Playing Card */}

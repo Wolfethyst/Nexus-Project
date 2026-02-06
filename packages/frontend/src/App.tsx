@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components';
 import { HomePage, OwnerPage, ProfilePage } from './pages';
@@ -8,6 +8,7 @@ import { useAuthStore } from './store';
 export const App: React.FC = () => {
   const { session } = useAuthStore();
   const { isInitialized, isOwner } = useAuth();
+  const [activeTab, setActiveTab] = useState<'live' | 'vods'>('live');
 
   if (!isInitialized) {
     return (
@@ -28,9 +29,11 @@ export const App: React.FC = () => {
           const { logout } = useAuthStore.getState();
           await logout();
         }}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       >
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<HomePage activeTab={activeTab} onTabChange={setActiveTab} />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route 
             path="/owner" 

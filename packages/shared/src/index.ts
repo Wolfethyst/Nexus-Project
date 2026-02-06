@@ -1,8 +1,9 @@
 // Authentication types
 export interface User {
   id: string;
-  username: string;
-  displayName: string;
+  username?: string;
+  display?: string;
+  displayName?: string;
   avatar?: string;
   decoration?: string;
   email?: string;
