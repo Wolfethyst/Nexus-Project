@@ -39,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
               )}
             </div>
           ) : (
-            <a href="/api/auth/logto/login" className="px-4 py-2 bg-purple-500/20 border border-purple-500 text-purple-200 rounded font-bold text-sm hover:bg-purple-500/30 transition">
+            <a href="https://nexus.protected.app" className="px-4 py-2 bg-purple-500/20 border border-purple-500 text-purple-200 rounded font-bold text-sm hover:bg-purple-500/30 transition">
               Sign in
             </a>
           )}
