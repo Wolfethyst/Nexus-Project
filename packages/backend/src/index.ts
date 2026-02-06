@@ -21,6 +21,7 @@ export type Env = {
     TWITCH_CLIENT_SECRET: string;
     YOUTUBE_CLIENT_ID: string;
     YOUTUBE_CLIENT_SECRET: string;
+    YOUTUBE_CHANNEL_ID?: string;
     JWT_SECRET: string;
   };
 };

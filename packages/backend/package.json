@@ -10,6 +10,7 @@
     "type-check": "tsc --build --force"
   },
   "dependencies": {
+    "fast-xml-parser": "^4.5.3",
     "hono": "^3.11.1"
   },
   "devDependencies": {

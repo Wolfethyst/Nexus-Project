@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { XMLParser } from 'fast-xml-parser';
 import type { Env } from '../index.js';
 
 const router = new Hono<Env>();
@@ -20,6 +21,54 @@ async function requireOwner(c: any) {
   return { ok: true, session };
 }
 
+type YouTubeItem = {
+  videoId: string;
+  title: string;
+  thumbnail: string;
+  publishedAt: number;
+};
+
+function normalizeArray<T>(value: T | T[] | undefined): T[] {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
+async function fetchYouTubeRss(channelId: string): Promise<YouTubeItem[]> {
+  const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+  const response = await fetch(rssUrl);
+  if (!response.ok) {
+    throw new Error(`YouTube RSS returned ${response.status}`);
+  }
+
+  const xml = await response.text();
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: '@_',
+  });
+  const parsed = parser.parse(xml) as any;
+  const entries = normalizeArray(parsed?.feed?.entry);
+
+  return entries
+    .map((entry: any) => {
+      const videoId = entry['yt:videoId'];
+      const title = entry?.title;
+      const published = entry?.published || entry?.updated;
+      const mediaGroup = entry?.['media:group'];
+      const thumbnails = normalizeArray(mediaGroup?.['media:thumbnail']);
+      const thumbnail = thumbnails[0]?.['@_url'] || '';
+
+      if (!videoId || !title || !published) return null;
+
+      return {
+        videoId,
+        title,
+        thumbnail,
+        publishedAt: new Date(published).getTime(),
+      } as YouTubeItem;
+    })
+    .filter(Boolean) as YouTubeItem[];
+}
+
 // POST /owner/youtube/sync - Sync YouTube videos to database
 router.post('/youtube/sync', async (c) => {
   const auth = await requireOwner(c);
@@ -28,38 +77,52 @@ router.post('/youtube/sync', async (c) => {
   }
 
   const session = auth.session;
-  if (!session.youtube?.access) {
-    return c.json({ error: 'YouTube not connected' }, 400);
-  }
-
   try {
-    // Get YouTube videos from API
-    const response = await fetch(
-      'https://www.googleapis.com/youtube/v3/search?part=snippet&forMine=true&type=video&maxResults=50&order=date',
-      {
-        headers: {
-          'Authorization': `Bearer ${session.youtube.access}`
+    let items: YouTubeItem[] = [];
+
+    if (session.youtube?.access) {
+      const response = await fetch(
+        'https://www.googleapis.com/youtube/v3/search?part=snippet&forMine=true&type=video&maxResults=50&order=date',
+        {
+          headers: {
+            'Authorization': `Bearer ${session.youtube.access}`
+          }
         }
+      );
+
+      if (!response.ok) {
+        return c.json({ error: 'YouTube API returned error', status: response.status }, 500);
       }
-    );
 
-    if (!response.ok) {
-      return c.json({ error: 'YouTube API returned error', status: response.status }, 500);
+      const data = await response.json() as { items?: any[] };
+      const apiItems = data.items || [];
+
+      items = apiItems.map((item: any) => {
+        const thumbnail = item.snippet.thumbnails?.maxres?.url ||
+          item.snippet.thumbnails?.high?.url ||
+          item.snippet.thumbnails?.medium?.url || '';
+
+        return {
+          videoId: item.id.videoId,
+          title: item.snippet.title,
+          thumbnail,
+          publishedAt: new Date(item.snippet.publishedAt).getTime(),
+        } as YouTubeItem;
+      });
+    } else {
+      const channelId = c.env.YOUTUBE_CHANNEL_ID;
+      if (!channelId) {
+        return c.json({ error: 'YouTube not connected and no channel ID configured' }, 400);
+      }
+
+      items = await fetchYouTubeRss(channelId);
     }
-
-    const data = await response.json() as { items?: any[] };
-    const items = data.items || [];
     
     let synced = 0;
     let skipped = 0;
 
     for (const item of items) {
-      const videoId = item.id.videoId;
-      const title = item.snippet.title;
-      const thumbnail = item.snippet.thumbnails?.maxres?.url || 
-                       item.snippet.thumbnails?.high?.url || 
-                       item.snippet.thumbnails?.medium?.url;
-      const publishedAt = new Date(item.snippet.publishedAt).getTime();
+      const { videoId, title, thumbnail, publishedAt } = item;
 
       // Check if already exists
       const existing = await c.env.DB.prepare(
