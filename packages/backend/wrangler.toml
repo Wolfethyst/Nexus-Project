@@ -5,13 +5,11 @@ compatibility_date = "2024-01-01"
 [vars]
 YOUTUBE_CHANNEL_ID = "UCGk1QRVYCzEMRCcVK9--_7Q"
 OWNER_TOKEN = ""
+LOGTO_ENDPOINT = "https://z8v2lq.logto.app"
+LOGTO_CLIENT_ID = "dcgw6slrct4czm8ltgsl"
 
 [env.production]
 routes = [{ pattern = "nexus.wolfethyst.tv/api/*", zone_id = "81845f9b6a8496a989cbe0ba6a78ddc7" }]
-vars = {
-  LOGTO_ENDPOINT = "https://z8v2lq.logto.app",
-  LOGTO_CLIENT_ID = "dcgw6slrct4czm8ltgsl"
-}
 
 [[d1_databases]]
 binding = "DB"
