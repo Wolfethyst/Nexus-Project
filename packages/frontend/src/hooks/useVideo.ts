@@ -28,7 +28,6 @@ export function useVideoData() {
   }, [setVods, setClips, setLoading]);
 }
 
-export async function playVideo(id: string, type: 'vod' | 'clip') {
-  const { currentVideo } = useVideoStore.getState();
+export async function playVideo(_id: string, _type: 'vod' | 'clip') {
   // Implementation will load and play the video
 }

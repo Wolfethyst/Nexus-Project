@@ -8,20 +8,22 @@ import storeRouter from './routes/store';
 import profileRouter from './routes/profile';
 import ownerRouter from './routes/owner';
 
-export interface Env {
-  DB: D1Database;
-  POINTS: KVNamespace;
-  SESSIONS: KVNamespace;
-  ASSETS: KVNamespace;
-  MODERATION: KVNamespace;
-  CLIPS: KVNamespace;
-  REDEEM_SOUNDS: R2Bucket;
-  TWITCH_CLIENT_ID: string;
-  TWITCH_CLIENT_SECRET: string;
-  YOUTUBE_CLIENT_ID: string;
-  YOUTUBE_CLIENT_SECRET: string;
-  JWT_SECRET: string;
-}
+export type Env = {
+  Bindings: {
+    DB: D1Database;
+    POINTS: KVNamespace;
+    SESSIONS: KVNamespace;
+    ASSETS: KVNamespace;
+    MODERATION: KVNamespace;
+    CLIPS: KVNamespace;
+    REDEEM_SOUNDS: R2Bucket;
+    TWITCH_CLIENT_ID: string;
+    TWITCH_CLIENT_SECRET: string;
+    YOUTUBE_CLIENT_ID: string;
+    YOUTUBE_CLIENT_SECRET: string;
+    JWT_SECRET: string;
+  };
+};
 
 const app = new Hono<Env>();
 

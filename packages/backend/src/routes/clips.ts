@@ -1,4 +1,4 @@
-import { Hono, type Context } from 'hono';
+import { Hono } from 'hono';
 import type { Env } from '../index.js';
 
 const router = new Hono<Env>();
@@ -15,7 +15,7 @@ router.get('/list', async (c) => {
 
 // GET /clips/meta - Get clip metadata
 router.get('/meta', async (c) => {
-  const id = c.req.query('id');
+  const _id = c.req.query('id');
   
   try {
     // TODO: Query D1 for clip
@@ -27,7 +27,7 @@ router.get('/meta', async (c) => {
 
 // POST /clips/create - Create a clip (requires auth)
 router.post('/create', async (c) => {
-  const { windowSeconds } = await c.req.json();
+  const { windowSeconds: _windowSeconds } = await c.req.json();
   
   try {
     // TODO: Create clip via Cloudflare Stream API or similar

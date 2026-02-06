@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Session, User } from '@nexus/shared';
+import type { Session } from '@nexus/shared';
 
 interface AuthStore {
   session: Session | null;

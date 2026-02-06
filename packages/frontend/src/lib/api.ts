@@ -1,4 +1,4 @@
-import type { ApiResponse, ApiError } from '@nexus/shared';
+import type { ApiResponse } from '@nexus/shared';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 

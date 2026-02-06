@@ -1,4 +1,4 @@
-import { Hono, type Context } from 'hono';
+import { Hono } from 'hono';
 import type { Env } from '../index.js';
 
 const router = new Hono<Env>();
@@ -12,7 +12,7 @@ router.get('/session', async (c) => {
   }
 
   try {
-    const token = auth.replace('Bearer ', '');
+    // const _token = auth.replace('Bearer ', '');
     // TODO: Verify JWT token with c.env.JWT_SECRET
     // For now, placeholder
     return c.json({ loggedIn: true, roles: [], user: null });

@@ -1,5 +1,4 @@
 import React from 'react';
-import type { StoreItem } from '@nexus/shared';
 
 interface VideoCardProps {
   video: {

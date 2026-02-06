@@ -1,4 +1,4 @@
-import { Hono, type Context } from 'hono';
+import { Hono } from 'hono';
 import type { Env } from '../index.js';
 
 const router = new Hono<Env>();
@@ -25,7 +25,7 @@ router.get('/inventory', async (c) => {
 
 // POST /store/redeem - Redeem an item
 router.post('/redeem', async (c) => {
-  const { itemId } = await c.req.json();
+  const { itemId: _itemId } = await c.req.json();
   
   try {
     // TODO: Process redemption

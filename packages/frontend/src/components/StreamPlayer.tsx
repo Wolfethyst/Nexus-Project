@@ -10,11 +10,11 @@ export const StreamPlayer: React.FC = () => {
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !streamUrl) return;
+    if (!video || !streamUrl) return () => {};
 
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = streamUrl;
-      return;
+      return () => {};
     }
 
     if (Hls.isSupported()) {
@@ -52,6 +52,8 @@ export const StreamPlayer: React.FC = () => {
         hlsRef.current = null;
       };
     }
+    
+    return () => {};
   }, []);
 
   const handleGoLive = () => {

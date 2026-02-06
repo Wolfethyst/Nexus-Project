@@ -1,9 +1,35 @@
-import { Hono, type Context } from 'hono';
+import { Hono } from 'hono';
 import type { Env } from '../index.js';
 
 const router = new Hono<Env>();
 
-// GET /profile - Get current user's Nexus profile
+interface Session {
+  user?: {
+    id: string;
+    username?: string;
+    display?: string;
+  };
+}
+
+interface ProfileBody {
+  displayName?: string;
+  nameColor?: string;
+  pronouns?: string;
+}
+
+interface NexusMeta {
+  uuid: string;
+  platform: string;
+  displayName: string;
+  nameColor?: string;
+  pronouns?: string;
+  points: number;
+  inventory: any[];
+  avatarDecoration: any;
+  activeMessageDecoration: any;
+}
+
+// GET /profile - Get currentuser's Nexus profile
 router.get('/', async (c) => {
   // TODO: Get session from cookie
   const sessionId = c.req.header('Cookie')?.match(/wolfesession=([^;]+)/)?.[1];
@@ -12,7 +38,7 @@ router.get('/', async (c) => {
   }
 
   // TODO: Get session from KV
-  const session = await c.env.SESSIONS.get(`session:${sessionId}`, 'json');
+  const session = await c.env.SESSIONS.get<Session>(`session:${sessionId}`, 'json');
   if (!session?.user?.id) {
     return c.json({ error: 'Not logged in' }, 401);
   }
@@ -31,17 +57,17 @@ router.post('/', async (c) => {
     return c.json({ error: 'Not logged in' }, 401);
   }
 
-  const session = await c.env.SESSIONS.get(`session:${sessionId}`, 'json');
+  const session = await c.env.SESSIONS.get<Session>(`session:${sessionId}`, 'json');
   if (!session?.user?.id) {
     return c.json({ error: 'Not logged in' }, 401);
   }
 
-  const body = await c.req.json();
+  const body = await c.req.json() as ProfileBody;
   const userId = session.user.id;
   const metaKey = `nexus:meta:${userId}`;
   
   // Get existing meta or create new
-  let meta = await c.env.POINTS.get(metaKey, 'json') || {
+  let meta: NexusMeta = await c.env.POINTS.get<NexusMeta>(metaKey, 'json') || {
     uuid: userId,
     platform: 'nexus',
     displayName: session.user.display || 'Adventurer',

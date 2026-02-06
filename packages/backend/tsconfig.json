@@ -3,7 +3,9 @@
   "compilerOptions": {
     "lib": ["ES2020"],
     "types": ["@cloudflare/workers-types"],
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "include": ["src"],
   "references": [{ "path": "../shared" }]

@@ -1,12 +1,12 @@
-import { Hono, type Context } from 'hono';
+import { Hono } from 'hono';
 import type { Env } from '../index.js';
 
 const router = new Hono<Env>();
 
 // GET /streams/list - List streams/VODs
 router.get('/list', async (c) => {
-  const limit = c.req.query('limit') || '50';
-  const game = c.req.query('game');
+  // const _limit = c.req.query('limit') || '50';
+  // const _game = c.req.query('game');
   
   try {
     // TODO: Query D1 for streams
@@ -33,7 +33,7 @@ router.get('/now', async (c) => {
 
 // POST /stream/title - Update stream title (admin only)
 router.post('/title', async (c) => {
-  const { title, game } = await c.req.json();
+  // const _body = await c.req.json();
   
   try {
     // TODO: Update D1, cache

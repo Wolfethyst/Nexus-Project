@@ -1,19 +1,22 @@
 import React from 'react';
 
 interface VODPlayerProps {
-  videoId: string;
+  videoUrl: string;
   title: string;
   provider?: 'youtube' | 'twitch' | 'bunny';
   onClose?: () => void;
 }
 
 export const VODPlayer: React.FC<VODPlayerProps> = ({
-  videoId,
+  videoUrl,
   title,
   provider = 'youtube',
   onClose
 }) => {
   const getEmbedUrl = () => {
+    // Extract video ID from URL or use directly if it's just an ID
+    const videoId = videoUrl.includes('/') ? videoUrl.split('/').pop()?.split('?')[0] : videoUrl;
+    
     switch (provider) {
       case 'youtube':
         return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;

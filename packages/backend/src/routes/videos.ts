@@ -1,4 +1,4 @@
-import { Hono, type Context } from 'hono';
+import { Hono } from 'hono';
 import type { Env } from '../index.js';
 
 const router = new Hono<Env>();
@@ -18,7 +18,7 @@ router.get('/', async (c) => {
 
 // GET /videos/:id - Get video details
 router.get('/:id', async (c) => {
-  const { id } = c.req.param();
+  const { id: _id } = c.req.param();
   
   try {
     // TODO: Query D1 for specific video
@@ -31,7 +31,7 @@ router.get('/:id', async (c) => {
 // POST /videos - Create video (admin only)
 router.post('/', async (c) => {
   // TODO: Add auth check
-  const data = await c.req.json();
+  const _data = await c.req.json();
   
   try {
     // TODO: Insert into D1

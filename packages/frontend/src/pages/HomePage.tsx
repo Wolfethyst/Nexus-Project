@@ -30,13 +30,18 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {selectedVOD ? (
+      {selectedVOD && selectedVOD.videoUrl ? (
         <VODPlayer
           videoUrl={selectedVOD.videoUrl}
           title={selectedVOD.title}
-          provider={selectedVOD.platform === 'youtube' ? 'youtube' : 'twitch'}
+          provider={selectedVOD.platform === 'youtube' ? 'youtube' : selectedVOD.platform === 'twitch' ? 'twitch' : 'youtube'}
           onClose={() => setSelectedVOD(null)}
         />
+      ) : selectedVOD ? (
+        <div className="panel">
+          <p className="text-center text-text-muted">Video URL not available</p>
+          <button onClick={() => setSelectedVOD(null)} className="btn-secondary mt-4">Close</button>
+        </div>
       ) : (
         <>
           <section>

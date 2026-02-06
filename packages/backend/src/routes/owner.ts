@@ -1,4 +1,4 @@
-import { Hono, type Context } from 'hono';
+import { Hono } from 'hono';
 import type { Env } from '../index.js';
 
 const router = new Hono<Env>();
@@ -47,7 +47,7 @@ router.post('/youtube/sync', async (c) => {
       return c.json({ error: 'YouTube API returned error', status: response.status }, 500);
     }
 
-    const data = await response.json();
+    const data = await response.json() as { items?: any[] };
     const items = data.items || [];
     
     let synced = 0;
