@@ -7,17 +7,32 @@ routes = [{ pattern = "nexus.wolfethyst.tv/api/*", zone_id = "81845f9b6a8496a989
 
 [[d1_databases]]
 binding = "DB"
-database_name = "nexus"
+database_name = "nexus-db"
+database_id = "8fb6ea81-bdb7-40ea-9715-d67ffdc84a95"
 
 [[kv_namespaces]]
-binding = "KV"
-id = "your-kv-id"
-preview_id = "your-preview-kv-id"
+binding = "POINTS"
+id = "75e9427170c24a5f97ffc277978c352b"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "7ebdf491f7fd470890989e3866674b3b"
+
+[[kv_namespaces]]
+binding = "ASSETS"
+id = "3acb673a0e2b4db28292b343a9090562"
+
+[[kv_namespaces]]
+binding = "MODERATION"
+id = "f7bb4df5265a48bca91c375eee90a5b6"
+
+[[kv_namespaces]]
+binding = "CLIPS"
+id = "40ed63a3a3ee400ba7b78f50a4559f4c"
 
 [[r2_buckets]]
-binding = "R2"
-bucket_name = "nexus-assets"
-preview_bucket_name = "nexus-assets-preview"
+binding = "REDEEM_SOUNDS"
+bucket_name = "wolfethyst-redeems"
 
 [build]
 command = "pnpm -r build"
