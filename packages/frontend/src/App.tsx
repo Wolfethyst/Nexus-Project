@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Layout } from '../components';
+import React from 'react';
+import { Layout, StreamPlayer } from '../components';
 import { useAuth } from '../hooks';
 import { useAuthStore } from '../store';
 
@@ -29,17 +29,17 @@ export const App: React.FC = () => {
       <div className="space-y-6">
         <section>
           <h2 className="font-heading text-2xl font-bold mb-4">Welcome to Nexus v2</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="panel">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+            <div className="panel lg:col-span-1">
               <h3 className="font-semibold mb-2">Live Status</h3>
-              <p className="text-sm text-text-muted">● Offline</p>
+              <p className="text-sm text-text-muted">● Live</p>
+              <p className="text-xs text-text-muted mt-1">Low latency HLS</p>
             </div>
-            <div className="panel">
+            <StreamPlayer />
+            <div className="panel lg:col-span-1">
               <h3 className="font-semibold mb-2">Total VODs</h3>
               <p className="text-2xl font-bold text-nexus-accent">--</p>
-            </div>
-            <div className="panel">
-              <h3 className="font-semibold mb-2">Total Clips</h3>
+              <h3 className="font-semibold mb-2 mt-4">Total Clips</h3>
               <p className="text-2xl font-bold text-nexus-accent">--</p>
             </div>
           </div>
