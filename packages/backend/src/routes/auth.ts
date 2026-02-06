@@ -233,7 +233,7 @@ router.get('/logto/callback', async (c) => {
     }));
 
     // Redirect to home
-    return c.redirect('/');
+    return c.redirect('https://nexus.wolfethyst.tv/');
   } catch (error) {
     console.error('LogTo callback error:', error);
     return c.json({
