@@ -7,6 +7,7 @@ import clipsRouter from './routes/clips';
 import storeRouter from './routes/store';
 import profileRouter from './routes/profile';
 import ownerRouter from './routes/owner';
+import redeemsRouter from './routes/redeems';
 
 export type Env = {
   Bindings: {
@@ -53,6 +54,7 @@ app.route('/clips', clipsRouter);
 app.route('/store', storeRouter);
 app.route('/nexus/profile', profileRouter);
 app.route('/owner', ownerRouter);
+app.route('/redeems', redeemsRouter);
 
 // 404
 app.notFound((c) => {

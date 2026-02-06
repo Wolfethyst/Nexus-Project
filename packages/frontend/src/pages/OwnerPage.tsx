@@ -10,15 +10,47 @@ export const OwnerPage: React.FC = () => {
   const [stats, setStats] = useState({ vods: 0, clips: 0, users: 0 });
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<any>(null);
+  const [streamTitle, setStreamTitle] = useState('');
+  const [streamGame, setStreamGame] = useState('');
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     loadStats();
+    loadStreamInfo();
   }, []);
 
   const loadStats = async () => {
     const res = await ApiClient.get<typeof stats>('/owner/stats');
     if (res.ok && res.data) {
       setStats(res.data);
+    }
+  };
+
+  const loadStreamInfo = async () => {
+    const res = await ApiClient.get<{ title: string; game: string }>('/streams/now');
+    if (res.ok && res.data) {
+      setStreamTitle(res.data.title);
+      setStreamGame(res.data.game);
+    }
+  };
+
+  const handleUpdateStream = async () => {
+    setUpdating(true);
+    try {
+      const ownerToken = import.meta.env.VITE_OWNER_TOKEN;
+      const res = await ApiClient.post(
+        '/streams/title',
+        { title: streamTitle, game: streamGame },
+        ownerToken ? { headers: { 'X-Owner-Token': ownerToken } } : undefined
+      );
+
+      if (res.ok) {
+        alert('Stream info updated!');
+      } else {
+        alert(res.error || 'Update failed');
+      }
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -121,14 +153,32 @@ export const OwnerPage: React.FC = () => {
         <div className="panel">
           <h2 className="font-semibold text-lg mb-3">Stream Management</h2>
           <div className="space-y-3">
-            <button className="btn-secondary w-full text-left">
-              Manage Stream Title & Game
-            </button>
-            <button className="btn-secondary w-full text-left">
-              Create Manual Clip
-            </button>
-            <button className="btn-secondary w-full text-left">
-              Clear Chat History
+            <div>
+              <label className="block text-sm text-muted mb-1">Stream Title</label>
+              <input
+                type="text"
+                value={streamTitle}
+                onChange={(e) => setStreamTitle(e.target.value)}
+                className="w-full bg-black/50 border border-white/20 rounded px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                placeholder="Enter stream title..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-muted mb-1">Game Name</label>
+              <input
+                type="text"
+                value={streamGame}
+                onChange={(e) => setStreamGame(e.target.value)}
+                className="w-full bg-black/50 border border-white/20 rounded px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                placeholder="Enter game name..."
+              />
+            </div>
+            <button
+              onClick={handleUpdateStream}
+              disabled={updating}
+              className="btn-primary w-full"
+            >
+              {updating ? 'Updating...' : 'Update Stream Info'}
             </button>
           </div>
         </div>

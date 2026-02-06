@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { StreamPlayer, VideoCard, VODPlayer, Chat, Leaderboard } from '../components';
 import { useVideoStore } from '../store';
+import { useVideoData } from '../hooks/useVideo';
 import { ApiClient } from '../lib/api';
 import type { Video } from '@nexus/shared';
 
@@ -11,25 +12,69 @@ interface Stats {
   userCount: number;
 }
 
+interface StreamInfo {
+  title: string;
+  game: string;
+  live: boolean;
+}
+
 export const HomePage: React.FC = () => {
+  useVideoData(); // Load VODs from backend
   const { vods } = useVideoStore();
   const [stats, setStats] = useState<Stats>({ vodCount: 0, clipCount: 0, userCount: 0 });
+  const [streamInfo, setStreamInfo] = useState<StreamInfo>({ title: 'Stream Title Loading...', game: '', live: false });
   const [selectedVOD, setSelectedVOD] = useState<Video | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<'live' | 'vods'>('live');
+  const [ttsMessage, setTtsMessage] = useState('');
+  const [ttsLoading, setTtsLoading] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const response = await ApiClient.get<Stats>('/owner/stats');
-        if (response.ok && response.data) {
-          setStats(response.data);
-        }
-      } catch (error) {
-        console.error('Failed to load stats:', error);
-      }
-    })();
+    loadStats();
+    loadStreamInfo();
   }, []);
+
+  const loadStats = async () => {
+    try {
+      const response = await ApiClient.get<Stats>('/owner/stats');
+      if (response.ok && response.data) {
+        setStats(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+    }
+  };
+
+  const loadStreamInfo = async () => {
+    try {
+      const response = await ApiClient.get<StreamInfo>('/streams/now');
+      if (response.ok && response.data) {
+        setStreamInfo(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load stream info:', error);
+    }
+  };
+
+  const handleTTSSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ttsMessage.trim() || ttsLoading) return;
+
+    setTtsLoading(true);
+    try {
+      const response = await ApiClient.post('/redeems/tts', { message: ttsMessage });
+      if (response.ok) {
+        setTtsMessage('');
+        alert('TTS sent successfully!');
+      } else {
+        alert(response.error || 'Failed to send TTS');
+      }
+    } catch (error) {
+      alert('Network error');
+    } finally {
+      setTtsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const vodId = searchParams.get('vod');
@@ -91,15 +136,15 @@ export const HomePage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <h2 className="font-['Cinzel'] text-base font-bold text-white truncate shadow-sm">
-                      Stream Title Loading...
+                      {streamInfo.title}
                     </h2>
                     <div className="flex items-center gap-2 mt-1 text-xs">
                       <span className="bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/30 text-purple-300">
-                        Game Name
+                        {streamInfo.game || 'No game set'}
                       </span>
-                      <span className="text-red-500 font-bold flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
-                        Live
+                      <span className={`font-bold flex items-center gap-1 ${streamInfo.live ? 'text-red-500' : 'text-gray-500'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${streamInfo.live ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></span>
+                        {streamInfo.live ? 'Live' : 'Offline'}
                       </span>
                     </div>
                   </div>
@@ -118,8 +163,10 @@ export const HomePage: React.FC = () => {
                     <div className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-2">
                       Text-To-Speech
                     </div>
-                    <form className="flex flex-col gap-2">
+                    <form onSubmit={handleTTSSubmit} className="flex flex-col gap-2">
                       <textarea
+                        value={ttsMessage}
+                        onChange={(e) => setTtsMessage(e.target.value)}
                         placeholder="Type message..."
                         maxLength={150}
                         className="w-full bg-black/50 border border-white/20 rounded-lg p-3 text-white text-sm resize-none h-20 focus:outline-none focus:border-purple-500"
@@ -135,9 +182,10 @@ export const HomePage: React.FC = () => {
                         </div>
                         <button
                           type="submit"
-                          className="px-4 py-1.5 bg-purple-500/20 border border-purple-500 text-purple-200 rounded text-xs font-bold hover:bg-purple-500/30 transition"
+                          disabled={ttsLoading || !ttsMessage.trim()}
+                          className="px-4 py-1.5 bg-purple-500/20 border border-purple-500 text-purple-200 rounded text-xs font-bold hover:bg-purple-500/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          ➜
+                          {ttsLoading ? '...' : '➜'}
                         </button>
                       </div>
                     </form>

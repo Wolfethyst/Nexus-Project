@@ -11,14 +11,14 @@ export function useVideoData() {
       setLoading(true);
       try {
         const [vodsRes, clipsRes] = await Promise.all([
-          ApiClient.get<{ streams: Video[] }>('/streams/list?limit=50'),
+          ApiClient.get<{ videos: Video[] }>('/streams/list?limit=100'),
           ApiClient.get<{ clips: Clip[] }>('/clips/list'),
         ]);
 
-        if (vodsRes.ok && vodsRes.data) {
-          setVods(vodsRes.data.streams);
+        if (vodsRes.ok && vodsRes.data?.videos) {
+          setVods(vodsRes.data.videos);
         }
-        if (clipsRes.ok && clipsRes.data) {
+        if (clipsRes.ok && clipsRes.data?.clips) {
           setClips(clipsRes.data.clips);
         }
       } finally {
