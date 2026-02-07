@@ -46,7 +46,7 @@ router.get('/twitch/login', async (c) => {
 
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: 'https://nexus.wolfethyst.tv/api/auth/twitch/callback',
+    redirect_uri: 'https://api.wolfethyst.tv/auth/twitch/callback',
     response_type: 'code',
     scope: 'user:read:email',
     state,
@@ -88,7 +88,7 @@ router.get('/twitch/callback', async (c) => {
       client_secret: clientSecret,
       code,
       grant_type: 'authorization_code',
-      redirect_uri: 'https://nexus.wolfethyst.tv/api/auth/twitch/callback',
+      redirect_uri: 'https://api.wolfethyst.tv/auth/twitch/callback',
     }).toString(),
   });
 
@@ -135,7 +135,7 @@ router.get('/twitch/callback', async (c) => {
   });
 
   c.header('Set-Cookie', setCookieHeader('wolfesession', sessionId, Math.min(tokens.expires_in, 604800)));
-  return c.redirect('https://nexus.wolfethyst.tv/');
+  return c.redirect('https://nexus.wolfethyst.tv');
 });
 
 /**
