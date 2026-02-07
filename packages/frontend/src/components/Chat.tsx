@@ -195,7 +195,7 @@ export const Chat: React.FC = () => {
               className="w-full bg-purple-900/15 border border-purple-500 text-purple-200 py-2 rounded text-xs font-bold uppercase hover:bg-purple-900/35 transition-colors flex items-center justify-center gap-1.5"
             >
               <img
-                src="https://data.wolfethyst.tv/assets/wolfe_crystal"
+                 src="/assets/wolfe_crystal.png"
                 alt="crystal"
                 className="w-3.5 h-3.5"
               />

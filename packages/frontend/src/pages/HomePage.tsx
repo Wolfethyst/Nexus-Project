@@ -125,8 +125,17 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
               alt="Game Cover"
               onError={(e) => {
                 e.currentTarget.src = 'https://data.wolfethyst.tv/assets/nexus_icon.png';
+                  e.currentTarget.src = '/assets/nexus_icon.png';
               }}
             />
+              <img
+                src="/assets/nexus_icon.png"
+                className="w-full h-full object-cover"
+                alt="Nexus Icon"
+                onError={(e) => {
+                  e.currentTarget.src = '/assets/nexus_icon.png';
+                }}
+              />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0b0014] via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4">
               <div className="text-[10px] text-purple-400 uppercase mb-1">Current Session</div>
@@ -228,7 +237,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                         <div className="text-xs">
                           Cost: <span className="text-purple-400 font-bold">250</span>{' '}
                           <img
-                            src="https://data.wolfethyst.tv/assets/wolfe_crystal"
+                             src="/assets/wolfe_crystal.png"
                             alt="crystal"
                             className="inline w-3.5 h-3.5"
                           />

@@ -102,7 +102,7 @@ export const Leaderboard: React.FC = () => {
                   {entry.points.toLocaleString()}
                 </span>
                 <img
-                  src="https://data.wolfethyst.tv/assets/wolfe_crystal"
+                  src="/assets/wolfe_crystal.png"
                   alt="crystals"
                   className="w-5 h-5"
                 />
