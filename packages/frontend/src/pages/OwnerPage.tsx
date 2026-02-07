@@ -147,7 +147,12 @@ export const OwnerPage: React.FC = () => {
   return (
     <Layout>
       <div className="w-full max-w-6xl mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-6 text-white">Owner Dashboard</h1>
+        <div className="flex items-center gap-3 mb-6">
+          <h1 className="text-3xl font-bold text-white">Owner Dashboard</h1>
+          <span className="px-2 py-1 text-xs font-bold bg-purple-500/20 border border-purple-500 text-purple-200 rounded">
+            v2.0
+          </span>
+        </div>
 
         {message && (
           <div

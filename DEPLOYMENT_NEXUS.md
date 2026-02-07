@@ -22,8 +22,10 @@
   - `JWT_SECRET`
 
 - [ ] Cloudflare Pages connected to GitHub repo
-  - Build command: `pnpm build --filter @nexus/frontend`
+  - Build command: `pnpm build:frontend`
   - Output directory: `packages/frontend/dist`
+  - Root directory: `/` (or leave blank)
+  - Node version: `18` or higher
   - Custom domain: `nexus.wolfethyst.tv`
 
 ## Deployment Steps
@@ -56,8 +58,10 @@ npx wrangler secret put JWT_SECRET
 2. Connect GitHub repository
 3. Build settings:
    - **Framework**: None
-   - **Build command**: `pnpm build --filter @nexus/frontend`
+   - **Build command**: `pnpm build:frontend`
    - **Output directory**: `packages/frontend/dist`
+   - **Root directory**: `/` (leave blank)
+   - **Node version**: `18` or higher in Environment Variables
 4. Add custom domain: `nexus.wolfethyst.tv`
 
 ### 4. Deploy
