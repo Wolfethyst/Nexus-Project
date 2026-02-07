@@ -9,397 +9,273 @@ interface LogToUserInfo {
   email?: string;
   name?: string;
   picture?: string;
-  email_verified?: boolean;
 }
 
 interface LogToTokenResponse {
   access_token: string;
-  refresh_token?: string;
   id_token: string;
   token_type: string;
   expires_in: number;
+  refresh_token?: string;
 }
 
 interface SessionData {
   userId: string;
-  userEmail?: string;
-  userName?: string;
-  userAvatar?: string;
+  email?: string;
+  name?: string;
+  avatar?: string;
   accessToken: string;
-  refreshToken?: string;
   expiresAt: number;
 }
 
-/**
- * Helper: Parse cookies from request
- */
-function parseCookies(cookieHeader?: string): Record<string, string> {
+function parseCookies(headerValue?: string): Record<string, string> {
   const cookies: Record<string, string> = {};
-  if (!cookieHeader) return cookies;
-
-  cookieHeader.split(';').forEach((cookie) => {
-    const [key, value] = cookie.trim().split('=');
-    if (key && value) {
-      cookies[key] = decodeURIComponent(value);
+  if (!headerValue) return cookies;
+  headerValue.split(';').forEach((part) => {
+    const [key, ...rest] = part.split('=');
+    if (key && rest.length) {
+      cookies[key.trim()] = decodeURIComponent(rest.join('='));
     }
   });
-
   return cookies;
 }
 
-/**
- * Helper: Set cookie header
- */
-function setCookieHeader(
-  name: string,
-  value: string,
-  options?: {
-    maxAge?: number;
-    secure?: boolean;
-    httpOnly?: boolean;
-    sameSite?: 'Strict' | 'Lax' | 'None';
-    path?: string;
-  }
-): string {
-  let cookie = `${name}=${encodeURIComponent(value)}`;
-
-  if (options?.maxAge) {
-    cookie += `; Max-Age=${options.maxAge}`;
-  }
-  if (options?.secure) {
-    cookie += '; Secure';
-  }
-  if (options?.httpOnly) {
-    cookie += '; HttpOnly';
-  }
-  if (options?.sameSite) {
-    cookie += `; SameSite=${options.sameSite}`;
-  }
-  if (options?.path) {
-    cookie += `; Path=${options.path}`;
-  }
-
-  return cookie;
+function setCookieHeader(name: string, value: string, maxAge: number): string {
+  return `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; Secure; HttpOnly; SameSite=Lax`;
 }
 
 /**
- * Helper: Get LogTo userinfo
- */
-async function getLogToUserInfo(
-  endpoint: string,
-  accessToken: string
-): Promise<LogToUserInfo | null> {
-  try {
-    const response = await fetch(`${endpoint}/oidc/me`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    if (!response.ok) {
-      console.error('Failed to get LogTo userinfo:', response.status);
-      return null;
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('LogTo userinfo error:', error);
-    return null;
-  }
-}
-
-/**
- * GET /auth/logto/login - Initiate LogTo OIDC flow
+ * GET /auth/logto/login - Start OIDC flow
  */
 router.get('/logto/login', async (c) => {
-  try {
-    const endpoint = c.env.LOGTO_ENDPOINT;
-    const clientId = c.env.LOGTO_CLIENT_ID;
+  const endpoint = c.env.LOGTO_ENDPOINT;
+  const clientId = c.env.LOGTO_CLIENT_ID;
 
-    console.log('LogTo login initiated:', { endpoint, clientId });
+  console.log('[LOGIN] Config:', { endpoint, clientId });
 
-    if (!endpoint || !clientId) {
-      console.error('Missing LogTo config:', { endpoint: !!endpoint, clientId: !!clientId });
-      return c.json({ error: 'LogTo not configured' }, 500);
-    }
-
-    // Generate state and nonce for OIDC
-    const state = crypto.randomUUID();
-    const nonce = crypto.randomUUID();
-
-    // Store state/nonce in KV temporarily (5 min expiry)
-    const stateKey = `logto:state:${state}`;
-    await c.env.SESSIONS.put(stateKey, JSON.stringify({ nonce }), {
-      expirationTtl: 300,
-    });
-
-    const redirectUri = 'https://nexus.wolfethyst.tv/api/auth/logto/callback';
-
-    const authUrl = new URL(`${endpoint}/oidc/auth`);
-    authUrl.searchParams.set('client_id', clientId);
-    authUrl.searchParams.set('redirect_uri', redirectUri);
-    authUrl.searchParams.set('response_type', 'code');
-    authUrl.searchParams.set('scope', 'openid profile email');
-    authUrl.searchParams.set('state', state);
-    authUrl.searchParams.set('nonce', nonce);
-
-    console.log('Redirecting to:', authUrl.toString());
-
-    return c.redirect(authUrl.toString());
-  } catch (error) {
-    console.error('LogTo login error:', error);
-    return c.json({
-      error: 'Login failed',
-      details: error instanceof Error ? error.message : 'Unknown error',
-    }, 500);
+  if (!endpoint || !clientId) {
+    console.error('[LOGIN] Missing config');
+    return c.json({ error: 'Configuration missing' }, 500);
   }
+
+  const state = crypto.randomUUID();
+  const nonce = crypto.randomUUID();
+
+  await c.env.SESSIONS.put(`state:${state}`, JSON.stringify({ nonce }), {
+    expirationTtl: 300,
+  });
+
+  const params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: 'https://nexus.wolfethyst.tv/api/auth/logto/callback',
+    response_type: 'code',
+    scope: 'openid profile email',
+    state,
+    nonce,
+  });
+
+  const authUrl = `${endpoint}/oidc/auth?${params.toString()}`;
+  return c.redirect(authUrl);
 });
 
 /**
- * GET /auth/logto/callback - Handle LogTo OIDC redirect
+ * GET /auth/logto/callback - Handle redirect from LogTo
  */
 router.get('/logto/callback', async (c) => {
   const code = c.req.query('code');
   const state = c.req.query('state');
   const error = c.req.query('error');
 
-  console.log('LogTo callback received:', { code: !!code, state: !!state, error });
+  console.log('[CALLBACK] Start:', { code: !!code, state, error });
 
   if (error) {
-    console.error('LogTo authorization error:', error);
-    return c.json({ error: `LogTo error: ${error}` }, 400);
+    return c.json({ error: `Auth failed: ${error}` }, 400);
   }
 
   if (!code || !state) {
-    console.error('Missing callback params:', { code: !!code, state: !!state });
-    return c.json({ error: 'Missing code or state' }, 400);
+    return c.json({ error: 'Invalid callback' }, 400);
   }
 
   try {
-    // Verify state exists in KV
-    const stateData = await c.env.SESSIONS.get(`logto:state:${state}`, 'json');
-    if (!stateData) {
-      console.error('Invalid state token');
-      return c.json({ error: 'Invalid state' }, 400);
+    // Verify state
+    const savedState = await c.env.SESSIONS.get(`state:${state}`, 'json');
+    if (!savedState) {
+      console.error('[CALLBACK] State mismatch');
+      return c.json({ error: 'State mismatch' }, 400);
     }
 
     const endpoint = c.env.LOGTO_ENDPOINT;
     const clientId = c.env.LOGTO_CLIENT_ID;
     const clientSecret = c.env.LOGTO_CLIENT_SECRET;
 
+    console.log('[CALLBACK] Secrets check:', {
+      endpoint: !!endpoint,
+      clientId: !!clientId,
+      clientSecret: !!clientSecret,
+    });
+
     if (!endpoint || !clientId || !clientSecret) {
-      console.error('Missing LogTo secrets:', { endpoint: !!endpoint, clientId: !!clientId, clientSecret: !!clientSecret });
-      return c.json({ error: 'LogTo configuration error' }, 500);
+      console.error('[CALLBACK] Missing config!', {
+        endpoint: !!endpoint,
+        clientId: !!clientId,
+        clientSecret: !!clientSecret,
+      });
+      return c.json({ error: 'Server misconfigured' }, 500);
     }
 
-    const redirectUri = 'https://nexus.wolfethyst.tv/api/auth/logto/callback';
+    console.log('[CALLBACK] Exchanging code...');
 
-    console.log('Exchanging code for tokens...');
-
-    // Exchange code for tokens
-    const tokenResponse = await fetch(`${endpoint}/oidc/token`, {
+    const tokenRes = await fetch(`${endpoint}/oidc/token`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         client_id: clientId,
         client_secret: clientSecret,
-        redirect_uri: redirectUri,
+        redirect_uri: 'https://nexus.wolfethyst.tv/api/auth/logto/callback',
         code,
       }).toString(),
     });
 
-    if (!tokenResponse.ok) {
-      const errorBody = await tokenResponse.text();
-      console.error('LogTo token exchange failed:', { status: tokenResponse.status, body: errorBody });
-      return c.json({ error: 'Token exchange failed', details: errorBody }, 500);
+    console.log('[CALLBACK] Token response:', tokenRes.status);
+
+    if (!tokenRes.ok) {
+      const text = await tokenRes.text();
+      console.error('[CALLBACK] Token error:', text);
+      return c.json({ error: 'Token failed', details: text }, 500);
     }
 
-    const tokenData: LogToTokenResponse = await tokenResponse.json();
-    console.log('Token exchange successful');
+    const tokens: LogToTokenResponse = await tokenRes.json();
 
     // Get user info
-    const userInfo = await getLogToUserInfo(endpoint, tokenData.access_token);
-    if (!userInfo) {
-      console.error('Failed to get user info');
-      return c.json({ error: 'Failed to get user info' }, 500);
+    const userRes = await fetch(`${endpoint}/oidc/me`, {
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
+    });
+
+    if (!userRes.ok) {
+      console.error('[CALLBACK] Userinfo failed:', userRes.status);
+      return c.json({ error: 'Userinfo failed' }, 500);
     }
 
-    console.log('User info retrieved:', { userId: userInfo.sub });
+    const user: LogToUserInfo = await userRes.json();
+    console.log('[CALLBACK] Got user:', user.sub);
 
-    // Create/update user in D1
-    await ensureUserInD1(
-      c.env,
-      userInfo.sub,
-      userInfo.name || userInfo.email || 'User',
-      userInfo.picture
-    );
+    // Save to D1
+    await ensureUserInD1(c.env, user.sub, user.name || user.email || 'User', user.picture);
 
     // Create session
     const sessionId = crypto.randomUUID();
     const sessionData: SessionData = {
-      userId: userInfo.sub,
-      userEmail: userInfo.email,
-      userName: userInfo.name,
-      userAvatar: userInfo.picture,
-      accessToken: tokenData.access_token,
-      refreshToken: tokenData.refresh_token,
-      expiresAt: Date.now() + tokenData.expires_in * 1000,
+      userId: user.sub,
+      email: user.email,
+      name: user.name,
+      avatar: user.picture,
+      accessToken: tokens.access_token,
+      expiresAt: Date.now() + tokens.expires_in * 1000,
     };
 
-    // Store session in KV
-    await c.env.SESSIONS.put(
-      `session:${sessionId}`,
-      JSON.stringify(sessionData),
-      {
-        expirationTtl: Math.min(tokenData.expires_in, 604800), // Max 7 days
-      }
-    );
+    await c.env.SESSIONS.put(`session:${sessionId}`, JSON.stringify(sessionData), {
+      expirationTtl: Math.min(tokens.expires_in, 604800),
+    });
 
-    // Set session cookie
-    c.header('Set-Cookie', setCookieHeader('wolfesession', sessionId, {
-      maxAge: Math.min(tokenData.expires_in, 604800),
-      secure: true,
-      httpOnly: true,
-      sameSite: 'Lax',
-      path: '/',
-    }));
+    c.header('Set-Cookie', setCookieHeader('wolfesession', sessionId, Math.min(tokens.expires_in, 604800)));
 
-    console.log('Session created and cookie set, redirecting to home');
-
-    // Redirect to home
+    console.log('[CALLBACK] Success');
     return c.redirect('https://nexus.wolfethyst.tv/');
   } catch (error) {
-    console.error('LogTo callback error:', error);
-    return c.json({
-      error: 'Authentication failed',
-      details: error instanceof Error ? error.message : 'Unknown error',
-    }, 500);
+    console.error('[CALLBACK] Exception:', error);
+    return c.json({ error: 'Callback failed', details: error instanceof Error ? error.message : 'Unknown' }, 500);
   }
 });
 
 /**
- * GET /auth/session - Get current session and user info
+ * GET /auth/session - Get current user session
  */
 router.get('/session', async (c) => {
   try {
-    const cookieHeader = c.req.header('Cookie');
-    const cookies = parseCookies(cookieHeader);
+    const cookies = parseCookies(c.req.header('Cookie'));
     const sessionId = cookies.wolfesession;
 
     if (!sessionId) {
-      return c.json({ loggedIn: false, roles: [] });
+      return c.json({ loggedIn: false, user: null, roles: [] });
     }
 
-    const sessionData = await c.env.SESSIONS.get(
-      `session:${sessionId}`,
-      'json'
-    ) as SessionData | null;
+    const session = await c.env.SESSIONS.get(`session:${sessionId}`, 'json') as SessionData | null;
 
-    if (!sessionData) {
-      c.header('Set-Cookie', setCookieHeader('wolfesession', '', {
-        maxAge: 0,
-        path: '/',
-      }));
-      return c.json({ loggedIn: false, roles: [] });
-    }
-
-    // Check if token is expired
-    if (sessionData.expiresAt < Date.now()) {
-      // Try to refresh if we have refresh token
-      if (sessionData.refreshToken) {
-        // TODO: Implement token refresh
-      }
-      c.header('Set-Cookie', setCookieHeader('wolfesession', '', {
-        maxAge: 0,
-        path: '/',
-      }));
-      return c.json({ loggedIn: false, roles: [] });
+    if (!session) {
+      return c.json({ loggedIn: false, user: null, roles: [] });
     }
 
     return c.json({
       loggedIn: true,
       user: {
-        id: sessionData.userId,
-        display: sessionData.userName || sessionData.userEmail,
-        displayName: sessionData.userName || sessionData.userEmail,
-        avatar: sessionData.userAvatar,
-        email: sessionData.userEmail,
+        id: session.userId,
+        display: session.name || session.email,
+        displayName: session.name || session.email,
+        avatar: session.avatar,
+        email: session.email,
       },
-      roles: [], // TODO: Load roles from DB
+      roles: [],
     });
   } catch (error) {
-    console.error('Session error:', error);
-    return c.json({ loggedIn: false, roles: [] });
+    console.error('[SESSION] Error:', error);
+    return c.json({ loggedIn: false, user: null, roles: [], error: error instanceof Error ? error.message : 'Unknown' });
   }
 });
 
 /**
- * POST /auth/logout
+ * POST /auth/logout - Clear session
  */
 router.post('/logout', async (c) => {
-  const cookieHeader = c.req.header('Cookie');
-  const cookies = parseCookies(cookieHeader);
-  const sessionId = cookies.wolfesession;
+  try {
+    const cookies = parseCookies(c.req.header('Cookie'));
+    const sessionId = cookies.wolfesession;
 
-  if (sessionId) {
-    await c.env.SESSIONS.delete(`session:${sessionId}`);
+    if (sessionId) {
+      await c.env.SESSIONS.delete(`session:${sessionId}`);
+    }
+
+    c.header('Set-Cookie', 'wolfesession=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax');
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('[LOGOUT] Error:', error);
+    return c.json({ error: 'Logout failed' }, 500);
   }
-
-  c.header('Set-Cookie', setCookieHeader('wolfesession', '', {
-    maxAge: 0,
-    path: '/',
-  }));
-
-  return c.json({ ok: true });
 });
 
 /**
- * POST /auth/delete-account
+ * POST /auth/delete-account - Delete user account
  */
 router.post('/delete-account', async (c) => {
   try {
-    const cookieHeader = c.req.header('Cookie');
-    const cookies = parseCookies(cookieHeader);
+    const cookies = parseCookies(c.req.header('Cookie'));
     const sessionId = cookies.wolfesession;
 
     if (!sessionId) {
       return c.json({ error: 'Not logged in' }, 401);
     }
 
-    const sessionData = await c.env.SESSIONS.get(
-      `session:${sessionId}`,
-      'json'
-    ) as SessionData | null;
+    const session = await c.env.SESSIONS.get(`session:${sessionId}`, 'json') as SessionData | null;
 
-    if (!sessionData) {
+    if (!session) {
       return c.json({ error: 'Invalid session' }, 401);
     }
 
-    const userId = sessionData.userId;
+    const userId = session.userId;
 
     // Delete from D1
+    await c.env.DB.prepare('DELETE FROM user_points WHERE user_id = ?').bind(userId).run();
+    await c.env.DB.prepare('DELETE FROM point_events WHERE user_id = ?').bind(userId).run();
     await c.env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
-    await c.env.DB.prepare('DELETE FROM user_points WHERE user_id = ?')
-      .bind(userId)
-      .run();
-    await c.env.DB.prepare('DELETE FROM point_events WHERE user_id = ?')
-      .bind(userId)
-      .run();
 
-    // Delete session
+    // Clear session
     await c.env.SESSIONS.delete(`session:${sessionId}`);
-    c.header('Set-Cookie', setCookieHeader('wolfesession', '', {
-      maxAge: 0,
-      path: '/',
-    }));
+    c.header('Set-Cookie', 'wolfesession=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax');
 
-    return c.json({ ok: true });
+    return c.json({ success: true });
   } catch (error) {
-    console.error('Delete account error:', error);
-    return c.json({ error: 'Failed to delete account' }, 500);
+    console.error('[DELETE] Error:', error);
+    return c.json({ error: 'Delete failed' }, 500);
   }
 });
 
