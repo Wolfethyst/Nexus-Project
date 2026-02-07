@@ -160,7 +160,10 @@ chat.get('/stream', async (c: Context) => {
       body: JSON.stringify({ clientId }),
     }));
     
-    return response;
+    return new Response(response.body, {
+      status: response.status,
+      headers: new Headers(response.headers),
+    });
   } catch (error) {
     console.error('Chat stream error:', error);
     return c.text('event: error\ndata: Connection failed\n\n', 500);
