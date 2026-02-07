@@ -5,7 +5,6 @@ compatibility_date = "2024-01-01"
 [vars]
 YOUTUBE_CHANNEL_ID = "UCGk1QRVYCzEMRCcVK9--_7Q"
 OWNER_TOKEN = ""
-LOGTO_ENDPOINT = "https://z8v2lq.logto.app"
 
 [env.production]
 
