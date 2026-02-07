@@ -35,7 +35,7 @@ const app = new Hono<Env>();
 app.use(
   '*',
   cors({
-    origin: '*',
+    origin: ['https://nexus.wolfethyst.tv', 'http://localhost:5173'],
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization', 'X-Owner-Token'],
     credentials: true,
