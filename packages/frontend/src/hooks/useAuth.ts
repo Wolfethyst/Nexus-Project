@@ -8,20 +8,27 @@ export function useAuth() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const response = await ApiClient.get<Session>('/auth/session');
-        if (response.ok && response.data) {
-          setSession(response.data);
-        } else {
+      (async () => {
+        setLoading(true);
+        try {
+          console.log('[useAuth] Fetching session...');
+          const response = await ApiClient.get<Session>('/auth/session');
+          console.log('[useAuth] Session response:', response);
+          if (response.ok && response.data) {
+            console.log('[useAuth] Session found:', response.data);
+            setSession(response.data);
+          } else {
+            console.log('[useAuth] No session found');
+            setSession(null);
+          }
+        } catch (error) {
+          console.error('[useAuth] Error fetching session:', error);
           setSession(null);
+        } finally {
+          setLoading(false);
+          setIsInitialized(true);
         }
-      } finally {
-        setLoading(false);
-        setIsInitialized(true);
-      }
-    })();
+      })();
   }, [setSession, setLoading]);
 
   return { 

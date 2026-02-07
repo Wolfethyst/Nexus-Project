@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Session } from '@nexus/shared';
+import { ApiClient } from '../lib/api';
 
 interface AuthStore {
   session: Session | null;
@@ -16,7 +17,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   setLoading: (loading) => set({ isLoading: loading }),
   logout: async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      await ApiClient.post('/auth/logout', {});
       set({ session: null });
     } catch (error) {
       console.error('Logout failed:', error);
