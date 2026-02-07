@@ -14,19 +14,21 @@ const API_BASE = (() => {
   return '/api';
 })();
 
-async function readJsonOrText(response: Response): Promise<unknown> {
+async function parseResponse<T>(response: Response): Promise<{ data?: T; error?: string }> {
   const contentType = response.headers.get('content-type') || '';
   const raw = await response.text();
 
   if (contentType.includes('application/json')) {
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return {};
+    try {
+      return { data: JSON.parse(raw) as T };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Invalid JSON response' };
+    }
   }
 
-  try {
-    return raw ? JSON.parse(raw) : raw;
-  } catch {
-    return raw;
-  }
+  if (!raw) return { error: 'Empty non-JSON response' };
+  return { error: raw };
 }
 
 export class ApiClient {
@@ -36,8 +38,8 @@ export class ApiClient {
       const response = await fetch(`${API_BASE}${path}`, {
         credentials: 'include',
       });
-      const data = await readJsonOrText(response);
-      return { ok: response.ok, data };
+      const result = await parseResponse<T>(response);
+      return { ok: response.ok && !result.error, data: result.data, error: result.error };
     } catch (error) {
       return {
         ok: false,
@@ -59,8 +61,8 @@ export class ApiClient {
         credentials: 'include',
         body: JSON.stringify(body),
       });
-      const data = await readJsonOrText(response);
-      return { ok: response.ok, data };
+      const result = await parseResponse<T>(response);
+      return { ok: response.ok && !result.error, data: result.data, error: result.error };
     } catch (error) {
       return {
         ok: false,
@@ -77,8 +79,8 @@ export class ApiClient {
         credentials: 'include',
         body: JSON.stringify(body),
       });
-      const data = await readJsonOrText(response);
-      return { ok: response.ok, data };
+      const result = await parseResponse<T>(response);
+      return { ok: response.ok && !result.error, data: result.data, error: result.error };
     } catch (error) {
       return {
         ok: false,
@@ -93,8 +95,8 @@ export class ApiClient {
         method: 'DELETE',
         credentials: 'include',
       });
-      const data = await readJsonOrText(response);
-      return { ok: response.ok, data };
+      const result = await parseResponse<T>(response);
+      return { ok: response.ok && !result.error, data: result.data, error: result.error };
     } catch (error) {
       return {
         ok: false,
