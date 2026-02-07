@@ -124,8 +124,9 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
               className="w-full h-full object-cover"
               alt="Game Cover"
               onError={(e) => {
-                e.currentTarget.src = 'https://api.wolfethyst.tv/assets/nexus_icon.png';
+                if (e.currentTarget.src !== '/assets/nexus_icon.png') {
                   e.currentTarget.src = '/assets/nexus_icon.png';
+                }
               }}
             />
               <img
@@ -133,7 +134,9 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                 className="w-full h-full object-cover"
                 alt="Nexus Icon"
                 onError={(e) => {
-                  e.currentTarget.src = '/assets/nexus_icon.png';
+                  if (e.currentTarget.src !== '/assets/nexus_icon.png') {
+                    e.currentTarget.src = '/assets/nexus_icon.png';
+                  }
                 }}
               />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0b0014] via-transparent to-transparent" />
