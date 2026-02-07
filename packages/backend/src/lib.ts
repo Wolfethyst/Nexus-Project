@@ -2,7 +2,7 @@
  * Backend utility functions for Points, Users, and Database operations
  */
 
-export const OWNER_UUID = 'REPLACE_WITH_YOUR_OWNER_UUID';
+export const OWNER_UUID = 'wolfethyst';  // Set to your Twitch user ID or login
 export const TALATHYST_UUID = 'REPLACE_WITH_TALATHYST_UUID';
 export const INFINITE_POINTS = 999999999999;
 
@@ -176,21 +176,22 @@ export async function ensureUserInD1(
   userId: string,
   displayName: string = 'Adventurer',
   avatarUrl?: string
-): Promise<void> {
-  if (!userId || !env.DB) return;
+): Promise<{ nexusId: string }> {
+  if (!userId || !env.DB) return { nexusId: '' };
 
   const now = Date.now();
+  const nexusId = crypto.randomUUID();
 
   try {
-    // Insert or update user
+    // Insert or update user with nexus_id generation on first insert
     await env.DB.prepare(`
-      INSERT INTO users (id, display_name, avatar_url, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO users (id, nexus_id, display_name, avatar_url, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         display_name = CASE WHEN ? != 'Adventurer' THEN ? ELSE users.display_name END,
         avatar_url = COALESCE(?, users.avatar_url),
         updated_at = ?
-    `).bind(userId, displayName, avatarUrl, now, now, displayName, displayName, avatarUrl, now).run();
+    `).bind(userId, nexusId, displayName, avatarUrl, now, now, displayName, displayName, avatarUrl, now).run();
 
     // Insert or ignore user_points
     await env.DB.prepare(`
@@ -198,8 +199,11 @@ export async function ensureUserInD1(
       VALUES (?, 0, 0, 0, ?)
       ON CONFLICT(user_id) DO NOTHING
     `).bind(userId, now).run();
+
+    return { nexusId };
   } catch (error) {
     console.error('Failed to ensure user in D1:', error);
+    return { nexusId };
   }
 }
 

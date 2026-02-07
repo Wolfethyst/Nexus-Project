@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
 import type { Env } from '../index.js';
-import { ensureUserInD1 } from '../lib.js';
+import { ensureUserInD1, OWNER_UUID } from '../lib.js';
 
 const router = new Hono<Env>();
 
 interface SessionData {
   userId: string;
+  nexusId?: string;
   email?: string;
   name?: string;
   avatar?: string;
@@ -117,13 +118,14 @@ router.get('/twitch/callback', async (c) => {
     return c.json({ error: 'No user data' }, 500);
   }
 
-  // Save to D1
-  await ensureUserInD1(c.env, user.id, user.display_name, user.profile_image_url);
+  // Save to D1 and get Nexus ID
+  const { nexusId } = await ensureUserInD1(c.env, user.id, user.display_name, user.profile_image_url);
 
   // Create session
   const sessionId = crypto.randomUUID();
-  const sessionData = {
+  const sessionData: SessionData = {
     userId: user.id,
+    nexusId,
     name: user.display_name,
     avatar: user.profile_image_url,
     accessToken: tokens.access_token,
@@ -156,16 +158,36 @@ router.get('/session', async (c) => {
       return c.json({ loggedIn: false, user: null, roles: [] });
     }
 
+    // Determine user roles
+    const roles: string[] = [];
+    if (session.userId === OWNER_UUID) {
+      roles.push('owner');
+    }
+
+    // Try to get user data from D1 for nexusId
+    let nexusId = session.nexusId;
+    if (!nexusId && c.env.DB) {
+      try {
+        const userRow = await c.env.DB.prepare('SELECT nexus_id FROM users WHERE id = ?').bind(session.userId).first();
+        if (userRow?.nexus_id) {
+          nexusId = userRow.nexus_id as string;
+        }
+      } catch (error) {
+        console.error('Failed to fetch nexus_id from D1:', error);
+      }
+    }
+
     return c.json({
       loggedIn: true,
       user: {
         id: session.userId,
+        nexusId,
         display: session.name || session.email,
         displayName: session.name || session.email,
         avatar: session.avatar,
         email: session.email,
       },
-      roles: [],
+      roles,
     });
   } catch (error) {
     console.error('[SESSION] Error:', error);
