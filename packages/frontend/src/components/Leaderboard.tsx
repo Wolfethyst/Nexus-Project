@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { ApiClient } from '../lib/api';
 
 interface LeaderboardEntry {
-  rank: number;
-  id: string;
-  displayName: string;
+  user_id: string;
+  username: string;
+  profile_image?: string;
   points: number;
-  avatar?: string | null;
+  rank: number;
 }
 
 export const Leaderboard: React.FC = () => {
@@ -20,7 +20,7 @@ export const Leaderboard: React.FC = () => {
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
-      const response = await ApiClient.get<{ leaderboard: LeaderboardEntry[] }>('/leaderboard');
+      const response = await ApiClient.get<{ leaderboard: LeaderboardEntry[] }>('/points/leaderboard?limit=50');
       if (response.ok && response.data?.leaderboard) {
         setEntries(response.data.leaderboard);
       }
@@ -59,7 +59,7 @@ export const Leaderboard: React.FC = () => {
         ) : (
           entries.map((entry) => (
             <div
-              key={entry.id}
+              key={entry.user_id}
               className={`flex items-center justify-between p-2 rounded-md bg-white/5 border border-white/10 font-['Marcellus'] transition-all ${
                 entry.rank === 1
                   ? 'bg-gradient-to-r from-yellow-500/15 to-transparent border-l-4 border-l-yellow-500'
@@ -84,16 +84,16 @@ export const Leaderboard: React.FC = () => {
                 >
                   #{entry.rank}
                 </div>
-                {entry.avatar && (
+                {entry.profile_image && (
                   <img
-                    src={entry.avatar}
-                    alt={entry.displayName}
+                    src={entry.profile_image}
+                    alt={entry.username}
                     className="w-6 h-6 rounded-full"
                   />
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-white truncate text-sm">
-                    {entry.displayName}
+                    {entry.username}
                   </p>
                 </div>
               </div>

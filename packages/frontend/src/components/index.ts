@@ -5,3 +5,4 @@ export { VideoCard } from './VideoCard';
 export { VODPlayer } from './VODPlayer';
 export { Chat } from './Chat';
 export { Leaderboard } from './Leaderboard';
+export { Marketplace } from './Marketplace';
