@@ -2,7 +2,16 @@ name = "nexus-api"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
+# Durable Objects
+[[durable_objects.bindings]]
+name = "CHAT_ROOM"
+class_name = "ChatRoom"
+
 [env.production]
+
+[[env.production.durable_objects.bindings]]
+name = "CHAT_ROOM"
+class_name = "ChatRoom"
 
 [env.production.vars]
 YOUTUBE_CHANNEL_ID = "UCGk1QRVYCzEMRCcVK9--_7Q"

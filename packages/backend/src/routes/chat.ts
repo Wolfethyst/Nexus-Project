@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
+import type { Env } from '../index.js';
 
 export const chat = new Hono();
 
@@ -58,14 +59,15 @@ chat.post('/send', async (c: Context) => {
       timestamp: Date.now(),
     };
 
-    // Add to history
-    messageHistory.push(message);
-    if (messageHistory.length > MAX_HISTORY) {
-      messageHistory.shift();
-    }
-
-    // Broadcast to all subscribers
-    subscribers.forEach(cb => cb(message));
+    // Get the chat room Durable Object
+    const env = c.env as any;
+    const durableObject = env.CHAT_ROOM.get('default');
+    
+    // Send message to the Durable Object to broadcast
+    const response = await durableObject.fetch(new Request('http://localhost/send-message', {
+      method: 'POST',
+      body: JSON.stringify(message),
+    }));
 
     // Award points for message (if userId is valid and not system)
     if (body.userId && body.originPlatform !== 'system') {
@@ -106,16 +108,29 @@ chat.post('/send', async (c: Context) => {
 /**
  * GET /chat/history - Get chat message history
  */
-chat.get('/history', (c: Context) => {
-  const limit = parseInt(c.req.query('limit') || '50');
-  const history = messageHistory.slice(-Math.min(limit, MAX_HISTORY));
-  return c.json({ messages: history });
+chat.get('/history', async (c: Context) => {
+  try {
+    const limit = parseInt(c.req.query('limit') || '50');
+    const env = c.env as any;
+    const durableObject = env.CHAT_ROOM.get('default');
+    
+    const response = await durableObject.fetch(
+      new Request(`http://localhost/get-history?limit=${limit}`)
+    );
+    const data = await response.json() as { messages: ChatMessage[] };
+    
+    return c.json(data);
+  } catch (error) {
+    console.error('Chat history error:', error);
+    return c.json({ messages: [] });
+  }
 });
 
 /**
  * POST /chat/clear - Clear chat (mods only)
  */
 chat.post('/clear', async (c: Context) => {
+  try {
   const env = c.env as any;
   
   // Check if user is mod/owner
@@ -125,67 +140,38 @@ chat.post('/clear', async (c: Context) => {
     return c.json({ error: 'Forbidden' }, 403);
   }
 
-  // Clear last 50 messages (don't delete all at once)
-  const cleared = messageHistory.splice(-50, 50);
-  
-  return c.json({ ok: true, clearedCount: cleared.length });
+    const durableObject = env.CHAT_ROOM.get('default');
+    const response = await durableObject.fetch(
+      new Request('http://localhost/clear?count=50')
+    );
+    const data = await response.json();
+    
+    return c.json(data);
+  } catch (error) {
+    console.error('Chat clear error:', error);
+    return c.json({ error: 'Failed to clear chat' }, 500);
+  }
 });
 
 /**
  * GET /chat/stream - Server-Sent Events (SSE) for real-time chat
  * Returns text/event-stream with chat message updates
  */
-chat.get('/stream', (c: Context) => {
-  const encoder = new TextEncoder();
-  
-  // Send initial history
-  let response = 'data: ' + JSON.stringify({
-    type: 'history',
-    messages: messageHistory.slice(-50),
-  }) + '\n\n';
-
-  // Create a transform stream that sends chat updates
-  const stream = new ReadableStream({
-    start(controller) {
-      // Send history first
-      controller.enqueue(encoder.encode(response));
-
-      // Subscribe to new messages
-      const subscriber = (message: ChatMessage) => {
-        const data = 'data: ' + JSON.stringify({
-          type: 'chat',
-          message,
-        }) + '\n\n';
-        controller.enqueue(encoder.encode(data));
-      };
-
-      subscribers.add(subscriber);
-
-      // Clean up on close
-      const originalClose = controller.close.bind(controller);
-      controller.close = () => {
-        subscribers.delete(subscriber);
-        originalClose();
-      };
-
-      // Send heartbeat every 10 seconds
-      const heartbeat = setInterval(() => {
-        try {
-          controller.enqueue(encoder.encode(': heartbeat\n\n'));
-        } catch (e) {
-          clearInterval(heartbeat);
-          subscribers.delete(subscriber);
-        }
-      }, 10000);
-    },
-  });
-
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-      'Access-Control-Allow-Origin': '*',
-    },
-  });
+chat.get('/stream', async (c: Context) => {
+  try {
+    const env = c.env as any;
+    const clientId = `client_${crypto.randomUUID()}`;
+    
+    // Get the chat room Durable Object and request a client stream
+    const durableObject = env.CHAT_ROOM.get('default');
+    const response = await durableObject.fetch(new Request('http://localhost/add-client', {
+      method: 'POST',
+      body: JSON.stringify({ clientId }),
+    }));
+    
+    return response;
+  } catch (error) {
+    console.error('Chat stream error:', error);
+    return c.text('event: error\ndata: Connection failed\n\n', 500);
+  }
 });

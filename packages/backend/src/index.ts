@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { ChatRoom } from './durable-objects/ChatRoom';
 import authRouter from './routes/auth';
 import videosRouter from './routes/videos';
 import streamsRouter from './routes/streams';
@@ -16,6 +17,7 @@ export type Env = {
     ASSETS: KVNamespace;
     MODERATION: KVNamespace;
     CLIPS: KVNamespace;
+    CHAT_ROOM: DurableObjectNamespace;
     REDEEM_SOUNDS: R2Bucket;
     TWITCH_CLIENT_ID?: string;
     TWITCH_CLIENT_SECRET?: string;
@@ -77,3 +79,6 @@ app.onError((err, c) => {
 });
 
 export default app;
+
+// Export Durable Object for Cloudflare
+export { ChatRoom };
