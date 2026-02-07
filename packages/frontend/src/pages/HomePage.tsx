@@ -124,7 +124,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
               className="w-full h-full object-cover"
               alt="Game Cover"
               onError={(e) => {
-                e.currentTarget.src = 'https://data.wolfethyst.tv/assets/nexus_icon.png';
+                e.currentTarget.src = 'https://api.wolfethyst.tv/assets/nexus_icon.png';
                   e.currentTarget.src = '/assets/nexus_icon.png';
               }}
             />
