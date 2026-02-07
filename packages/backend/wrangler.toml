@@ -7,11 +7,19 @@ compatibility_date = "2024-01-01"
 name = "CHAT_ROOM"
 class_name = "ChatRoom"
 
+[[migrations]]
+tag = "v1"
+new_classes = ["ChatRoom"]
+
 [env.production]
 
 [[env.production.durable_objects.bindings]]
 name = "CHAT_ROOM"
 class_name = "ChatRoom"
+
+[[env.production.migrations]]
+tag = "v1"
+new_classes = ["ChatRoom"]
 
 [env.production.vars]
 YOUTUBE_CHANNEL_ID = "UCGk1QRVYCzEMRCcVK9--_7Q"
