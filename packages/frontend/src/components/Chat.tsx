@@ -48,7 +48,7 @@ export const Chat: React.FC = () => {
   const connectToChat = () => {
     try {
       setIsConnecting(true);
-      const es = new EventSource(`${ApiClient.baseURL}/chat/history`);
+      const es = new EventSource(`${ApiClient.baseURL}/chat/stream`);
 
       es.addEventListener('message', (e: Event) => {
         try {

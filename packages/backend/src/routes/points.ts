@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import type { Env } from '../index.js';
-import { getUserPoints } from '../lib.js';
+import { getUserPoints, getOwnerNexusId } from '../lib.js';
 
 const router = new Hono<Env>();
 
@@ -37,6 +37,9 @@ router.get('/leaderboard', async (c) => {
     const limit = Math.min(parseInt(c.req.query('limit') || '50'), 100);
     const offset = parseInt(c.req.query('offset') || '0');
 
+    // Get owner's Nexus ID to exclude them from leaderboard
+    const ownerNexusId = await getOwnerNexusId(c.env);
+
     const { results } = await c.env.DB.prepare(`
       SELECT 
         u.id as user_id,
@@ -46,9 +49,10 @@ router.get('/leaderboard', async (c) => {
         ROW_NUMBER() OVER (ORDER BY COALESCE(up.balance_total, 0) DESC) as rank
       FROM users u
       LEFT JOIN user_points up ON u.id = up.user_id
+      WHERE u.nexus_id != ?
       ORDER BY points DESC
       LIMIT ? OFFSET ?
-    `).bind(limit, offset).all() as { results: User[] };
+    `).bind(ownerNexusId || '', limit, offset).all() as { results: User[] };
 
     return c.json({ leaderboard: results || [], limit, offset });
   } catch (error) {
