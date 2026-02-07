@@ -43,9 +43,12 @@ export class ApiClient {
   static baseURL = API_BASE;
   static async get<T>(path: string): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(`${API_BASE}${path}`, {
+      const url = `${API_BASE}${path}`;
+      console.log('[API] GET request:', url);
+      const response = await fetch(url, {
         credentials: 'include',
       });
+      console.log('[API] GET response status:', response.status, 'content-type:', response.headers.get('content-type'));
       const result = await parseResponse<T>(response);
       return { ok: response.ok && !result.error, data: result.data, error: result.error };
     } catch (error) {
