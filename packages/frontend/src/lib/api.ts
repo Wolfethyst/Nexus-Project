@@ -1,6 +1,18 @@
 import type { ApiResponse } from '@nexus/shared';
 
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+const API_BASE = (() => {
+  const envBase = import.meta.env.VITE_API_BASE;
+  if (envBase) return envBase;
+
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host.endsWith('wolfethyst.tv')) {
+      return 'https://api.wolfethyst.tv';
+    }
+  }
+
+  return '/api';
+})();
 
 async function readJsonOrText(response: Response): Promise<unknown> {
   const contentType = response.headers.get('content-type') || '';
