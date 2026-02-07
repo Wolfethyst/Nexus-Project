@@ -2,6 +2,21 @@ import type { ApiResponse } from '@nexus/shared';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
+async function readJsonOrText(response: Response): Promise<unknown> {
+  const contentType = response.headers.get('content-type') || '';
+  const raw = await response.text();
+
+  if (contentType.includes('application/json')) {
+    return raw ? JSON.parse(raw) : null;
+  }
+
+  try {
+    return raw ? JSON.parse(raw) : raw;
+  } catch {
+    return raw;
+  }
+}
+
 export class ApiClient {
   static baseURL = API_BASE;
   static async get<T>(path: string): Promise<ApiResponse<T>> {
@@ -9,7 +24,7 @@ export class ApiClient {
       const response = await fetch(`${API_BASE}${path}`, {
         credentials: 'include',
       });
-      const data = await response.json();
+      const data = await readJsonOrText(response);
       return { ok: response.ok, data };
     } catch (error) {
       return {
@@ -32,7 +47,7 @@ export class ApiClient {
         credentials: 'include',
         body: JSON.stringify(body),
       });
-      const data = await response.json();
+      const data = await readJsonOrText(response);
       return { ok: response.ok, data };
     } catch (error) {
       return {
@@ -50,7 +65,7 @@ export class ApiClient {
         credentials: 'include',
         body: JSON.stringify(body),
       });
-      const data = await response.json();
+      const data = await readJsonOrText(response);
       return { ok: response.ok, data };
     } catch (error) {
       return {
@@ -66,7 +81,7 @@ export class ApiClient {
         method: 'DELETE',
         credentials: 'include',
       });
-      const data = await response.json();
+      const data = await readJsonOrText(response);
       return { ok: response.ok, data };
     } catch (error) {
       return {
