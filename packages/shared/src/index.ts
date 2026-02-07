@@ -1,6 +1,7 @@
 // Authentication types
 export interface User {
   id: string;
+  nexusId?: string;
   username?: string;
   display?: string;
   displayName?: string;
