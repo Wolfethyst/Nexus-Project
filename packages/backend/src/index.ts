@@ -47,19 +47,19 @@ app.get('/health', (c) => {
   return c.json({ ok: true, timestamp: new Date().toISOString() });
 });
 
-// Routes under /api
-app.route('/api/auth', authRouter);
-app.route('/api/videos', videosRouter);
-app.route('/api/streams', streamsRouter);
-app.route('/api/clips', clipsRouter);
-app.route('/api/store', storeRouter);
-app.route('/api/nexus/profile', profileRouter);
-app.route('/api/owner', ownerRouter);
-app.route('/api/redeems', redeemsRouter);
-app.route('/api/chat', chat);
+// Routes
+app.route('/auth', authRouter);
+app.route('/videos', videosRouter);
+app.route('/streams', streamsRouter);
+app.route('/clips', clipsRouter);
+app.route('/store', storeRouter);
+app.route('/nexus/profile', profileRouter);
+app.route('/owner', ownerRouter);
+app.route('/redeems', redeemsRouter);
+app.route('/chat', chat);
 
 // Leaderboard endpoint (public)
-app.get('/api/leaderboard', async (c) => {
+app.get('/leaderboard', async (c) => {
   try {
     const limit = parseInt(c.req.query('limit') || '50');
     const leaderboard = await getLeaderboard(c.env, limit);
