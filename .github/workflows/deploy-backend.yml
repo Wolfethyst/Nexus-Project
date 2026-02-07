@@ -34,4 +34,4 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           cd packages/backend
-          npx wrangler deploy
+          npx wrangler deploy --env production
