@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useStore, useInventory } from '../hooks/useStore';
+import { useStore } from '../hooks/useStore';
 import { useAuthStore } from '../store';
 
 export const Marketplace: React.FC = () => {
   const { session } = useAuthStore();
   const { items, loading: itemsLoading } = useStore();
   const { purchase } = useStore();
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [purchasing, setPurchasing] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -73,8 +72,7 @@ export const Marketplace: React.FC = () => {
           items.map((item) => (
             <div
               key={item.id}
-              className="flex items-between justify-between p-3 rounded-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all cursor-pointer"
-              onClick={() => setSelectedItem(item.id)}
+              className="flex items-between justify-between p-3 rounded-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
             >
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-white truncate">{item.name}</h3>
