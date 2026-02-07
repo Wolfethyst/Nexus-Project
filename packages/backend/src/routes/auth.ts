@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import type { Env } from '../index.js';
-import { ensureUserInD1, OWNER_UUID } from '../lib.js';
+import { ensureUserInD1, getOwnerNexusId, setOwnerNexusId, isOwner } from '../lib.js';
 
 const router = new Hono<Env>();
 
@@ -121,6 +121,12 @@ router.get('/twitch/callback', async (c) => {
   // Save to D1 and get Nexus ID
   const { nexusId } = await ensureUserInD1(c.env, user.id, user.display_name, user.profile_image_url);
 
+  // If no owner is set yet, make this the first signer the owner
+  const currentOwnerNexusId = await getOwnerNexusId(c.env);
+  if (!currentOwnerNexusId) {
+    await setOwnerNexusId(c.env, nexusId);
+  }
+
   // Create session
   const sessionId = crypto.randomUUID();
   const sessionData: SessionData = {
@@ -160,11 +166,11 @@ router.get('/session', async (c) => {
 
     // Determine user roles
     const roles: string[] = [];
-    if (session.userId === OWNER_UUID) {
+    if (session.nexusId && await isOwner(c.env, session.nexusId)) {
       roles.push('owner');
     }
 
-    // Try to get user data from D1 for nexusId
+    // Try to get user data from D1 for nexusId if not in session
     let nexusId = session.nexusId;
     if (!nexusId && c.env.DB) {
       try {

@@ -2,9 +2,42 @@
  * Backend utility functions for Points, Users, and Database operations
  */
 
-export const OWNER_UUID = 'wolfethyst';  // Set to your Twitch user ID or login
 export const TALATHYST_UUID = 'REPLACE_WITH_TALATHYST_UUID';
 export const INFINITE_POINTS = 999999999999;
+
+// Key for storing owner's Nexus ID in KV
+const OWNER_NEXUS_ID_KEY = 'config:owner_nexus_id';
+
+/**
+ * Get the stored owner's Nexus ID
+ */
+export async function getOwnerNexusId(env: any): Promise<string | null> {
+  try {
+    return await env.SESSIONS.get(OWNER_NEXUS_ID_KEY);
+  } catch (error) {
+    console.error('Failed to get owner nexus id:', error);
+    return null;
+  }
+}
+
+/**
+ * Set the owner's Nexus ID (usually on first sign-in)
+ */
+export async function setOwnerNexusId(env: any, nexusId: string): Promise<void> {
+  try {
+    await env.SESSIONS.put(OWNER_NEXUS_ID_KEY, nexusId, { expirationTtl: 63072000 }); // ~2 years
+  } catch (error) {
+    console.error('Failed to set owner nexus id:', error);
+  }
+}
+
+/**
+ * Check if a user is the owner based on their Nexus ID
+ */
+export async function isOwner(env: any, nexusId: string): Promise<boolean> {
+  const ownerNexusId = await getOwnerNexusId(env);
+  return ownerNexusId === nexusId;
+}
 
 // Points per message by platform
 export const MESSAGE_POINTS = {
@@ -19,10 +52,17 @@ export const MESSAGE_POINTS = {
 export async function getUserPoints(env: any, userId: string): Promise<number> {
   if (!userId) return 0;
   
-  // Infinite points for owner
-  if (userId === OWNER_UUID) return INFINITE_POINTS;
-
   try {
+    // Check if user is the owner by fetching their nexus ID
+    const userRow = await env.DB.prepare(
+      `SELECT nexus_id FROM users WHERE id = ?`
+    ).bind(userId).first() as { nexus_id?: string } | null;
+
+    if (userRow?.nexus_id && await isOwner(env, userRow.nexus_id)) {
+      return INFINITE_POINTS;
+    }
+
+    // Get regular user points
     const row = await env.DB.prepare(
       `SELECT balance_total FROM user_points WHERE user_id = ?`
     ).bind(userId).first();
@@ -56,15 +96,23 @@ export async function addPoints(
   // Ensure user exists in database
   await ensureUserInD1(env, userId);
 
-  // Infinite points for owner
-  if (userId === OWNER_UUID) {
-    if (amount !== 0) {
-      await env.DB.prepare(`
-        INSERT INTO point_events (user_id, delta, type, reason, source, created_at, balance_after)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).bind(userId, amount, options.reason || 'adjust', options.reason, options.source, now, INFINITE_POINTS).run();
+  // Check if user is the owner by fetching their nexus ID
+  try {
+    const userRow = await env.DB.prepare('SELECT nexus_id FROM users WHERE id = ?').bind(userId).first();
+    if (userRow?.nexus_id) {
+      const isUserOwner = await isOwner(env, userRow.nexus_id as string);
+      if (isUserOwner) {
+        if (amount !== 0) {
+          await env.DB.prepare(`
+            INSERT INTO point_events (user_id, delta, type, reason, source, created_at, balance_after)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+          `).bind(userId, amount, options.reason || 'adjust', options.reason, options.source, now, INFINITE_POINTS).run();
+        }
+        return { balanceBefore: INFINITE_POINTS, balanceAfter: INFINITE_POINTS };
+      }
     }
-    return { balanceBefore: INFINITE_POINTS, balanceAfter: INFINITE_POINTS };
+  } catch (error) {
+    console.error('Failed to check owner status:', error);
   }
 
   try {
