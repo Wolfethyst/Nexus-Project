@@ -25,12 +25,7 @@ export type Env = {
     YOUTUBE_CLIENT_ID?: string;
     YOUTUBE_CLIENT_SECRET?: string;
     YOUTUBE_CHANNEL_ID?: string;
-    LOGTO_ENDPOINT: string;
-    LOGTO_CLIENT_ID: string;
-    LOGTO_CLIENT_SECRET: string;
-    LOGTO_COOKIE_SECRET: string;
     OWNER_TOKEN?: string;
-    JWT_SECRET: string;
   };
 };
 
