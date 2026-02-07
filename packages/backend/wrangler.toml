@@ -11,12 +11,6 @@ LOGTO_CLIENT_ID = "dcgw6slrct4czm8ltgsl"
 [env.production]
 routes = [{ pattern = "nexus.wolfethyst.tv/api/*", zone_id = "81845f9b6a8496a989cbe0ba6a78ddc7" }]
 
-[[secrets]]
-binding = "LOGTO_CLIENT_SECRET"
-
-[[secrets]]
-binding = "LOGTO_COOKIE_SECRET"
-
 [[d1_databases]]
 binding = "DB"
 database_name = "nexus-db"
