@@ -2,25 +2,17 @@ import type { ApiResponse } from '@nexus/shared';
 
 const API_BASE = (() => {
   const envBase = import.meta.env.VITE_API_BASE;
-  console.log('[API] VITE_API_BASE env var:', envBase);
-  if (envBase) {
-    console.log('[API] Using env-configured API_BASE:', envBase);
-    return envBase;
-  }
+  if (envBase) return envBase;
 
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
-    console.log('[API] Current hostname:', host);
     if (host.endsWith('wolfethyst.tv')) {
-      console.log('[API] Using runtime fallback to https://api.wolfethyst.tv');
       return 'https://api.wolfethyst.tv';
     }
   }
 
-  console.log('[API] Using default /api fallback');
   return '/api';
 })();
-console.log('[API] Final API_BASE:', API_BASE);
 
 async function parseResponse<T>(response: Response): Promise<{ data?: T; error?: string }> {
   const contentType = response.headers.get('content-type') || '';
@@ -43,12 +35,9 @@ export class ApiClient {
   static baseURL = API_BASE;
   static async get<T>(path: string): Promise<ApiResponse<T>> {
     try {
-      const url = `${API_BASE}${path}`;
-      console.log('[API] GET request:', url);
-      const response = await fetch(url, {
+      const response = await fetch(`${API_BASE}${path}`, {
         credentials: 'include',
       });
-      console.log('[API] GET response status:', response.status, 'content-type:', response.headers.get('content-type'));
       const result = await parseResponse<T>(response);
       return { ok: response.ok && !result.error, data: result.data, error: result.error };
     } catch (error) {
