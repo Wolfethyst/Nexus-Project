@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import type { Context } from 'hono';
 import type { Env } from '../index.js';
 
-export const chat = new Hono();
+export const chat = new Hono<Env>();
 
 // Chat message type
 interface ChatMessage {
@@ -20,12 +20,12 @@ interface ChatMessage {
   timestamp: number;
 }
 
-// Store messages in memory with a limit (in production, use D1)
-const messageHistory: ChatMessage[] = [];
-const MAX_HISTORY = 100;
+const CHAT_ROOM_NAME = 'global';
 
-// WebSocket subscriptions for real-time chat
-const subscribers = new Set<(message: ChatMessage) => void>();
+const getChatRoom = (env: Env['Bindings']) => {
+  const id = env.CHAT_ROOM.idFromName(CHAT_ROOM_NAME);
+  return env.CHAT_ROOM.get(id);
+};
 
 /**
  * POST /chat/send - Send a chat message
@@ -39,11 +39,6 @@ chat.post('/send', async (c: Context) => {
       return c.json({ error: 'Missing text or user' }, 400);
     }
 
-    // Get session from cookie
-    const cookies = c.req.header('Cookie') || '';
-    const sessionMatch = cookies.match(/wolfesession=([^;]+)/);
-    const sessionId = sessionMatch ? sessionMatch[1] : null;
-    
     const message: ChatMessage = {
       id: crypto.randomUUID(),
       userId: body.userId || 'anonymous',
@@ -60,18 +55,17 @@ chat.post('/send', async (c: Context) => {
     };
 
     // Get the chat room Durable Object
-    const env = c.env as any;
-    const durableObject = env.CHAT_ROOM.get('default');
+    const durableObject = getChatRoom(c.env);
     
     // Send message to the Durable Object to broadcast
     const response = await durableObject.fetch(new Request('http://localhost/send-message', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(message),
     }));
 
     // Award points for message (if userId is valid and not system)
     if (body.userId && body.originPlatform !== 'system') {
-      const env = c.env as any;
       const pointsPerMessage = {
         twitch: 15,
         youtube: 15,
@@ -79,16 +73,16 @@ chat.post('/send', async (c: Context) => {
       };
       const points = pointsPerMessage[originPlatform as keyof typeof pointsPerMessage] || 0;
       
-      if (points > 0 && env.DB) {
+      if (points > 0 && c.env.DB) {
         try {
           const now = Date.now();
-          await env.DB.prepare(`
+          await c.env.DB.prepare(`
             UPDATE user_points 
             SET balance_total = balance_total + ?, messages_count = messages_count + 1, updated_at = ? 
             WHERE user_id = ?
           `).bind(points, now, body.userId).run();
 
-          await env.DB.prepare(`
+          await c.env.DB.prepare(`
             INSERT INTO point_events (user_id, delta, type, reason, source, created_at)
             VALUES (?, ?, 'message', ?, ?, ?)
           `).bind(body.userId, points, originPlatform, originPlatform, now).run();
@@ -111,8 +105,7 @@ chat.post('/send', async (c: Context) => {
 chat.get('/history', async (c: Context) => {
   try {
     const limit = parseInt(c.req.query('limit') || '50');
-    const env = c.env as any;
-    const durableObject = env.CHAT_ROOM.get('default');
+    const durableObject = getChatRoom(c.env);
     
     const response = await durableObject.fetch(
       new Request(`http://localhost/get-history?limit=${limit}`)
@@ -131,16 +124,14 @@ chat.get('/history', async (c: Context) => {
  */
 chat.post('/clear', async (c: Context) => {
   try {
-  const env = c.env as any;
-  
-  // Check if user is mod/owner
-  // For now, require X-Admin-Token header
-  const token = c.req.header('X-Admin-Token');
-  if (token !== env.ADMIN_TOKEN) {
+    // Check if user is mod/owner
+    // For now, require X-Admin-Token header
+    const token = c.req.header('X-Admin-Token');
+    if (token !== c.env.ADMIN_TOKEN) {
     return c.json({ error: 'Forbidden' }, 403);
   }
 
-    const durableObject = env.CHAT_ROOM.get('default');
+    const durableObject = getChatRoom(c.env);
     const response = await durableObject.fetch(
       new Request('http://localhost/clear?count=50')
     );
@@ -159,13 +150,13 @@ chat.post('/clear', async (c: Context) => {
  */
 chat.get('/stream', async (c: Context) => {
   try {
-    const env = c.env as any;
     const clientId = `client_${crypto.randomUUID()}`;
     
     // Get the chat room Durable Object and request a client stream
-    const durableObject = env.CHAT_ROOM.get('default');
+    const durableObject = getChatRoom(c.env);
     const response = await durableObject.fetch(new Request('http://localhost/add-client', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ clientId }),
     }));
     
