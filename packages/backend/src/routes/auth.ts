@@ -26,7 +26,7 @@ function parseCookies(headerValue?: string): Record<string, string> {
 }
 
 function setCookieHeader(name: string, value: string, maxAge: number): string {
-  return `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; Secure; HttpOnly; SameSite=Lax`;
+  return `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; Domain=.wolfethyst.tv; Secure; HttpOnly; SameSite=Lax`;
 }
 
 /**
