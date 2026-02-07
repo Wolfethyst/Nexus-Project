@@ -5,11 +5,8 @@ import videosRouter from './routes/videos';
 import streamsRouter from './routes/streams';
 import clipsRouter from './routes/clips';
 import storeRouter from './routes/store';
-import profileRouter from './routes/profile';
-import ownerRouter from './routes/owner';
-import redeemsRouter from './routes/redeems';
+import pointsRouter from './routes/points';
 import { chat } from './routes/chat';
-import { getLeaderboard } from './lib';
 
 export type Env = {
   Bindings: {
@@ -53,21 +50,13 @@ app.route('/videos', videosRouter);
 app.route('/streams', streamsRouter);
 app.route('/clips', clipsRouter);
 app.route('/store', storeRouter);
-app.route('/nexus/profile', profileRouter);
-app.route('/owner', ownerRouter);
-app.route('/redeems', redeemsRouter);
+app.route('/points', pointsRouter);
 app.route('/chat', chat);
 
-// Leaderboard endpoint (public)
-app.get('/leaderboard', async (c) => {
-  try {
-    const limit = parseInt(c.req.query('limit') || '50');
-    const leaderboard = await getLeaderboard(c.env, limit);
-    return c.json({ ok: true, leaderboard });
-  } catch (error: any) {
-    console.error('Leaderboard error:', error);
-    return c.json({ error: 'Failed to fetch leaderboard' }, 500);
-  }
+// Leaderboard endpoint (public) - delegate to /points/leaderboard
+app.get('/leaderboard', (c) => {
+  // Redirect to the new /points/leaderboard endpoint using query params
+  return c.redirect(`/points/leaderboard?limit=${c.req.query('limit') || '50'}&offset=${c.req.query('offset') || '0'}`);
 });
 
 // 404
