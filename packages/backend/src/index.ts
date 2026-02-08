@@ -49,24 +49,24 @@ app.get('/assets/:key', async (c) => {
   else if (key.endsWith('.js')) contentType = 'application/javascript';
   else if (key.endsWith('.json')) contentType = 'application/json';
   return new Response(asset, {
-    Bindings: {
-      DB: D1Database;
-      POINTS: KVNamespace;
-      SESSIONS: KVNamespace;
-      ASSETS: KVNamespace;
-      MODERATION: KVNamespace;
-      CLIPS: KVNamespace;
-      CHAT_ROOM: DurableObjectNamespace;
-      REDEEM_SOUNDS: R2Bucket;
-      TWITCH_CLIENT_ID?: string;
-      TWITCH_CLIENT_SECRET?: string;
-      YOUTUBE_CLIENT_ID?: string;
-      YOUTUBE_CLIENT_SECRET?: string;
-      YOUTUBE_CHANNEL_ID?: string;
-      OWNER_TOKEN?: string;
-    };
-  };
-  const app = new Hono<Env>();
+    headers: {
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=31536000',
+    },
+  });
+});
+
+// Serve redeem sounds (and other files) from R2: /sounds/*
+app.get('/sounds/*', async (c) => {
+  const key = c.req.path.replace(/^\/sounds\//, '');
+  const obj = await c.env.REDEEM_SOUNDS.get(key);
+  if (!obj) {
+    return c.text('Not found', 404);
+  }
+  // Guess content type by extension
+  let contentType = 'application/octet-stream';
+  if (key.endsWith('.mp3')) contentType = 'audio/mpeg';
+  else if (key.endsWith('.wav')) contentType = 'audio/wav';
   else if (key.endsWith('.ogg')) contentType = 'audio/ogg';
   else if (key.endsWith('.png')) contentType = 'image/png';
   else if (key.endsWith('.jpg') || key.endsWith('.jpeg')) contentType = 'image/jpeg';
@@ -93,9 +93,7 @@ app.get('/assets/nexus_icon.png', async (c) => {
       'Cache-Control': 'public, max-age=31536000',
     },
   });
-
-
-const app = new Hono<Env>();
+});
 
 // Middleware
 app.use(
