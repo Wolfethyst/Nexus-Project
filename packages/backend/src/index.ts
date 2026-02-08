@@ -1,3 +1,35 @@
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { ChatRoom } from './durable-objects/ChatRoom';
+import authRouter from './routes/auth';
+import videosRouter from './routes/videos';
+import streamsRouter from './routes/streams';
+import clipsRouter from './routes/clips';
+import storeRouter from './routes/store';
+import pointsRouter from './routes/points';
+import { chat } from './routes/chat';
+
+export type Env = {
+  Bindings: {
+    DB: D1Database;
+    POINTS: KVNamespace;
+    SESSIONS: KVNamespace;
+    ASSETS: KVNamespace;
+    MODERATION: KVNamespace;
+    CLIPS: KVNamespace;
+    CHAT_ROOM: DurableObjectNamespace;
+    REDEEM_SOUNDS: R2Bucket;
+    TWITCH_CLIENT_ID?: string;
+    TWITCH_CLIENT_SECRET?: string;
+    YOUTUBE_CLIENT_ID?: string;
+    YOUTUBE_CLIENT_SECRET?: string;
+    YOUTUBE_CHANNEL_ID?: string;
+    OWNER_TOKEN?: string;
+  };
+};
+
+const app = new Hono<Env>();
+
 // Serve any asset from KV: /assets/:key
 app.get('/assets/:key', async (c) => {
   const key = c.req.param('key');
@@ -61,36 +93,7 @@ app.get('/assets/nexus_icon.png', async (c) => {
       'Cache-Control': 'public, max-age=31536000',
     },
   });
-});
-import { Hono } from 'hono';
-import { cors } from 'hono/cors';
-import { ChatRoom } from './durable-objects/ChatRoom';
-import authRouter from './routes/auth';
-import videosRouter from './routes/videos';
-import streamsRouter from './routes/streams';
-import clipsRouter from './routes/clips';
-import storeRouter from './routes/store';
-import pointsRouter from './routes/points';
-import { chat } from './routes/chat';
 
-export type Env = {
-  Bindings: {
-    DB: D1Database;
-    POINTS: KVNamespace;
-    SESSIONS: KVNamespace;
-    ASSETS: KVNamespace;
-    MODERATION: KVNamespace;
-    CLIPS: KVNamespace;
-    CHAT_ROOM: DurableObjectNamespace;
-    REDEEM_SOUNDS: R2Bucket;
-    TWITCH_CLIENT_ID?: string;
-    TWITCH_CLIENT_SECRET?: string;
-    YOUTUBE_CLIENT_ID?: string;
-    YOUTUBE_CLIENT_SECRET?: string;
-    YOUTUBE_CHANNEL_ID?: string;
-    OWNER_TOKEN?: string;
-  };
-};
 
 const app = new Hono<Env>();
 
