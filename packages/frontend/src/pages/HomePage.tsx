@@ -39,7 +39,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
   const handleClearChat = async () => {
     try {
       const response = await ApiClient.post('/chat/clear', {}, {
-        headers: { 'X-Owner-Token': import.meta.env.VITE_OWNER_TOKEN }
+        headers: { 'X-Owner-Token': import.meta.env.VITE_OWNER_TOKEN ?? '' }
       });
       if (response.ok) {
         alert('Chat cleared!');
