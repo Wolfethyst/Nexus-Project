@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components';
-import { HomePage, OwnerPage, ProfilePage } from './pages';
+import { HomePage, OwnerPage, ProfilePage, NotFoundPage } from './pages';
 import { useAuth } from './hooks';
 import { useAuthStore } from './store';
 
@@ -10,7 +10,7 @@ export const App: React.FC = () => {
   const { isInitialized, isOwner } = useAuth();
   const [activeTab, setActiveTab] = useState<'live' | 'vods'>('live');
 
-  const [authError, setAuthError] = useState<string | null>(null);
+  // Removed unused setAuthError
 
   if (!isInitialized) {
     return (
@@ -24,15 +24,7 @@ export const App: React.FC = () => {
   }
 
   if (authError) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-nexus-dark">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <h1 className="text-2xl font-bold text-red-400 mb-2">Authentication Error</h1>
-          <p className="text-muted">{authError}</p>
-        </div>
-      </div>
-    );
+    // Removed unused authError block
   }
 
   return (

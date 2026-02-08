@@ -7,7 +7,7 @@ export function useAuth() {
   const { session, setSession, setLoading } = useAuthStore();
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const [authError, setAuthError] = useState<string | null>(null);
+  // Removed unused authError
 
   useEffect(() => {
     (async () => {
