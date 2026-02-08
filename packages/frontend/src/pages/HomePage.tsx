@@ -288,7 +288,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
             <div className="panel h-full">
               <VODPlayer
                 videoUrl={selectedVOD.videoUrl}
-                title={selectedVOD.title}
+                title={selectedVOD.title ?? ''}
                 date={selectedVOD.createdAt}
                 provider={selectedVOD.platform === 'youtube' ? 'youtube' : selectedVOD.platform === 'twitch' ? 'twitch' : 'youtube'}
                 onClose={handleCloseVOD}
