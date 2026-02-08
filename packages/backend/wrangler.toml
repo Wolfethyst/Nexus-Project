@@ -28,15 +28,7 @@ OWNER_TOKEN = ""
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "nexus-db"
-database_id = "8fb6ea81-bdb7-40ea-9715-d67ffdc84a95"
-
-
-[[env.production.d1_databases]]
-binding = "DB"
-database_name = "nexus-db"
 database_id = "42b33f42-73bc-46e4-a19b-9d69356c237e"
-[[env.production.kv_namespaces]]
-
 [[env.production.kv_namespaces]]
 binding = "ASSETS"
 id = "d2612f87683e4e63995d6e238e2ac18e"
@@ -48,4 +40,3 @@ id = "011f9c09049542c898309d3d6f17e840"
 [[env.production.kv_namespaces]]
 binding = "SESSIONS"
 id = "e99eca42c1f843ec8cff2d9a35ed9248"
-id = "40ed63a3a3ee400ba7b78f50a4559f4c"
