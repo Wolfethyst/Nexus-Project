@@ -28,8 +28,8 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
   const [ttsLoading, setTtsLoading] = useState(false);
   
   // Admin editable stream info
-  const [editTitle, setEditTitle] = useState('');
-  const [editGame, setEditGame] = useState('');
+  const [editTitle, setEditTitle] = useState<string>('');
+  const [editGame, setEditGame] = useState<string>('');
   const [savingStream, setSavingStream] = useState(false);
   
   const isOwner = !!session?.roles?.includes('owner');
@@ -60,8 +60,8 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
       const response = await ApiClient.get<StreamInfo>('/streams/now');
       if (response.ok && response.data) {
         setStreamInfo(response.data);
-        setEditTitle(response.data.title);
-        setEditGame(response.data.game);
+        setEditTitle(response.data.title ?? '');
+        setEditGame(response.data.game ?? '');
       }
     } catch (error) {
       console.error('Failed to load stream info:', error);
