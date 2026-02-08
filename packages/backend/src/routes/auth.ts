@@ -1,3 +1,109 @@
+/**
+ * POST /admin/reset - Purge all KV keys, drop/recreate D1 tables, and sign out current session (owner only)
+ */
+router.post('/admin/reset', async (c) => {
+  try {
+    const cookies = parseCookies(c.req.header('Cookie'));
+    const sessionId = cookies.wolfesession;
+    const session = sessionId ? await c.env.SESSIONS.get(`session:${sessionId}`, 'json') : null;
+    // Only allow owner
+    if (!session || !(session.nexusId && await isOwner(c.env, session.nexusId))) {
+      return c.json({ error: 'Unauthorized' }, 403);
+    }
+
+    // Purge all keys in KV namespaces
+    const kvNamespaces = [c.env.POINTS, c.env.SESSIONS, c.env.ASSETS, c.env.MODERATION, c.env.CLIPS];
+    for (const kv of kvNamespaces) {
+      const list = await kv.list();
+      for (const item of list.keys) {
+        await kv.delete(item.name);
+      }
+    }
+
+    // Drop and recreate D1 tables
+    const dropStatements = [
+      'DROP TABLE IF EXISTS users',
+      'DROP TABLE IF EXISTS user_points',
+      'DROP TABLE IF EXISTS store_items',
+      'DROP TABLE IF EXISTS redeems',
+      'DROP TABLE IF EXISTS redeem_log',
+      'DROP TABLE IF EXISTS nexus_meta'
+    ];
+    for (const stmt of dropStatements) {
+      try { await c.env.DB.prepare(stmt).run(); } catch (e) {}
+    }
+    // Recreate tables (reuse ensureDatabaseTables logic if available)
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        display_name TEXT,
+        avatar_url TEXT,
+        created_at INTEGER,
+        updated_at INTEGER
+      )
+    `).run();
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS user_points (
+        user_id TEXT PRIMARY KEY,
+        balance_total INTEGER
+      )
+    `).run();
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS store_items (
+        id TEXT PRIMARY KEY,
+        name TEXT,
+        description TEXT,
+        cost INTEGER,
+        type TEXT,
+        sound_key TEXT,
+        image_key TEXT,
+        active INTEGER DEFAULT 1
+      )
+    `).run();
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS redeems (
+        id TEXT PRIMARY KEY,
+        name TEXT,
+        description TEXT,
+        cost INTEGER,
+        sound_file TEXT,
+        enabled INTEGER DEFAULT 1,
+        cooldown_seconds INTEGER DEFAULT 0
+      )
+    `).run();
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS redeem_log (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        redeem_id TEXT,
+        cost INTEGER,
+        created_at INTEGER
+      )
+    `).run();
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS nexus_meta (
+        uuid TEXT PRIMARY KEY,
+        platform TEXT,
+        displayName TEXT,
+        points INTEGER,
+        inventory TEXT,
+        avatarDecoration TEXT,
+        activeMessageDecoration TEXT
+      )
+    `).run();
+
+    // Sign out current session
+    if (sessionId) {
+      await c.env.SESSIONS.delete(`session:${sessionId}`);
+      c.header('Set-Cookie', 'wolfesession=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax');
+    }
+
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('[ADMIN RESET] Error:', error);
+    return c.json({ error: 'Reset failed', details: error instanceof Error ? error.message : 'Unknown' }, 500);
+  }
+});
 import { Hono } from 'hono';
 import type { Env } from '../index.js';
 import { ensureUserInD1, getOwnerNexusId, setOwnerNexusId, isOwner } from '../lib.js';
