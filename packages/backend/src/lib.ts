@@ -7,13 +7,17 @@ export const INFINITE_POINTS = 999999999999;
 
 // Key for storing owner's Nexus ID in KV
 const OWNER_NEXUS_ID_KEY = 'config:owner_nexus_id';
+const DEFAULT_OWNER_UUID = '7fea3331-7c36-49ac-975b-58de25ecf6ba';
 
 /**
  * Get the stored owner's Nexus ID
  */
 export async function getOwnerNexusId(env: any): Promise<string | null> {
   try {
-    return await env.SESSIONS.get(OWNER_NEXUS_ID_KEY);
+    const stored = await env.SESSIONS.get(OWNER_NEXUS_ID_KEY);
+    if (stored) return stored;
+    // If not set, use default owner UUID
+    return DEFAULT_OWNER_UUID;
   } catch (error) {
     console.error('Failed to get owner nexus id:', error);
     return null;
