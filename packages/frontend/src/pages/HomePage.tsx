@@ -7,9 +7,9 @@ import { ApiClient } from '../lib/api';
 import type { Video } from '@nexus/shared';
 
 interface StreamInfo {
-  title?: string;
-  game?: string;
-  live?: boolean;
+  title: string;
+  game: string;
+  live: boolean;
 }
 
 interface HomePageProps {
@@ -59,9 +59,13 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
     try {
       const response = await ApiClient.get<StreamInfo>('/streams/now');
       if (response.ok && response.data) {
-        setStreamInfo(response.data);
-        setEditTitle(typeof response.data.title === 'string' ? response.data.title : '');
-        setEditGame(typeof response.data.game === 'string' ? response.data.game : '');
+        setStreamInfo({
+          title: response.data.title ?? '',
+          game: response.data.game ?? '',
+          live: response.data.live ?? false
+        });
+        setEditTitle(response.data.title ?? '');
+        setEditGame(response.data.game ?? '');
       }
     } catch (error) {
       console.error('Failed to load stream info:', error);
