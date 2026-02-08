@@ -16,6 +16,7 @@ interface StoreItem {
 }
 
 export const OwnerPage: React.FC = () => {
+  console.log('OwnerPage rendered');
   const { isOwner } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [stats, setStats] = useState({ vods: 0, clips: 0, users: 0 });
@@ -49,6 +50,7 @@ export const OwnerPage: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
+    console.log('isOwner:', isOwner);
     if (!isOwner) return;
     loadStats();
     loadStoreItems();
@@ -56,19 +58,25 @@ export const OwnerPage: React.FC = () => {
   }, [isOwner]);
 
   const loadStats = async () => {
+    console.log('Loading stats...');
     const res = await ApiClient.get<typeof stats>('/points/leaderboard?limit=1');
+    console.log('Stats response:', res);
     if (res.ok) {
       setStats({ vods: 0, clips: 0, users: 0 });
     }
   };
 
   const loadStoreItems = async () => {
+    console.log('Loading store items...');
     const res = await ApiClient.get<{ data: StoreItem[] }>('/store/list');
+    console.log('Store items response:', res);
     if (res.ok) setStoreItems(res.data?.data || []);
   };
 
   const loadRedeems = async () => {
+    console.log('Loading redeems...');
     const res = await ApiClient.get<{ redeems: StoreItem[] }>('/store/redeems');
+    console.log('Redeems response:', res);
     if (res.ok) setRedeems(res.data?.redeems || []);
   };
 
