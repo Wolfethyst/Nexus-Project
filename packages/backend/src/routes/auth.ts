@@ -117,6 +117,7 @@ interface SessionData {
   avatar?: string;
   accessToken?: string;
   expiresAt?: number;
+  email?: string; // Add email property for compatibility
 }
 
 const router = new Hono<Env>();
