@@ -32,7 +32,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
   const [editGame, setEditGame] = useState('');
   const [savingStream, setSavingStream] = useState(false);
   
-  const isOwner = session?.roles?.includes('owner') ?? false;
+  const isOwner = !!session?.roles?.includes('owner');
   // Only owner can edit stream info and see owner controls
   const canEdit = isOwner;
   // Owner-only: Clear Chat
