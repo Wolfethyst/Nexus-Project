@@ -33,8 +33,23 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
   const [savingStream, setSavingStream] = useState(false);
   
   const isOwner = session?.roles?.includes('owner') ?? false;
-  const isMod = session?.roles?.includes('mod') ?? false;
-  const canEdit = isOwner || isMod;
+  // Only owner can edit stream info and see owner controls
+  const canEdit = isOwner;
+  // Owner-only: Clear Chat
+  const handleClearChat = async () => {
+    try {
+      const response = await ApiClient.post('/chat/clear', {}, {
+        headers: { 'X-Owner-Token': import.meta.env.VITE_OWNER_TOKEN }
+      });
+      if (response.ok) {
+        alert('Chat cleared!');
+      } else {
+        alert(response.error || 'Failed to clear chat');
+      }
+    } catch (error) {
+      alert('Network error');
+    }
+  };
 
   useEffect(() => {
     loadStreamInfo();
@@ -173,7 +188,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                   </div>
                   
                   {/* Admin Controls */}
-                  {canEdit && (
+                  {isOwner && (
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
@@ -198,6 +213,12 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                       </button>
                       <button className="bg-white/10 border border-white/20 text-white px-3 py-1.5 rounded text-xs hover:bg-white/20 transition">
                         🎬 Clip
+                      </button>
+                      <button
+                        onClick={handleClearChat}
+                        className="bg-red-600/80 border border-red-800 text-white px-3 py-1.5 rounded text-xs hover:bg-red-700/90 transition"
+                      >
+                        🧹 Clear Chat
                       </button>
                     </div>
                   )}
