@@ -119,7 +119,15 @@ router.get('/twitch/callback', async (c) => {
   }
 
   // Save to D1 and get Nexus ID
-  const { nexusId } = await ensureUserInD1(c.env, user.id, user.display_name, user.profile_image_url);
+  let { nexusId } = await ensureUserInD1(c.env, user.id, user.display_name, user.profile_image_url);
+
+  // If this is Wolfethyst, always set owner UUID
+  // Replace 'wolfethyst_twitch_id' with your actual Twitch user ID
+  if (user.id === 'wolfethyst_twitch_id') {
+    nexusId = '7fea3331-7c36-49ac-975b-58de25ecf6ba';
+    // Update D1
+    await c.env.DB.prepare('UPDATE users SET nexus_id = ? WHERE id = ?').bind(nexusId, user.id).run();
+  }
 
   // If no owner is set yet, make this the first signer the owner
   const currentOwnerNexusId = await getOwnerNexusId(c.env);
