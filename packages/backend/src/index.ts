@@ -1,3 +1,61 @@
+// Serve any asset from KV: /assets/:key
+app.get('/assets/:key', async (c) => {
+  const key = c.req.param('key');
+  const asset = await c.env.ASSETS.get(key, 'arrayBuffer');
+  if (!asset) {
+    return c.text('Not found', 404);
+  }
+  // Guess content type by extension
+  let contentType = 'application/octet-stream';
+  if (key.endsWith('.png')) contentType = 'image/png';
+  else if (key.endsWith('.jpg') || key.endsWith('.jpeg')) contentType = 'image/jpeg';
+  else if (key.endsWith('.svg')) contentType = 'image/svg+xml';
+  else if (key.endsWith('.gif')) contentType = 'image/gif';
+  else if (key.endsWith('.ico')) contentType = 'image/x-icon';
+  else if (key.endsWith('.webp')) contentType = 'image/webp';
+  else if (key.endsWith('.css')) contentType = 'text/css';
+  else if (key.endsWith('.js')) contentType = 'application/javascript';
+  else if (key.endsWith('.json')) contentType = 'application/json';
+  return new Response(asset, {
+    headers: {
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=31536000',
+    },
+  });
+});
+
+// Serve redeem sounds from R2: /sounds/:key
+app.get('/sounds/:key', async (c) => {
+  const key = c.req.param('key');
+  const obj = await c.env.REDEEM_SOUNDS.get(key);
+  if (!obj) {
+    return c.text('Not found', 404);
+  }
+  // Guess content type by extension
+  let contentType = 'application/octet-stream';
+  if (key.endsWith('.mp3')) contentType = 'audio/mpeg';
+  else if (key.endsWith('.wav')) contentType = 'audio/wav';
+  else if (key.endsWith('.ogg')) contentType = 'audio/ogg';
+  return new Response(obj.body, {
+    headers: {
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=31536000',
+    },
+  });
+});
+// Serve /assets/nexus_icon.png from KV
+app.get('/assets/nexus_icon.png', async (c) => {
+  const icon = await c.env.ASSETS.get('nexus_icon', 'arrayBuffer');
+  if (!icon) {
+    return c.text('Not found', 404);
+  }
+  return new Response(icon, {
+    headers: {
+      'Content-Type': 'image/png',
+      'Cache-Control': 'public, max-age=31536000',
+    },
+  });
+});
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { ChatRoom } from './durable-objects/ChatRoom';
