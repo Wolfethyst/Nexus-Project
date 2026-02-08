@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { StreamPlayer, VideoCard, VODPlayer, Chat, Leaderboard } from '../components';
 import { useVideoStore, useAuthStore } from '../store';
+import { useAuth } from '../hooks/useAuth';
 import { useVideoData } from '../hooks/useVideo';
 import { ApiClient } from '../lib/api';
 import type { Video } from '@nexus/shared';
@@ -18,6 +19,7 @@ interface HomePageProps {
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) => {
+  useAuth(); // Ensure session and roles are loaded
   useVideoData(); // Load VODs from backend
   const { vods } = useVideoStore();
   const { session } = useAuthStore();
