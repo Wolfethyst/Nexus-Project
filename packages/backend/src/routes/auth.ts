@@ -134,7 +134,7 @@ router.post('/admin/reset', async (c) => {
     return c.json({ success: true });
   } catch (error) {
     console.error('[ADMIN RESET] Error:', error);
-    return c.json({ error: 'Reset failed', details: error instanceof Error ? error.message : 'Unknown' }, 500);
+    return c.json({ error: 'Reset failed', details: error instanceof Error ? error.message : 'Unknown' });
   }
 });
 
