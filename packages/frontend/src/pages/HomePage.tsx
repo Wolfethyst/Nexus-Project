@@ -7,9 +7,9 @@ import { ApiClient } from '../lib/api';
 import type { Video } from '@nexus/shared';
 
 interface StreamInfo {
-  title: string;
-  game: string;
-  live: boolean;
+  title?: string;
+  game?: string;
+  live?: boolean;
 }
 
 interface HomePageProps {
@@ -63,8 +63,8 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
         const game = response.data.game !== undefined ? String(response.data.game) : '';
         const live = typeof response.data.live === 'boolean' ? response.data.live : false;
         setStreamInfo({ title, game, live });
-        setEditTitle(title);
-        setEditGame(game);
+        setEditTitle(title ?? '');
+        setEditGame(game ?? '');
       }
     } catch (error) {
       console.error('Failed to load stream info:', error);
