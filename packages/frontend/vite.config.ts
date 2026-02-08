@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
     'https://customer-gc5hjo8ti1eiebgs.cloudflarestream.com/c6f83f068cf1847b267b41c4689c85a1/manifest/video.m3u8?protocol=llhlsbeta';
 
   return {
+    root: __dirname,
     plugins: [react()],
     build: {
       target: 'ES2020',
