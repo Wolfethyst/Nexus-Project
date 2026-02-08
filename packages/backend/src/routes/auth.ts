@@ -1,3 +1,36 @@
+import { Hono } from 'hono';
+import type { Env } from '../index.js';
+import { ensureUserInD1, getOwnerNexusId, setOwnerNexusId, isOwner } from '../lib.js';
+
+const router = new Hono<Env>();
+
+// SessionData type for session objects
+interface SessionData {
+  userId: string;
+  nexusId?: string;
+  name?: string;
+  avatar?: string;
+  accessToken?: string;
+  expiresAt?: number;
+  email?: string; // Add email property for compatibility
+}
+
+function parseCookies(headerValue?: string): Record<string, string> {
+  const cookies: Record<string, string> = {};
+  if (!headerValue) return cookies;
+  headerValue.split(';').forEach((part) => {
+    const [key, ...rest] = part.split('=');
+    if (key && rest.length) {
+      cookies[key.trim()] = decodeURIComponent(rest.join('='));
+    }
+  });
+  return cookies;
+}
+
+function setCookieHeader(name: string, value: string, maxAge: number): string {
+  return `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; Domain=.wolfethyst.tv; Secure; HttpOnly; SameSite=Lax`;
+}
+
 /**
  * POST /admin/reset - Purge all KV keys, drop/recreate D1 tables, and sign out current session (owner only)
  */
@@ -104,39 +137,6 @@ router.post('/admin/reset', async (c) => {
     return c.json({ error: 'Reset failed', details: error instanceof Error ? error.message : 'Unknown' }, 500);
   }
 });
-
-import { Hono } from 'hono';
-import type { Env } from '../index.js';
-import { ensureUserInD1, getOwnerNexusId, setOwnerNexusId, isOwner } from '../lib.js';
-
-// SessionData type for session objects
-interface SessionData {
-  userId: string;
-  nexusId?: string;
-  name?: string;
-  avatar?: string;
-  accessToken?: string;
-  expiresAt?: number;
-  email?: string; // Add email property for compatibility
-}
-
-const router = new Hono<Env>();
-
-function parseCookies(headerValue?: string): Record<string, string> {
-  const cookies: Record<string, string> = {};
-  if (!headerValue) return cookies;
-  headerValue.split(';').forEach((part) => {
-    const [key, ...rest] = part.split('=');
-    if (key && rest.length) {
-      cookies[key.trim()] = decodeURIComponent(rest.join('='));
-    }
-  });
-  return cookies;
-}
-
-function setCookieHeader(name: string, value: string, maxAge: number): string {
-  return `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; Domain=.wolfethyst.tv; Secure; HttpOnly; SameSite=Lax`;
-}
 
 /**
  * GET /auth/twitch/login - Start Twitch OAuth
