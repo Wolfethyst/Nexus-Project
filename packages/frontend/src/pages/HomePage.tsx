@@ -57,9 +57,11 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
 
   const loadStreamInfo = async () => {
     try {
-      const response = await ApiClient.get<StreamInfo>('/streams/now');
+      const response = await ApiClient.get<Partial<StreamInfo>>('/streams/now');
       if (response.ok && response.data) {
-        const { title = '', game = '', live = false } = response.data;
+        const title = typeof response.data.title === 'string' ? response.data.title : '';
+        const game = typeof response.data.game === 'string' ? response.data.game : '';
+        const live = typeof response.data.live === 'boolean' ? response.data.live : false;
         setStreamInfo({ title, game, live });
         setEditTitle(title);
         setEditGame(game);
