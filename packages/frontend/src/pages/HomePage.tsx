@@ -124,21 +124,9 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
               className="w-full h-full object-cover"
               alt="Game Cover"
               onError={(e) => {
-                if (e.currentTarget.src !== '/assets/nexus_icon.png') {
-                  e.currentTarget.src = '/assets/nexus_icon.png';
-                }
+                e.currentTarget.src = '/assets/nexus_icon.png';
               }}
             />
-              <img
-                src="/assets/nexus_icon.png"
-                className="w-full h-full object-cover"
-                alt="Nexus Icon"
-                onError={(e) => {
-                  if (e.currentTarget.src !== '/assets/nexus_icon.png') {
-                    e.currentTarget.src = '/assets/nexus_icon.png';
-                  }
-                }}
-              />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0b0014] via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4">
               <div className="text-[10px] text-purple-400 uppercase mb-1">Current Session</div>
