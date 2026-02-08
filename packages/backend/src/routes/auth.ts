@@ -5,7 +5,7 @@ router.post('/admin/reset', async (c) => {
   try {
     const cookies = parseCookies(c.req.header('Cookie'));
     const sessionId = cookies.wolfesession;
-    const session = sessionId ? await c.env.SESSIONS.get(`session:${sessionId}`, 'json') : null;
+    const session: SessionData | null = sessionId ? await c.env.SESSIONS.get(`session:${sessionId}`, 'json') : null;
     // Only allow owner
     if (!session || !(session.nexusId && await isOwner(c.env, session.nexusId))) {
       return c.json({ error: 'Unauthorized' }, 403);
@@ -109,17 +109,17 @@ import { Hono } from 'hono';
 import type { Env } from '../index.js';
 import { ensureUserInD1, getOwnerNexusId, setOwnerNexusId, isOwner } from '../lib.js';
 
-const router = new Hono<Env>();
-
+// SessionData type for session objects
 interface SessionData {
   userId: string;
   nexusId?: string;
-  email?: string;
   name?: string;
   avatar?: string;
-  accessToken: string;
-  expiresAt: number;
+  accessToken?: string;
+  expiresAt?: number;
 }
+
+const router = new Hono<Env>();
 
 function parseCookies(headerValue?: string): Record<string, string> {
   const cookies: Record<string, string> = {};
