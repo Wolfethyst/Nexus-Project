@@ -59,13 +59,10 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
     try {
       const response = await ApiClient.get<StreamInfo>('/streams/now');
       if (response.ok && response.data) {
-        setStreamInfo({
-          title: response.data.title ?? '',
-          game: response.data.game ?? '',
-          live: response.data.live ?? false
-        });
-        setEditTitle(response.data.title ?? '');
-        setEditGame(response.data.game ?? '');
+        const { title = '', game = '', live = false } = response.data;
+        setStreamInfo({ title, game, live });
+        setEditTitle(title);
+        setEditGame(game);
       }
     } catch (error) {
       console.error('Failed to load stream info:', error);
