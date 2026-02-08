@@ -149,10 +149,10 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
             <div className="absolute bottom-0 left-0 right-0 p-4">
               <div className="text-[10px] text-purple-400 uppercase mb-1">Current Session</div>
               <div className="font-['Cinzel'] text-[22px] leading-tight text-white mb-1 drop-shadow-lg">
-                {streamInfo.game || 'Loading...'}
+                {streamInfo.game ?? 'Loading...'}
               </div>
               <div className="font-['Marcellus'] text-[13px] text-gray-300">
-                {streamInfo.title}
+                {streamInfo.title ?? ''}
               </div>
               <div className="mt-1.5 text-xs font-bold flex items-center gap-2">
                 <span className={streamInfo.live ? 'text-purple-400' : 'text-gray-500'}>
@@ -177,11 +177,11 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <h2 className="font-['Cinzel'] text-base font-bold text-white truncate shadow-sm">
-                      {streamInfo.title}
+                      {streamInfo.title ?? ''}
                     </h2>
                     <div className="flex items-center gap-2 mt-1 text-xs">
                       <span className="bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/30 text-purple-300">
-                        {streamInfo.game || 'No game set'}
+                        {streamInfo.game ?? 'No game set'}
                       </span>
                       <span className={`font-bold flex items-center gap-1 ${streamInfo.live ? 'text-red-500' : 'text-gray-500'}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${streamInfo.live ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></span>
