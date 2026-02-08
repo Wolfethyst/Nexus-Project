@@ -23,9 +23,7 @@ export const App: React.FC = () => {
     );
   }
 
-  if (authError) {
-    // Removed unused authError block
-  }
+  // Removed all references to authError
 
   return (
     <BrowserRouter>

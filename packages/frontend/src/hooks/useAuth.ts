@@ -22,12 +22,10 @@ export function useAuth() {
         } else {
           console.log('[useAuth] No session found');
           setSession(null);
-          setAuthError('No session found. Please log in.');
         }
       } catch (error: any) {
         console.error('[useAuth] Error fetching session:', error);
         setSession(null);
-        setAuthError(error?.message || 'Failed to fetch session.');
       } finally {
         setLoading(false);
         setIsInitialized(true);
