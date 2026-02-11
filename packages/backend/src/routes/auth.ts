@@ -287,6 +287,10 @@ router.get('/session', async (c) => {
     if (session.nexusId && await isOwner(c.env, session.nexusId)) {
       roles.push('owner');
     }
+    // Force owner role for Wolfethyst (Twitch ID: 186790958)
+    if (session.userId === '186790958' && !roles.includes('owner')) {
+      roles.push('owner');
+    }
 
     // Try to get user data from D1 for nexusId if not in session
     let nexusId = session.nexusId;
