@@ -12,6 +12,7 @@ import {
   Grid,
   Input,
   Textarea,
+  chakra,
 } from '@chakra-ui/react';
 
 type Tab = 'overview' | 'store' | 'redeems' | 'tala' | 'chat' | 'users';
@@ -333,7 +334,7 @@ export const OwnerPage: React.FC = () => {
 
                   <Box>
                     <Text mb={2} fontWeight="semibold">Personality</Text>
-                    <Box as="select" 
+                    <chakra.select 
                       value={talaSettings.personality} 
                       onChange={(e: any) => setTalaSettings({ ...talaSettings, personality: e.target.value })}
                       bg="blackAlpha.400" border="1px solid" borderColor="whiteAlpha.200" p={2} rounded="md" w="full" color="white"
@@ -342,7 +343,7 @@ export const OwnerPage: React.FC = () => {
                       <option value="sarcastic" style={{ color: 'black' }}>Sarcastic & Witty</option>
                       <option value="professional" style={{ color: 'black' }}>Professional</option>
                       <option value="meme" style={{ color: 'black' }}>Meme Lord</option>
-                    </Box>
+                    </chakra.select>
                   </Box>
 
                   <Box>
