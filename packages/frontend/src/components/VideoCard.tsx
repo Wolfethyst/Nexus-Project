@@ -47,7 +47,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onPlay }) => {
         )}
       </Box>
       <Box p={3}>
-        <Text as="h3" fontWeight="semibold" fontSize="sm" noOfLines={2} fontFamily="Cinzel, serif">
+        <Text as="h3" fontWeight="semibold" fontSize="sm" lineClamp={2} fontFamily="Cinzel, serif">
           {video.title}
         </Text>
         <Text fontSize="xs" color="gray.400" mt={1}>{dateStr}</Text>

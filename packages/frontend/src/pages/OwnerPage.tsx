@@ -12,6 +12,9 @@ import {
   Grid,
   Input,
   Textarea,
+  Checkbox,
+  Select,
+  Slider, SliderTrack, SliderFilledTrack, SliderThumb,
 } from '@chakra-ui/react';
 
 type Tab = 'overview' | 'store' | 'redeems' | 'tala' | 'chat' | 'users';
@@ -247,7 +250,7 @@ export const OwnerPage: React.FC = () => {
                   <Button
                     gridColumn="span 2"
                     onClick={saveStoreItem}
-                    isLoading={saving}
+                    loading={saving}
                     colorPalette="purple"
                   >
                     {editingStore ? 'Update Item' : 'Create Item'}
@@ -297,7 +300,7 @@ export const OwnerPage: React.FC = () => {
                   <Button
                     gridColumn="span 2"
                     onClick={saveRedeem}
-                    isLoading={saving}
+                    loading={saving}
                     colorPalette="purple"
                   >
                     {editingRedeem ? 'Update Redeem' : 'Create Redeem'}

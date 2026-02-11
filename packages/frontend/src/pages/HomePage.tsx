@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useVideoData } from '../hooks/useVideo';
 import { ApiClient } from '../lib/api';
 import type { Video } from '@nexus/shared';
-import { Grid, Box, Flex, Button } from '@chakra-ui/react';
+import { Grid, Box, Flex, Button, Text } from '@chakra-ui/react';
 
 interface StreamInfo {
   title?: string;
@@ -103,9 +103,9 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                 <Box fontFamily="Cinzel, serif" fontSize="lg" lineHeight="1.2" color="white" mb={1} textShadow="0 2px 8px #3d0066" truncate>
                   {streamInfo.game ?? 'Just Chatting'}
                 </Box>
-                <Box fontFamily="Cinzel, serif" fontSize="xs" color="gray.300" mb={2} noOfLines={2}>
+                <Text fontFamily="Cinzel, serif" fontSize="xs" color="gray.300" mb={2} lineClamp={2}>
                   {streamInfo.title ?? 'Stream is currently offline'}
-                </Box>
+                </Text>
                 <Flex fontSize="sm" fontWeight="bold" align="center" gap={2}>
                   <Box as="span" color={streamInfo.live ? 'red.400' : 'gray.500'} fontSize="md" animation={streamInfo.live ? 'pulse 2s infinite' : undefined}>
                     {streamInfo.live ? '● LIVE' : '● OFFLINE'}

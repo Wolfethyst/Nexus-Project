@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Box, Flex, Avatar, Button, Text, HStack, Center, Image } from '@chakra-ui/react';
+import { Box, Flex, Avatar, Button, Text, HStack, Center, Image, Link as ChakraLink } from '@chakra-ui/react';
 
 interface HeaderProps {
   user?: {
@@ -30,9 +30,9 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
     >
       <Flex align="center" justify="space-between" position="relative">
         {/* LEFT - Sign In / User Profile */}
-        <HStack spacing={4} align="center">
+        <HStack gap={4} align="center">
           {user ? (
-            <HStack spacing={3} align="center">
+            <HStack gap={3} align="center">
               {user.avatar && (
                 <Avatar.Root size="md">
                   <Avatar.Image src={user.avatar} />
@@ -47,10 +47,13 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
               )}
             </HStack>
           ) : (
-            <Button
-              as="a"
+            <ChakraLink
               href="https://api.wolfethyst.tv/auth/twitch/login"
-              size="sm"
+              _hover={{ bgGradient: "to-r", gradientFrom: "purple.500", gradientTo: "pink.500", boxShadow: "0 0 15px rgba(236, 72, 153, 0.4)", textDecoration: 'none' }}
+              transition="all 0.2s"
+              px={4}
+              py={1.5}
+              borderRadius="md"
               bgGradient="to-r"
               gradientFrom="purple.600"
               gradientTo="pink.600"
@@ -60,18 +63,15 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
               fontWeight="bold"
               fontFamily="Cinzel, serif"
               fontSize="sm"
-              _hover={{ bgGradient: "to-r", gradientFrom: "purple.500", gradientTo: "pink.500", boxShadow: "0 0 15px rgba(236, 72, 153, 0.4)" }}
-              transition="all 0.2s"
-              px={4}
             >
               Sign in
-            </Button>
+            </ChakraLink>
           )}
         </HStack>
 
         {/* CENTER - Tab Navigation */}
         <Center position="absolute" left="50%" transform="translateX(-50%)">
-          <HStack spacing={1} bg="blackAlpha.700" p={1} rounded="full" border="1px solid" borderColor="whiteAlpha.200">
+          <HStack gap={1} bg="blackAlpha.700" p={1} rounded="full" border="1px solid" borderColor="whiteAlpha.200">
             <Button
               onClick={() => onTabChange?.('live')}
               px={6}

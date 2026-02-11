@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ApiClient } from '../lib/api';
 import { useAuthStore } from '../store';
+import { Box, Flex, Heading, Text, Input, Button, Spinner } from '@chakra-ui/react';
 
 interface ProfileData {
   displayName: string;

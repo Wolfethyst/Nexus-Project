@@ -109,7 +109,7 @@ export const Marketplace: React.FC = () => {
                 <Button 
                     colorPalette="purple" 
                     onClick={handleTTS}
-                    isLoading={sendingTTS}
+                    loading={sendingTTS}
                     disabled={!ttsText.trim() || !session}
                     w="full"
                     variant="solid"
@@ -174,7 +174,7 @@ export const Marketplace: React.FC = () => {
                         <Box flex={1} minW={0} mb={3}>
                             <Text fontFamily="Cinzel, serif" fontWeight="bold" color="white" fontSize="sm" mb={1} lineHeight="short">{item.name}</Text>
                             {item.description && (
-                            <Text fontFamily="Cinzel, serif" fontSize="xs" color="gray.400" noOfLines={2}>{item.description}</Text>
+                            <Text fontFamily="Cinzel, serif" fontSize="xs" color="gray.400" lineClamp={2}>{item.description}</Text>
                             )}
                         </Box>
                         

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
-import { Box, Flex, Text, Button } from '@chakra-ui/react';
+import { Box, Flex, Button } from '@chakra-ui/react';
 
 const streamUrl = import.meta.env.VITE_STREAM_HLS_URL as string | undefined;
 

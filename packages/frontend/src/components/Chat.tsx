@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '../store';
 import { ApiClient } from '../lib/api';
-import { Box, Flex, Text, Avatar as ChakraAvatar, Input, Button, Spinner } from '@chakra-ui/react';
+import { Box, Flex, Text, Avatar as ChakraAvatar, Input, Button, Link as ChakraLink } from '@chakra-ui/react';
 
 interface ChatMessage {
   id: string;
@@ -166,7 +166,6 @@ export const Chat: React.FC = () => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Send a message..."
-                variant="unstyled"
                 color="white"
                 _placeholder={{ color: 'gray.400' }}
                 fontFamily="Marcellus, serif"
@@ -175,14 +174,13 @@ export const Chat: React.FC = () => {
               />
               <Button
                 type="submit"
-                disabled={!inputValue.trim()}
                 size="md"
                 bg="purple.600"
                 color="white"
                 borderRadius="full"
                 _hover={{ bg: 'purple.500' }}
                 transition="background 0.2s"
-                isDisabled={!inputValue.trim()}
+                disabled={!inputValue.trim()}
               >
                 ➜
               </Button>
@@ -190,7 +188,7 @@ export const Chat: React.FC = () => {
             <Button
               type="button"
               w="auto"
-              variant="link"
+              variant="plain"
               fontSize="xs"
               fontFamily="Cinzel, serif"
               fontWeight="bold"
@@ -203,21 +201,19 @@ export const Chat: React.FC = () => {
           </form>
         ) : (
           <Box textAlign="center" py={4}>
-            <Button
-              as="a"
+            <ChakraLink
               href="https://api.wolfethyst.tv/auth/twitch/login"
-              variant="ghost"
-              color="purple.300"
-              fontFamily="Cinzel, serif"
-              fontSize="md"
-              fontWeight="bold"
-              _hover={{ color: 'purple.200', bg: 'whiteAlpha.100' }}
+              display="inline-block"
               w="full"
-              h="auto"
               py={2}
+              px={4}
+              borderRadius="md"
+              _hover={{ textDecoration: 'none', bg: 'whiteAlpha.100' }}
             >
-              Sign in to chat
-            </Button>
+              <Text color="purple.300" fontFamily="Cinzel, serif" fontSize="md" fontWeight="bold">
+                Sign in to chat
+              </Text>
+            </ChakraLink>
           </Box>
         )}
       </Box>
