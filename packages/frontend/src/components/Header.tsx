@@ -112,7 +112,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
 
         {/* RIGHT - NEXUS Brand */}
         <Link to="/">
-          <Image src={`${ApiClient.baseURL}/assets/nexus_icon.png`} alt="Nexus Logo" h="40px" _hover={{ filter: 'brightness(1.2)' }} transition="filter 0.2s" />
+          <Image src={`${ApiClient.baseURL}/assets/nexus_icon`} alt="Nexus Logo" h="40px" _hover={{ filter: 'brightness(1.2)' }} transition="filter 0.2s" />
         </Link>
       </Flex>
     </Box>

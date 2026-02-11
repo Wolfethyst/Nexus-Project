@@ -83,8 +83,8 @@ app.get('/sounds/*', async (c) => {
     },
   });
 });
-// Serve /assets/nexus_icon.png from KV
-app.get('/assets/nexus_icon.png', async (c) => {
+// Serve /assets/nexus_icon from KV
+app.get('/assets/nexus_icon', async (c) => {
   const icon = await c.env.ASSETS.get('nexus_icon', 'arrayBuffer');
   if (!icon) {
     return c.text('Not found', 404);
