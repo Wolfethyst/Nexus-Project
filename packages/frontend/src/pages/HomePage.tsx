@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useVideoData } from '../hooks/useVideo';
 import { ApiClient } from '../lib/api';
 import type { Video } from '@nexus/shared';
-import { Grid, Box, Flex, Button, Text } from '@chakra-ui/react';
+import { Grid, Box, Flex, Button, Text, Input } from '@chakra-ui/react';
 
 interface StreamInfo {
   title?: string;
@@ -20,13 +20,34 @@ interface HomePageProps {
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) => {
-  useAuth(); // Ensure session and roles are loaded
+  const { isOwner } = useAuth(); // Ensure session and roles are loaded
   useVideoData(); // Load VODs from backend
   const { vods } = useVideoStore();
   const [streamInfo, setStreamInfo] = useState<StreamInfo>({ title: 'Stream Title Loading...', game: 'Loading...', live: false });
   const [selectedVOD, setSelectedVOD] = useState<Video | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
-  // Only owner can edit stream info and see owner controls
+  
+  // Owner editing state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ title: '', game: '' });
+
+  useEffect(() => {
+    if (streamInfo) {
+      setEditForm({ title: streamInfo.title || '', game: streamInfo.game || '' });
+    }
+  }, [streamInfo]);
+
+  const handleSaveStreamInfo = async () => {
+    try {
+      const res = await ApiClient.post('/stream/title', editForm);
+      if (res.ok) {
+        setStreamInfo(prev => ({ ...prev, ...editForm }));
+        setIsEditing(false);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     const vodId = searchParams.get('vod');
@@ -109,20 +130,74 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
 
               {/* Info Text */}
               <Box flex={1} minW={0} display="flex" flexDirection="column" justifyContent="center">
-                <Box fontFamily="Cinzel, serif" fontSize="xs" color="purple.300" fontWeight="bold" letterSpacing="wider" mb={1} textTransform="uppercase">
-                  Current Session
-                </Box>
-                <Box fontFamily="Cinzel, serif" fontSize="lg" lineHeight="1.2" color="white" mb={1} textShadow="0 2px 8px #3d0066" truncate>
-                  {streamInfo.game ?? 'Just Chatting'}
-                </Box>
-                <Text fontFamily="Cinzel, serif" fontSize="xs" color="gray.300" mb={2} lineClamp={2}>
-                  {streamInfo.title ?? 'Stream is currently offline'}
-                </Text>
-                <Flex fontSize="sm" fontWeight="bold" align="center" gap={2}>
-                  <Box as="span" color={streamInfo.live ? 'red.400' : 'gray.500'} fontSize="md" animation={streamInfo.live ? 'pulse 2s infinite' : undefined}>
-                    {streamInfo.live ? '● LIVE' : '● OFFLINE'}
+                <Flex align="center" justify="space-between" mb={1}>
+                  <Box fontFamily="Cinzel, serif" fontSize="xs" color="purple.300" fontWeight="bold" letterSpacing="wider" textTransform="uppercase">
+                    Current Session
                   </Box>
+                  {isOwner && !isEditing && (
+                    <Button 
+                      size="xs" 
+                      variant="ghost" 
+                      colorPalette="purple" 
+                      onClick={() => setIsEditing(true)} 
+                      h="auto" 
+                      minH="auto" 
+                      py={0} 
+                      fontSize="xs"
+                      fontFamily="Cinzel, serif"
+                    >
+                      Edit
+                    </Button>
+                  )}
                 </Flex>
+
+                {isEditing ? (
+                  <Box mb={2}>
+                    <Input 
+                      value={editForm.game} 
+                      onChange={(e) => setEditForm({...editForm, game: e.target.value})}
+                      placeholder="Game"
+                      size="xs"
+                      mb={1}
+                      bg="whiteAlpha.100"
+                      borderColor="whiteAlpha.300"
+                      color="white"
+                      fontFamily="Cinzel, serif"
+                    />
+                    <Input 
+                      value={editForm.title} 
+                      onChange={(e) => setEditForm({...editForm, title: e.target.value})}
+                      placeholder="Stream Title"
+                      size="xs"
+                      mb={2}
+                      bg="whiteAlpha.100"
+                      borderColor="whiteAlpha.300"
+                      color="white"
+                      fontFamily="Cinzel, serif"
+                    />
+                    <Flex gap={2}>
+                      <Button size="xs" colorPalette="green" onClick={handleSaveStreamInfo} fontFamily="Cinzel, serif">Save</Button>
+                      <Button size="xs" variant="ghost" onClick={() => setIsEditing(false)} fontFamily="Cinzel, serif">Cancel</Button>
+                    </Flex>
+                  </Box>
+                ) : (
+                  <>
+                    <Box fontFamily="Cinzel, serif" fontSize="lg" lineHeight="1.2" color="white" mb={1} textShadow="0 2px 8px #3d0066" truncate>
+                      {streamInfo.game ?? 'Just Chatting'}
+                    </Box>
+                    <Text fontFamily="Cinzel, serif" fontSize="xs" color="gray.300" mb={2} lineClamp={2}>
+                      {streamInfo.title ?? 'Stream is currently offline'}
+                    </Text>
+                  </>
+                )}
+                
+                {!isEditing && (
+                  <Flex fontSize="sm" fontWeight="bold" align="center" gap={2}>
+                    <Box as="span" color={streamInfo.live ? 'red.400' : 'gray.500'} fontSize="md" animation={streamInfo.live ? 'pulse 2s infinite' : undefined}>
+                      {streamInfo.live ? '● LIVE' : '● OFFLINE'}
+                    </Box>
+                  </Flex>
+                )}
               </Box>
             </Flex>
           </Box>
