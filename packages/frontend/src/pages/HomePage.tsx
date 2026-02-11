@@ -41,12 +41,23 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
     }
   }, [streamInfo]);
 
+  const fetchStreamInfo = React.useCallback(async () => {
+    try {
+      const response = await ApiClient.get<StreamInfo>('/stream/info');
+      if (response.ok && response.data) {
+        setStreamInfo(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch stream info:', error);
+    }
+  }, []);
+
   const handleSaveStreamInfo = async () => {
     try {
       const res = await ApiClient.post('/stream/title', editForm);
       if (res.ok) {
-        setStreamInfo(prev => ({ ...prev, ...editForm }));
         setIsEditing(false);
+        await fetchStreamInfo(); // Re-fetch to get new cover
       }
     } catch (e) {
       console.error(e);
@@ -65,19 +76,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
   }, [searchParams, vods, clips, onTabChange]);
 
   // Fetch stream info on component mount
-  useEffect(() => {
-    const fetchStreamInfo = async () => {
-      try {
-        const response = await ApiClient.get<StreamInfo>('/stream/info');
-        if (response.ok && response.data) {
-          setStreamInfo(response.data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch stream info:', error);
-      }
-    };
-    fetchStreamInfo();
-  }, []);
+  useEffect(() => { fetchStreamInfo(); }, [fetchStreamInfo]);
 
   const handleCloseVideo = () => {
     setSelectedVideo(null);
@@ -89,7 +88,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
     const all = [...vods, ...clips];
     const gameSet = new Set<string>();
     all.forEach(v => {
-      const name = v.gameName || v.title?.match(/\[(.*?)\]/)?.[1] || 'Other';
+      const name = (v as any).gameName || v.title?.match(/\[(.*?)\]/)?.[1] || 'Other';
       gameSet.add(name);
     });
     return Array.from(gameSet).sort();
@@ -101,10 +100,10 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
     
     // If a video is selected but no game selected, try to infer game or show all (fallback)
     // For now, we rely on selectedGame being set by user or inferred.
-    const targetGame = selectedGame || selectedVideo?.gameName || selectedVideo?.title?.match(/\[(.*?)\]/)?.[1] || 'Other';
+    const targetGame = selectedGame || (selectedVideo as any)?.gameName || selectedVideo?.title?.match(/\[(.*?)\]/)?.[1] || 'Other';
     
     const all = [...vods, ...clips].filter(v => {
-      const g = v.gameName || v.title?.match(/\[(.*?)\]/)?.[1] || 'Other';
+      const g = (v as any).gameName || v.title?.match(/\[(.*?)\]/)?.[1] || 'Other';
       return g === targetGame;
     });
 
@@ -118,7 +117,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
   // Auto-select game if video is selected from URL
   useEffect(() => {
     if (selectedVideo && !selectedGame) {
-      const g = selectedVideo.gameName || selectedVideo.title?.match(/\[(.*?)\]/)?.[1] || 'Other';
+      const g = (selectedVideo as any).gameName || selectedVideo.title?.match(/\[(.*?)\]/)?.[1] || 'Other';
       setSelectedGame(g);
     }
   }, [selectedVideo, selectedGame]);
@@ -207,9 +206,9 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                 {isEditing ? (
                   <Box mb={2}>
                     <Input 
-                      value={editForm.game} 
-                      onChange={(e) => setEditForm({...editForm, game: e.target.value})}
-                      placeholder="Game"
+                      value={editForm.title} 
+                      onChange={(e) => setEditForm({...editForm, title: e.target.value})}
+                      placeholder="Stream Title"
                       size="xs"
                       mb={1}
                       bg="whiteAlpha.100"
@@ -218,9 +217,9 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                       fontFamily="Cinzel, serif"
                     />
                     <Input 
-                      value={editForm.title} 
-                      onChange={(e) => setEditForm({...editForm, title: e.target.value})}
-                      placeholder="Stream Title"
+                      value={editForm.game} 
+                      onChange={(e) => setEditForm({...editForm, game: e.target.value})}
+                      placeholder="Game"
                       size="xs"
                       mb={2}
                       bg="whiteAlpha.100"

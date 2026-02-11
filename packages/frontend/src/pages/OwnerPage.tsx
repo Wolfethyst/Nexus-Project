@@ -323,12 +323,12 @@ export const OwnerPage: React.FC = () => {
               <Box bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100" p={6} rounded="md">
                 <Heading as="h2" size="lg" mb={4}>Tala - Chat AI Settings</Heading>
                 <Flex direction="column" gap={6}>
-                  <Checkbox
-                    isChecked={talaSettings.enabled}
-                    onChange={(e) => setTalaSettings({ ...talaSettings, enabled: e.target.checked })}
-                  >
-                    Enable Tala AI
-                  </Checkbox>
+                  <Flex align="center" gap={2}>
+                    <Checkbox.Root checked={talaSettings.enabled} onCheckedChange={(c) => setTalaSettings({ ...talaSettings, enabled: !!c })}>
+                      <Checkbox.Indicator />
+                    </Checkbox.Root>
+                    <Checkbox.Label>Enable Tala AI</Checkbox.Label>
+                  </Flex>
 
                   <Box>
                     <Text mb={2} fontWeight="semibold">Personality</Text>
@@ -349,12 +349,12 @@ export const OwnerPage: React.FC = () => {
                     <Input type="number" min={0} max={100} value={talaSettings.responseRate} onChange={(e) => setTalaSettings({ ...talaSettings, responseRate: Number(e.target.value) })} />
                   </Box>
 
-                  <Checkbox
-                    isChecked={talaSettings.learnFromChat}
-                    onChange={(e) => setTalaSettings({ ...talaSettings, learnFromChat: e.target.checked })}
-                  >
-                    Learn from chat (improve over time)
-                  </Checkbox>
+                  <Flex align="center" gap={2}>
+                    <Checkbox.Root checked={talaSettings.learnFromChat} onCheckedChange={(c) => setTalaSettings({ ...talaSettings, learnFromChat: !!c })}>
+                      <Checkbox.Indicator />
+                    </Checkbox.Root>
+                    <Checkbox.Label>Learn from chat (improve over time)</Checkbox.Label>
+                  </Flex>
 
                   <Button onClick={saveTalaSettings} loading={saving} colorPalette="purple" alignSelf="flex-start">
                     Save Tala Settings
@@ -374,12 +374,12 @@ export const OwnerPage: React.FC = () => {
                     <Text mb={2} fontWeight="semibold">Slowmode (seconds)</Text>
                     <Input type="number" value={chatSettings.slowmodeSeconds} onChange={(e) => setChatSettings({ ...chatSettings, slowmodeSeconds: Number(e.target.value) })} />
                   </Box>
-                  <Checkbox
-                    isChecked={chatSettings.emoteOnly}
-                    onChange={(e) => setChatSettings({ ...chatSettings, emoteOnly: e.target.checked })}
-                  >
-                    Emote Only Mode
-                  </Checkbox>
+                  <Flex align="center" gap={2}>
+                    <Checkbox.Root checked={chatSettings.emoteOnly} onCheckedChange={(c) => setChatSettings({ ...chatSettings, emoteOnly: !!c })}>
+                      <Checkbox.Indicator />
+                    </Checkbox.Root>
+                    <Checkbox.Label>Emote Only Mode</Checkbox.Label>
+                  </Flex>
                   <Button onClick={saveChatSettings} loading={saving} colorPalette="purple" alignSelf="flex-start">
                     Save Chat Settings
                   </Button>
