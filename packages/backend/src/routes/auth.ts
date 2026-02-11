@@ -225,14 +225,16 @@ router.get('/twitch/callback', async (c) => {
   if (!user) {
     return c.json({ error: 'No user data' }, 500);
   }
+  console.log('Twitch User:', user);
 
   // Save to D1 and get Nexus ID
   let { nexusId } = await ensureUserInD1(c.env, user.id, user.display_name, user.profile_image_url);
 
   // If this is Wolfethyst, always set owner UUID
   // Replace 'wolfethyst_twitch_id' with your actual Twitch user ID
-  if (user.id === 'wolfethyst_twitch_id') {
-    nexusId = '7fea3331-7c36-49ac-975b-58de25ecf6ba';
+  if (user.id === '186790958') {
+    // Replace with your actual Nexus ID
+    nexusId = '19d15566-8972-4aba-82ff-025cb6f5563f';
     // Update D1
     await c.env.DB.prepare('UPDATE users SET nexus_id = ? WHERE id = ?').bind(nexusId, user.id).run();
   }
