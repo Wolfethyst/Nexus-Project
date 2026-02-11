@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Box, Flex, Avatar, Button, Text, HStack, Center } from '@chakra-ui/react';
+import { Box, Flex, Avatar, Button, Text, HStack, Center, Image } from '@chakra-ui/react';
 
 interface HeaderProps {
   user?: {
@@ -50,7 +50,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
             <Button
               as="a"
               href="https://api.wolfethyst.tv/auth/twitch/login"
-              size="lg"
+              size="sm"
               bgGradient="to-r"
               gradientFrom="purple.600"
               gradientTo="pink.600"
@@ -59,10 +59,10 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
               borderColor="whiteAlpha.300"
               fontWeight="bold"
               fontFamily="Cinzel, serif"
-              fontSize="lg"
+              fontSize="sm"
               _hover={{ bgGradient: "to-r", gradientFrom: "purple.500", gradientTo: "pink.500", boxShadow: "0 0 15px rgba(236, 72, 153, 0.4)" }}
               transition="all 0.2s"
-              px={8}
+              px={4}
             >
               Sign in
             </Button>
@@ -75,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
             <Button
               onClick={() => onTabChange?.('live')}
               px={6}
-              py={6}
+              py={2}
               rounded="full"
               fontFamily="Cinzel, serif"
               fontSize="sm"
@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
             <Button
               onClick={() => onTabChange?.('vods')}
               px={6}
-              py={6}
+              py={2}
               rounded="full"
               fontFamily="Cinzel, serif"
               fontSize="sm"
@@ -111,9 +111,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
 
         {/* RIGHT - NEXUS Brand */}
         <Link to="/">
-          <Text fontFamily="Cinzel, serif" fontSize="3xl" fontWeight="bold" color="purple.400" _hover={{ color: 'purple.300' }} transition="color 0.2s" letterSpacing="widest">
-            NEXUS
-          </Text>
+          <Image src="/assets/nexus_icon.png" alt="Nexus Logo" h="40px" _hover={{ filter: 'brightness(1.2)' }} transition="filter 0.2s" />
         </Link>
       </Flex>
     </Box>

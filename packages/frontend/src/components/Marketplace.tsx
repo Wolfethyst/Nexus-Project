@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Flex, Text, Button, Image, Grid, GridItem, Textarea, VStack } from '@chakra-ui/react';
+import { Box, Flex, Text, Button, Image, Grid, GridItem, Textarea, VStack, Input } from '@chakra-ui/react';
 import { useStore } from '../hooks/useStore';
 import { useAuthStore } from '../store';
 
@@ -12,6 +12,7 @@ export const Marketplace: React.FC = () => {
   // TTS State
   const [ttsText, setTtsText] = useState('');
   const [sendingTTS, setSendingTTS] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handlePurchase = async (itemId: string) => {
     if (!session) return;
@@ -41,6 +42,8 @@ export const Marketplace: React.FC = () => {
     }, 1000);
   };
 
+  const filteredItems = items.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
   // Only one return, all logic inside the component
   return (
     <Box h="full" display="flex" flexDirection="column" position="relative">
@@ -65,8 +68,8 @@ export const Marketplace: React.FC = () => {
       <Flex h="full" direction={{ base: 'column', lg: 'row' }}>
         {/* LEFT: TTS Section */}
         <Box 
-            w={{ base: 'full', lg: '500px' }} 
-            p={6} 
+            w={{ base: 'full', lg: '450px' }} 
+            p={4} 
             borderRight={{ lg: '1px solid' }} 
             borderBottom={{ base: '1px solid', lg: 'none' }}
             borderColor="whiteAlpha.100" 
@@ -74,10 +77,10 @@ export const Marketplace: React.FC = () => {
         >
             <VStack align="stretch" gap={4}>
                 <Flex align="center" justify="space-between">
-                    <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.200" fontSize="2xl">TTS Message</Text>
+                    <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.200" fontSize="lg">TTS Message</Text>
                 </Flex>
                 
-                <Text fontFamily="Cinzel, serif" fontSize="md" color="gray.400" lineHeight="tall">
+                <Text fontFamily="Cinzel, serif" fontSize="sm" color="gray.400" lineHeight="tall">
                     Send a message that will be read aloud on stream by the AI voice.
                 </Text>
                 
@@ -91,11 +94,11 @@ export const Marketplace: React.FC = () => {
                         borderColor="whiteAlpha.200"
                         fontFamily="Marcellus, serif"
                         _focus={{ borderColor: 'purple.400', boxShadow: '0 0 0 1px #a78bfa' }}
-                        rows={5}
+                        rows={3}
                         resize="none"
                         maxLength={200}
                         color="white"
-                        fontSize="md"
+                        fontSize="sm"
                         p={3}
                     />
                     <Text fontFamily="Cinzel, serif" position="absolute" bottom={2} right={2} fontSize="sm" color="gray.500">
@@ -110,11 +113,12 @@ export const Marketplace: React.FC = () => {
                     disabled={!ttsText.trim() || !session}
                     w="full"
                     variant="solid"
-                    size="lg"
+                    size="md"
                     fontFamily="Cinzel, serif"
                 >
-                    <Image src="/assets/crystal_icon" alt="crystals" boxSize={5} mr={2} />
-                    Send TTS - 500
+                    Send TTS -&nbsp;
+                    <Image src="/assets/crystal_icon" alt="crystals" boxSize={4} mx={1} display="inline-block" verticalAlign="middle" />
+                    500
                 </Button>
                 
                 {!session && (
@@ -126,16 +130,29 @@ export const Marketplace: React.FC = () => {
         </Box>
 
         {/* RIGHT: Redeems Grid */}
-        <Box flex={1} overflowY="auto" p={6}>
-            <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.200" fontSize="2xl" mb={4}>Stream Redeems</Text>
+        <Box flex={1} overflowY="auto" p={4}>
+            <Flex justify="space-between" align="center" mb={4}>
+                <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.200" fontSize="lg">Redeems</Text>
+                <Input 
+                    placeholder="Search..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    size="sm"
+                    w="150px"
+                    bg="blackAlpha.400"
+                    borderColor="whiteAlpha.200"
+                    color="white"
+                    _focus={{ borderColor: 'purple.400' }}
+                />
+            </Flex>
             
-            {items.length === 0 ? (
+            {filteredItems.length === 0 ? (
                 <Flex align="center" justify="center" h="40">
-                    <Text color="gray.400" fontStyle="italic">No redeems available</Text>
+                    <Text color="gray.400" fontStyle="italic">{items.length === 0 ? "No redeems available" : "No matching redeems"}</Text>
                 </Flex>
             ) : (
-                <Grid templateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={4}>
-                    {items.map((item) => (
+                <Grid templateColumns="repeat(auto-fill, minmax(160px, 1fr))" gap={4}>
+                    {filteredItems.map((item) => (
                     <GridItem key={item.id} w="100%">
                         <Flex
                         direction="column"
@@ -155,15 +172,15 @@ export const Marketplace: React.FC = () => {
                         <Box position="absolute" top={0} left={0} right={0} h="1px" bgGradient="to-r" gradientFrom="transparent" gradientVia="purple.500/50" gradientTo="transparent" opacity={0.5} />
                         
                         <Box flex={1} minW={0} mb={3}>
-                            <Text fontFamily="Cinzel, serif" fontWeight="bold" color="white" fontSize="lg" mb={1} lineHeight="short">{item.name}</Text>
+                            <Text fontFamily="Cinzel, serif" fontWeight="bold" color="white" fontSize="sm" mb={1} lineHeight="short">{item.name}</Text>
                             {item.description && (
-                            <Text fontFamily="Cinzel, serif" fontSize="sm" color="gray.400" noOfLines={2}>{item.description}</Text>
+                            <Text fontFamily="Cinzel, serif" fontSize="xs" color="gray.400" noOfLines={2}>{item.description}</Text>
                             )}
                         </Box>
                         
                         <Flex align="center" justify="space-between" mt="auto" pt={2} borderTop="1px solid" borderColor="whiteAlpha.100">
                             <Flex align="center" gap={1.5}>
-                            <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.300" fontSize="md">{item.cost}</Text>
+                            <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.300" fontSize="sm">{item.cost}</Text>
                             <Image src="/assets/crystal_icon" alt="crystals" boxSize={4} />
                             </Flex>
                             <Button
@@ -172,7 +189,7 @@ export const Marketplace: React.FC = () => {
                             variant="subtle"
                             onClick={() => handlePurchase(item.id)}
                             disabled={purchasing}
-                            fontSize="sm"
+                            fontSize="xs"
                             fontFamily="Cinzel, serif"
                             >
                             Redeem

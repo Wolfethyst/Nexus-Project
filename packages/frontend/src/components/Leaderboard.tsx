@@ -64,7 +64,7 @@ export const Leaderboard: React.FC = () => {
         borderColor="rgba(197,140,255,0.65)" 
         px={5} py={4} 
         fontFamily="Cinzel, serif" 
-        fontSize="lg" 
+        fontSize="md" 
         fontWeight="bold" 
         color="#e1a6ff" 
         textShadow="0 0 10px rgba(213,123,255,0.3)" 
@@ -102,7 +102,7 @@ export const Leaderboard: React.FC = () => {
                 _hover={{ bg: 'white/10' }}
               >
                 <Flex align="center" gap={3} flex={1} minW={0}>
-                  <Text fontFamily="Cinzel, serif" fontSize="md" fontWeight="bold" w={6} textAlign="center" color={styles.color}>
+                  <Text fontFamily="Cinzel, serif" fontSize="sm" fontWeight="bold" w={6} textAlign="center" color={styles.color}>
                     #{entry.rank}
                   </Text>
                   
@@ -113,14 +113,14 @@ export const Leaderboard: React.FC = () => {
                   </Avatar.Root>
 
                   <Box flex={1} minW={0}>
-                    <Text fontFamily="Cinzel, serif" fontWeight="semibold" color="white" fontSize="md" truncate>
+                    <Text fontFamily="Cinzel, serif" fontWeight="semibold" color="white" fontSize="sm" truncate>
                       {entry.username}
                     </Text>
                   </Box>
                 </Flex>
 
                 <Flex align="center" gap={1.5}>
-                  <Text fontFamily="Cinzel, serif" fontSize="md" fontWeight="bold" color="purple.300">
+                  <Text fontFamily="Cinzel, serif" fontSize="sm" fontWeight="bold" color="purple.300">
                     {entry.points.toLocaleString()}
                   </Text>
                   <Image src="/assets/crystal_icon" alt="crystals" boxSize="20px" />

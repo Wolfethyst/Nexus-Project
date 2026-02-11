@@ -21,7 +21,7 @@ router.use('*', async (c, next) => {
   if (!authorized) {
     return c.json({ ok: false, error: 'Unauthorized' }, 403);
   }
-  await next();
+  return next();
 });
 
 router.get('/stats', async (c) => {

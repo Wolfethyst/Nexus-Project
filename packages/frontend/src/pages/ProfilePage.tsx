@@ -63,7 +63,7 @@ export const ProfilePage: React.FC = () => {
   return (
     <Box h="full" overflowY="auto" p={4}>
       <Box maxW="2xl" mx="auto" mt={8}>
-        <Heading as="h2" size="xl" mb={8} fontFamily="Cinzel, serif" color="purple.100" textAlign="center" textShadow="0 0 10px rgba(168,85,247,0.5)">
+        <Heading as="h2" size="lg" mb={8} fontFamily="Cinzel, serif" color="purple.100" textAlign="center" textShadow="0 0 10px rgba(168,85,247,0.5)">
           Profile Settings
         </Heading>
         
@@ -154,7 +154,7 @@ export const ProfilePage: React.FC = () => {
           variant="solid"
           w="full"
           fontFamily="Cinzel, serif"
-          size="lg"
+          size="md"
           boxShadow="0 0 15px rgba(128, 90, 213, 0.4)"
           _hover={{ bg: 'purple.400', boxShadow: '0 0 20px rgba(128, 90, 213, 0.6)' }}
         >

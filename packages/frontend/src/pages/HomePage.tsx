@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useVideoData } from '../hooks/useVideo';
 import { ApiClient } from '../lib/api';
 import type { Video } from '@nexus/shared';
-import { Grid, Box, Flex, Button, Separator } from '@chakra-ui/react';
+import { Grid, Box, Flex, Button } from '@chakra-ui/react';
 
 interface StreamInfo {
   title?: string;
@@ -63,17 +63,17 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
     <Box w="full" h="full" px={{ base: 2, md: 8 }} py={{ base: 2, md: 6 }} display="flex" alignItems="stretch" justifyContent="center">
       <Grid
         display="grid"
-        templateColumns={{ base: '1fr', md: '480px 1fr 480px' }}
+        templateColumns={{ base: '1fr', md: '420px 1fr 420px' }}
         gap={{ base: 2, md: 2 }}
         flex={1}
         minH={0}
         h="full"
         alignItems="stretch"
         p={0}
-        style={{ gridTemplateColumns: '480px 1fr 480px', height: '100%' }}
+        style={{ gridTemplateColumns: '420px 1fr 420px', height: '100%' }}
       >
         {/* LEFT COLUMN - Session Info & Leaderboard */}
-        <Box display="flex" flexDirection="column" minH={0} h="full" minW="480px" gap={2} bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)" overflow="hidden">
+        <Box display="flex" flexDirection="column" minH={0} h="full" minW="420px" gap={2} bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)" overflow="hidden">
           {/* Current Session Info */}
           <Box position="relative" p={6} bg="blackAlpha.400" borderRadius="xl" border="1px solid" borderColor="whiteAlpha.100" minH="220px" display="flex" alignItems="center">
             <Flex gap={6} w="full" align="center">
@@ -100,10 +100,10 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                 <Box fontFamily="Cinzel, serif" fontSize="xs" color="purple.300" fontWeight="bold" letterSpacing="wider" mb={1} textTransform="uppercase">
                   Current Session
                 </Box>
-                <Box fontFamily="Cinzel, serif" fontSize="xl" lineHeight="1.2" color="white" mb={1} textShadow="0 2px 8px #3d0066" truncate>
+                <Box fontFamily="Cinzel, serif" fontSize="lg" lineHeight="1.2" color="white" mb={1} textShadow="0 2px 8px #3d0066" truncate>
                   {streamInfo.game ?? 'Just Chatting'}
                 </Box>
-                <Box fontFamily="Cinzel, serif" fontSize="sm" color="gray.300" mb={2} noOfLines={2}>
+                <Box fontFamily="Cinzel, serif" fontSize="xs" color="gray.300" mb={2} noOfLines={2}>
                   {streamInfo.title ?? 'Stream is currently offline'}
                 </Box>
                 <Flex fontSize="sm" fontWeight="bold" align="center" gap={2}>
@@ -126,7 +126,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
               <Box flexShrink={0} display="flex" flexDirection="column" overflow="hidden">
               {/* Stream Info Bar */}
               <Flex align="center" justify="space-between" bg="blackAlpha.700" borderBottom="1px solid" borderColor="whiteAlpha.200" px={6} py={3}>
-                <Box fontSize="xl" fontWeight="bold" color="purple.200" fontFamily="Cinzel, serif">{streamInfo.title || 'Live Stream'}</Box>
+                <Box fontSize="lg" fontWeight="bold" color="purple.200" fontFamily="Cinzel, serif">{streamInfo.title || 'Live Stream'}</Box>
                 {/* ...existing code... */}
               </Flex>
               {/* Stream Player */}
@@ -134,7 +134,6 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                 <StreamPlayer />
               </Box>
               </Box>
-              <Separator borderColor="purple.800" borderWidth="1px" />
               <Box flex={1} minH={0} bg="blackAlpha.300">
                 <Marketplace />
               </Box>
@@ -178,7 +177,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
           )}
         </Box>
         {/* RIGHT COLUMN - Chat */}
-        <Box h="full" minH={0} minW="480px" flex={1} overflow="hidden" display="flex" flexDirection="column" bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)">
+        <Box h="full" minH={0} minW="420px" flex={1} overflow="hidden" display="flex" flexDirection="column" bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)">
           <Chat />
         </Box>
       </Grid>
