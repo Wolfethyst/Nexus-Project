@@ -24,7 +24,7 @@ export const Leaderboard: React.FC = () => {
       const response = await ApiClient.get<{ leaderboard: LeaderboardEntry[] }>('/points/leaderboard?limit=50');
       if (response.ok && response.data?.leaderboard) {
         // Filter out the owner (Wolfethyst) from the leaderboard
-        setEntries(response.data.leaderboard.filter(entry => entry.username.toLowerCase() !== 'wolfethyst'));
+        setEntries(response.data.leaderboard.filter(entry => entry.username.trim().toLowerCase() !== 'wolfethyst'));
       }
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error);
@@ -49,12 +49,12 @@ export const Leaderboard: React.FC = () => {
       h="full" 
       display="flex" 
       flexDirection="column" 
-      bg="rgba(40,0,60,0.45)" 
-      borderRadius="xl" 
-      boxShadow="md" 
-      backdropFilter="blur(10px)" 
+      bg="rgba(20, 10, 40, 0.4)" 
+      borderRadius="2xl" 
+      boxShadow="xl" 
+      backdropFilter="blur(8px)" 
       border="1px solid" 
-      borderColor="rgba(255,150,255,0.20)"
+      borderColor="whiteAlpha.100"
     >
       {/* HEADER SECTION */}
       <Box 
@@ -63,9 +63,9 @@ export const Leaderboard: React.FC = () => {
         gradientTo="rgba(40,0,60,0.6)" 
         borderBottom="1px solid" 
         borderColor="rgba(197,140,255,0.65)" 
-        px={5} py={4} 
+        px={6} py={3} 
         fontFamily="Cinzel, serif" 
-        fontSize="md" 
+        fontSize="lg" 
         fontWeight="bold" 
         color="#e1a6ff" 
         textShadow="0 0 10px rgba(213,123,255,0.3)" 

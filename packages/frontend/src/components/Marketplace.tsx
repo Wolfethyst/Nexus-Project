@@ -66,20 +66,27 @@ export const Marketplace: React.FC = () => {
           </Box>
         )}
         
-      <Flex h="full" direction={{ base: 'column', lg: 'row' }}>
+      <Flex h="full" direction={{ base: 'column', lg: 'row' }} gap={2}>
         {/* LEFT: TTS Section */}
         <Box 
             w={{ base: 'full', lg: '450px' }} 
-            p={4} 
-            borderRight={{ lg: '1px solid' }} 
-            borderBottom={{ base: '1px solid', lg: 'none' }}
+            bg="rgba(20, 10, 40, 0.4)" 
+            borderRadius="2xl" 
+            boxShadow="xl" 
+            border="1px solid" 
             borderColor="whiteAlpha.100" 
-            bg="blackAlpha.200"
+            backdropFilter="blur(8px)"
+            display="flex"
+            flexDirection="column"
+            overflow="hidden"
         >
+            {/* TTS Header */}
+            <Box bgGradient="to-r" gradientFrom="rgba(20,5,30,0.9)" gradientTo="rgba(40,0,60,0.6)" borderBottom="1px solid" borderColor="rgba(197,140,255,0.65)" px={6} h="52px" fontFamily="Cinzel, serif" fontSize="lg" fontWeight="bold" color="#e1a6ff" textShadow="0 0 10px rgba(213,123,255,0.3)" textTransform="uppercase" letterSpacing="1px" display="flex" alignItems="center" justifyContent="space-between" flexShrink={0}>
+                <span>TTS Message</span>
+            </Box>
+
+            <Box p={4} overflowY="auto" flex={1}>
             <VStack align="stretch" gap={4}>
-                <Flex align="center" justify="space-between">
-                    <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.200" fontSize="lg">TTS Message</Text>
-                </Flex>
                 
                 <Text fontFamily="Marcellus, serif" fontSize="sm" color="gray.400" lineHeight="tall">
                     Send a message that will be read aloud on stream by the AI voice.
@@ -111,42 +118,56 @@ export const Marketplace: React.FC = () => {
                     colorPalette="purple" 
                     onClick={handleTTS}
                     loading={sendingTTS}
-                    disabled={!ttsText.trim() || !session}
+                    disabled={!session || (!ttsText.trim() && !!session)}
                     w="full"
                     variant="solid"
                     size="md"
                     fontFamily="Marcellus, serif"
                 >
-                    Send TTS -&nbsp;
-                    <Image src={`${ApiClient.baseURL}/assets/crystal_icon`} alt="crystals" boxSize={3} mx={1} display="inline-block" verticalAlign="middle" objectFit="contain" />
-                    500
+                    {!session ? "Sign in to use TTS" : (
+                        <>
+                            Send TTS -&nbsp;
+                            <Image src={`${ApiClient.baseURL}/assets/crystal_icon`} alt="crystals" boxSize={3} mx={1} display="inline-block" verticalAlign="middle" objectFit="contain" />
+                            500
+                        </>
+                    )}
                 </Button>
-                
-                {!session && (
-                    <Text fontFamily="Marcellus, serif" fontSize="sm" color="red.300" textAlign="center">
-                        Must be signed in to use TTS
-                    </Text>
-                )}
             </VStack>
+            </Box>
         </Box>
 
         {/* RIGHT: Redeems Grid */}
-        <Box flex={1} overflowY="auto" p={4}>
-            <Flex justify="space-between" align="center" mb={4}>
-                <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.200" fontSize="lg">Redeems</Text>
+        <Box 
+            flex={1} 
+            display="flex" 
+            flexDirection="column" 
+            minW={0}
+            bg="rgba(20, 10, 40, 0.4)" 
+            borderRadius="2xl" 
+            boxShadow="xl" 
+            border="1px solid" 
+            borderColor="whiteAlpha.100" 
+            backdropFilter="blur(8px)"
+            overflow="hidden"
+        >
+            {/* Redeems Header */}
+            <Box bgGradient="to-r" gradientFrom="rgba(20,5,30,0.9)" gradientTo="rgba(40,0,60,0.6)" borderBottom="1px solid" borderColor="rgba(197,140,255,0.65)" px={6} h="52px" fontFamily="Cinzel, serif" fontSize="lg" fontWeight="bold" color="#e1a6ff" textShadow="0 0 10px rgba(213,123,255,0.3)" textTransform="uppercase" letterSpacing="1px" display="flex" alignItems="center" justifyContent="space-between" flexShrink={0}>
+                <span>Redeems</span>
                 <Input 
                     placeholder="Search..." 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    size="sm"
+                    size="xs"
                     w="150px"
-                    bg="blackAlpha.400"
-                    borderColor="whiteAlpha.200"
+                    bg="blackAlpha.500"
+                    borderColor="rgba(197,140,255,0.3)"
                     color="white"
                     _focus={{ borderColor: 'purple.400' }}
+                    fontFamily="Marcellus, serif"
                 />
-            </Flex>
+            </Box>
             
+            <Box flex={1} overflowY="auto" p={4}>
             {filteredItems.length === 0 ? (
                 <Flex align="center" justify="center" h="40">
                     <Text color="gray.400" fontStyle="italic">{items.length === 0 ? "No redeems available" : "No matching redeems"}</Text>
@@ -201,6 +222,7 @@ export const Marketplace: React.FC = () => {
                     ))}
                 </Grid>
             )}
+            </Box>
         </Box>
       </Flex>
     </Box>

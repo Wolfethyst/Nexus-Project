@@ -73,14 +73,26 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
         style={{ gridTemplateColumns: '420px 1fr 420px', height: '100%' }}
       >
         {/* LEFT COLUMN - Session Info & Leaderboard */}
-        <Box display="flex" flexDirection="column" minH={0} h="full" minW="420px" gap={2} bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)" overflow="hidden">
+        <Flex direction="column" minH={0} h="full" minW="420px" gap={2}>
           {/* Current Session Info */}
-          <Box position="relative" p={6} bg="blackAlpha.400" borderRadius="xl" border="1px solid" borderColor="whiteAlpha.100" minH="220px" display="flex" alignItems="center">
-            <Flex gap={6} w="full" align="center">
+          <Box 
+            position="relative" 
+            py={1.5} pl={3} pr={1.5} 
+            bg="rgba(20, 10, 40, 0.4)" 
+            borderRadius="2xl" 
+            boxShadow="xl" 
+            border="1px solid" 
+            borderColor="whiteAlpha.100" 
+            backdropFilter="blur(8px)"
+            minH="220px" 
+            display="flex" 
+            alignItems="center"
+          >
+            <Flex gap={4} w="full" align="center">
               {/* Game Cover Art */}
               <Box 
-                w="110px" 
-                h="150px" 
+                w="150px"
+                h="200px"
                 bg="gray.800" 
                 borderRadius="md" 
                 overflow="hidden" 
@@ -115,18 +127,18 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
             </Flex>
           </Box>
           {/* Leaderboard */}
-          <Box flex={1} minH={0} overflow="hidden">
+          <Box flex={1} minH={0}>
             <Leaderboard />
           </Box>
-        </Box>
+        </Flex>
         {/* CENTER COLUMN - Stream/VODs */}
-        <Box h="full" minH={0} minW={0} flex={2} overflow="hidden" display="flex" flexDirection="column" bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)">
+        <Flex direction="column" h="full" minH={0} minW={0} flex={2} overflow="hidden" gap={2}>
           {activeTab === 'live' ? (
-            <Flex direction="column" h="full">
-              <Box flexShrink={0} display="flex" flexDirection="column" overflow="hidden">
+            <>
+              <Box flexShrink={0} display="flex" flexDirection="column" overflow="hidden" bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)">
               {/* Stream Info Bar */}
               <Flex align="center" justify="space-between" bg="blackAlpha.700" borderBottom="1px solid" borderColor="whiteAlpha.200" px={6} py={3}>
-                <Box fontSize="lg" fontWeight="bold" color="purple.200" fontFamily="Cinzel, serif">{streamInfo.title || 'Live Stream'}</Box>
+                <Box fontSize="lg" fontWeight="bold" color="purple.200" fontFamily="Cinzel, serif" textShadow="0 0 10px rgba(213,123,255,0.3)">{streamInfo.title || 'Live Stream'}</Box>
                 {/* ...existing code... */}
               </Flex>
               {/* Stream Player */}
@@ -134,12 +146,12 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                 <StreamPlayer />
               </Box>
               </Box>
-              <Box flex={1} minH={0} bg="blackAlpha.300">
+              <Box flex={1} minH={0}>
                 <Marketplace />
               </Box>
-            </Flex>
+            </>
           ) : selectedVOD && selectedVOD.videoUrl ? (
-            <Box h="full" minH={0} overflow="auto" bg="rgba(40,0,60,0.45)" borderRadius="xl" boxShadow="md" backdropFilter="blur(10px)" border="1px solid rgba(255,150,255,0.20)">
+            <Box h="full" minH={0} overflow="auto" bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)">
               <VODPlayer
                 videoUrl={selectedVOD.videoUrl}
                 title={selectedVOD.title ?? ''}
@@ -149,14 +161,14 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
               />
             </Box>
           ) : selectedVOD ? (
-            <Box h="full" minH={0} display="flex" alignItems="center" justifyContent="center" overflow="auto" bg="rgba(40,0,60,0.45)" borderRadius="xl" boxShadow="md" backdropFilter="blur(10px)" border="1px solid rgba(255,150,255,0.20)">
+            <Box h="full" minH={0} display="flex" alignItems="center" justifyContent="center" overflow="auto" bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)">
               <Box textAlign="center">
                 <Box fontFamily="Cinzel, serif" color="gray.400" mb={4}>Video URL not available</Box>
                 <Button fontFamily="Cinzel, serif" onClick={handleCloseVOD} colorPalette="purple" variant="outline">Close</Button>
               </Box>
             </Box>
           ) : (
-            <Box h="full" minH={0} display="flex" flexDirection="column" overflow="auto" bg="rgba(40,0,60,0.45)" borderRadius="xl" boxShadow="md" backdropFilter="blur(10px)" border="1px solid rgba(255,150,255,0.20)">
+            <Box h="full" minH={0} display="flex" flexDirection="column" overflow="auto" bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)">
               <Box bgGradient="to-r" gradientFrom="rgba(20,5,30,0.9)" gradientTo="rgba(40,0,60,0.6)" borderBottom="1px solid" borderColor="rgba(197,140,255,0.65)" px={4} py={3} fontFamily="Cinzel, serif" fontSize="md" fontWeight="bold" color="#e1a6ff" textShadow="0 0 10px rgba(213,123,255,0.3)" textTransform="uppercase" letterSpacing="1px" display="flex" justifyContent="space-between" alignItems="center" flexShrink={0}>All VODs</Box>
               <Box flex={1} overflowY="auto" minH={0}>
                 {vods.length > 0 ? (
@@ -175,7 +187,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
               </Box>
             </Box>
           )}
-        </Box>
+        </Flex>
         {/* RIGHT COLUMN - Chat */}
         <Box h="full" minH={0} minW="420px" flex={1} overflow="hidden" display="flex" flexDirection="column" bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)">
           <Chat />

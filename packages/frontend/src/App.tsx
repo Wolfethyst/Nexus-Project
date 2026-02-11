@@ -42,7 +42,7 @@ export const App: React.FC = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route 
             path="/owner" 
-            element={isOwner ? <OwnerPage /> : <Navigate to="/" replace />} 
+            element={<OwnerPage />} 
           />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

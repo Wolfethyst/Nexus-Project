@@ -103,7 +103,7 @@ export const Chat: React.FC = () => {
 
   return (
     <Box h="full" display="flex" flexDirection="column" bg="rgba(40,0,60,0.45)" borderRadius="xl" boxShadow="md" backdropFilter="blur(10px)" border="1px solid rgba(255,150,255,0.20)">
-      <Box bgGradient="to-r" gradientFrom="rgba(20,5,30,0.9)" gradientTo="rgba(40,0,60,0.6)" borderBottom="1px solid" borderColor="rgba(197,140,255,0.65)" px={5} py={4} fontFamily="Cinzel, serif" fontSize="md" fontWeight="bold" color="#e1a6ff" textShadow="0 0 10px rgba(213,123,255,0.3)" textTransform="uppercase" letterSpacing="1px" display="flex" alignItems="center" justifyContent="space-between">
+      <Box bgGradient="to-r" gradientFrom="rgba(20,5,30,0.9)" gradientTo="rgba(40,0,60,0.6)" borderBottom="1px solid" borderColor="rgba(197,140,255,0.65)" px={6} py={3} fontFamily="Cinzel, serif" fontSize="lg" fontWeight="bold" color="#e1a6ff" textShadow="0 0 10px rgba(213,123,255,0.3)" textTransform="uppercase" letterSpacing="1px" display="flex" alignItems="center" justifyContent="space-between">
         <span>Live Chat</span>
         <Flex align="center" gap={2}>
           <Box w={2} h={2} borderRadius="full" bg={isConnected ? 'green.500' : isConnecting ? 'yellow.500' : 'red.500'} animation={isConnected || isConnecting ? 'pulse 2s infinite' : undefined} />
