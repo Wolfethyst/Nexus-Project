@@ -1,8 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
   :root {
     --bg: radial-gradient(circle at 50% 0%, #3d0066, #0b0014 80%);
     --panel-bg: rgba(40, 0, 60, 0.45);
@@ -14,19 +9,18 @@
     --bright-1: #e1a6ff;
     --danger: #ff4b91;
     --success: #72ffb0;
-    --font-head: "Cinzel", serif;
+    --font-head: 'Marcellus', 'Cinzel', serif;
     --font-body: "Space Grotesk", sans-serif;
   }
-
+  
   body {
     margin: 0;
-    background: var(--bg);
+    background: linear-gradient(135deg, #2a1447 0%, #1a0933 100%);
     color: var(--text);
     font-family: var(--font-head);
     height: 100vh;
     overflow: hidden;
   }
-}
 
 @layer components {
   .btn-primary {
@@ -125,3 +119,4 @@
     animation: fadeIn 0.3s ease-out;
   }
 }
+@import url('https://fonts.googleapis.com/css2?family=Marcellus&display=swap');

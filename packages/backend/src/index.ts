@@ -8,6 +8,7 @@ import clipsRouter from './routes/clips';
 import storeRouter from './routes/store';
 import pointsRouter from './routes/points';
 import { chat } from './routes/chat';
+import adminRouter from './routes/admin';
 
 export type Env = {
   Bindings: {
@@ -48,6 +49,7 @@ app.get('/assets/:key', async (c) => {
   else if (key.endsWith('.css')) contentType = 'text/css';
   else if (key.endsWith('.js')) contentType = 'application/javascript';
   else if (key.endsWith('.json')) contentType = 'application/json';
+  else if (key === 'crystal_icon') contentType = 'image/png';
   return new Response(asset, {
     headers: {
       'Content-Type': contentType,
@@ -115,9 +117,11 @@ app.get('/health', (c) => {
 app.route('/auth', authRouter);
 app.route('/videos', videosRouter);
 app.route('/streams', streamsRouter);
+app.route('/stream', streamsRouter); // Alias for singular usage
 app.route('/clips', clipsRouter);
 app.route('/store', storeRouter);
 app.route('/points', pointsRouter);
+app.route('/admin', adminRouter);
 app.route('/chat', chat);
 
 // Leaderboard endpoint (public) - delegate to /points/leaderboard

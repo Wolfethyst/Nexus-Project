@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { StreamPlayer, VideoCard, VODPlayer, Chat, Leaderboard } from '../components';
-import { useVideoStore, useAuthStore } from '../store';
+import { StreamPlayer, VideoCard, VODPlayer, Chat, Leaderboard, Marketplace } from '../components';
+import { useVideoStore } from '../store';
 import { useAuth } from '../hooks/useAuth';
 import { useVideoData } from '../hooks/useVideo';
 import { ApiClient } from '../lib/api';
 import type { Video } from '@nexus/shared';
+import { Grid, Box, Flex, Button, Separator } from '@chakra-ui/react';
 
 interface StreamInfo {
   title?: string;
@@ -22,98 +23,10 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
   useAuth(); // Ensure session and roles are loaded
   useVideoData(); // Load VODs from backend
   const { vods } = useVideoStore();
-  const { session } = useAuthStore();
-  const [streamInfo, setStreamInfo] = useState<StreamInfo>({ title: 'Stream Title Loading...', game: '', live: false });
+  const [streamInfo, setStreamInfo] = useState<StreamInfo>({ title: 'Stream Title Loading...', game: 'Loading...', live: false });
   const [selectedVOD, setSelectedVOD] = useState<Video | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [ttsMessage, setTtsMessage] = useState('');
-  const [ttsLoading, setTtsLoading] = useState(false);
-  
-  // Admin editable stream info
-  const [editTitle, setEditTitle] = useState<string>('');
-  const [editGame, setEditGame] = useState<string>('');
-  const [savingStream, setSavingStream] = useState(false);
-  
-  const isOwner = !!session?.roles?.includes('owner');
   // Only owner can edit stream info and see owner controls
-  const canEdit = isOwner;
-  // Owner-only: Clear Chat
-  const handleClearChat = async () => {
-    try {
-      const response = await ApiClient.post('/chat/clear', {}, {
-        headers: { 'X-Owner-Token': import.meta.env.VITE_OWNER_TOKEN ?? '' }
-      });
-      if (response.ok) {
-        alert('Chat cleared!');
-      } else {
-        alert(response.error || 'Failed to clear chat');
-      }
-    } catch (error) {
-      alert('Network error');
-    }
-  };
-
-  useEffect(() => {
-    loadStreamInfo();
-  }, []);
-
-  const loadStreamInfo = async () => {
-    try {
-      const response = await ApiClient.get<Partial<StreamInfo>>('/streams/now');
-      if (response.ok && response.data) {
-        const title = response.data.title !== undefined ? String(response.data.title) : '';
-        const game = response.data.game !== undefined ? String(response.data.game) : '';
-        const live = typeof response.data.live === 'boolean' ? response.data.live : false;
-        setStreamInfo({ title, game, live });
-        setEditTitle(title ?? '');
-        setEditGame(game ?? '');
-      }
-    } catch (error) {
-      console.error('Failed to load stream info:', error);
-    }
-  };
-
-  const handleSaveStreamInfo = async () => {
-    if (!canEdit) return;
-    
-    setSavingStream(true);
-    try {
-      const ownerToken = import.meta.env.VITE_OWNER_TOKEN;
-      const response = await ApiClient.post(
-        '/streams/title',
-        { title: editTitle, game: editGame },
-        ownerToken ? { headers: { 'X-Owner-Token': ownerToken } } : undefined
-      );
-
-      if (response.ok) {
-        setStreamInfo({ ...streamInfo, title: editTitle, game: editGame });
-      }
-    } catch (error) {
-      console.error('Failed to update stream info:', error);
-    } finally {
-      setSavingStream(false);
-    }
-  };
-
-  const handleTTSSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ttsMessage.trim() || ttsLoading) return;
-
-    setTtsLoading(true);
-    try {
-      const response = await ApiClient.post('/redeems/tts', { message: ttsMessage });
-      if (response.ok) {
-        setTtsMessage('');
-        alert('TTS sent successfully!');
-      } else {
-        alert(response.error || 'Failed to send TTS');
-      }
-    } catch (error) {
-      alert('Network error');
-    } finally {
-      setTtsLoading(false);
-    }
-  };
 
   useEffect(() => {
     const vodId = searchParams.get('vod');
@@ -126,168 +39,108 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
     }
   }, [searchParams, vods, onTabChange]);
 
+  // Fetch stream info on component mount
+  useEffect(() => {
+    const fetchStreamInfo = async () => {
+      try {
+        const response = await ApiClient.get<StreamInfo>('/stream/info');
+        if (response.ok && response.data) {
+          setStreamInfo(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch stream info:', error);
+      }
+    };
+    fetchStreamInfo();
+  }, []);
+
   const handleCloseVOD = () => {
     setSelectedVOD(null);
     setSearchParams({});
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* V1 Three-Column Grid: 320px (LEFT) | 1fr (CENTER) | 380px (RIGHT for CHAT) */}
-      <div className="flex-1 grid grid-cols-[320px_1fr_380px] gap-5 px-5 py-5 overflow-hidden h-full min-h-0">
-        {/* LEFT COLUMN - Now Playing Card + Leaderboard */}
-        <div className="h-full flex flex-col gap-5 overflow-hidden">
-          {/* Now Playing Card */}
-          <div className="relative rounded-xl overflow-hidden aspect-[2/3] border border-purple-500/20 shadow-xl flex-shrink-0">
-            <img
-              src="https://images.igdb.com/igdb/image/upload/t_cover_big/co85cg.jpg"
-              className="w-full h-full object-cover"
-              alt="Game Cover"
-              onError={(e) => {
-                e.currentTarget.src = '/assets/nexus_icon.png';
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0b0014] via-transparent to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-4">
-              <div className="text-[10px] text-purple-400 uppercase mb-1">Current Session</div>
-              <div className="font-['Cinzel'] text-[22px] leading-tight text-white mb-1 drop-shadow-lg">
-                {streamInfo.game ?? 'Loading...'}
-              </div>
-              <div className="font-['Marcellus'] text-[13px] text-gray-300">
-                {streamInfo.title ?? ''}
-              </div>
-              <div className="mt-1.5 text-xs font-bold flex items-center gap-2">
-                <span className={streamInfo.live ? 'text-purple-400' : 'text-gray-500'}>
-                  {streamInfo.live ? '● Live' : '● Offline'}
-                </span>
-              </div>
-            </div>
-          </div>
+    <Box w="full" h="full" px={{ base: 2, md: 8 }} py={{ base: 2, md: 6 }} display="flex" alignItems="stretch" justifyContent="center">
+      <Grid
+        display="grid"
+        templateColumns={{ base: '1fr', md: '480px 1fr 480px' }}
+        gap={{ base: 2, md: 2 }}
+        flex={1}
+        minH={0}
+        h="full"
+        alignItems="stretch"
+        p={0}
+        style={{ gridTemplateColumns: '480px 1fr 480px', height: '100%' }}
+      >
+        {/* LEFT COLUMN - Session Info & Leaderboard */}
+        <Box display="flex" flexDirection="column" minH={0} h="full" minW="480px" gap={2} bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)" overflow="hidden">
+          {/* Current Session Info */}
+          <Box position="relative" p={6} bg="blackAlpha.400" borderRadius="xl" border="1px solid" borderColor="whiteAlpha.100" minH="220px" display="flex" alignItems="center">
+            <Flex gap={6} w="full" align="center">
+              {/* Game Cover Art */}
+              <Box 
+                w="110px" 
+                h="150px" 
+                bg="gray.800" 
+                borderRadius="md" 
+                overflow="hidden" 
+                boxShadow="0 4px 10px rgba(0,0,0,0.5)"
+                flexShrink={0}
+                border="1px solid"
+                borderColor="whiteAlpha.200"
+              >
+                {/* Placeholder for Game Cover - Replace src with dynamic data later */}
+                <Box w="full" h="full" bgGradient="to-br" gradientFrom="purple.900" gradientTo="gray.900" display="flex" alignItems="center" justifyContent="center">
+                  <Box fontSize="2xl">🎮</Box>
+                </Box>
+              </Box>
 
+              {/* Info Text */}
+              <Box flex={1} minW={0} display="flex" flexDirection="column" justifyContent="center">
+                <Box fontFamily="Cinzel, serif" fontSize="xs" color="purple.300" fontWeight="bold" letterSpacing="wider" mb={1} textTransform="uppercase">
+                  Current Session
+                </Box>
+                <Box fontFamily="Cinzel, serif" fontSize="xl" lineHeight="1.2" color="white" mb={1} textShadow="0 2px 8px #3d0066" truncate>
+                  {streamInfo.game ?? 'Just Chatting'}
+                </Box>
+                <Box fontFamily="Cinzel, serif" fontSize="sm" color="gray.300" mb={2} noOfLines={2}>
+                  {streamInfo.title ?? 'Stream is currently offline'}
+                </Box>
+                <Flex fontSize="sm" fontWeight="bold" align="center" gap={2}>
+                  <Box as="span" color={streamInfo.live ? 'red.400' : 'gray.500'} fontSize="md" animation={streamInfo.live ? 'pulse 2s infinite' : undefined}>
+                    {streamInfo.live ? '● LIVE' : '● OFFLINE'}
+                  </Box>
+                </Flex>
+              </Box>
+            </Flex>
+          </Box>
           {/* Leaderboard */}
-          <div className="flex-1 overflow-hidden">
+          <Box flex={1} minH={0} overflow="hidden">
             <Leaderboard />
-          </div>
-        </div>
-
+          </Box>
+        </Box>
         {/* CENTER COLUMN - Stream/VODs */}
-        <div className="h-full overflow-hidden">
+        <Box h="full" minH={0} minW={0} flex={2} overflow="hidden" display="flex" flexDirection="column" bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)">
           {activeTab === 'live' ? (
-            <div className="panel h-full flex flex-col">
+            <Flex direction="column" h="full">
+              <Box flexShrink={0} display="flex" flexDirection="column" overflow="hidden">
               {/* Stream Info Bar */}
-              <div className="flex-shrink-0 bg-black/30 border-b border-white/10 p-4 backdrop-blur-md">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h2 className="font-['Cinzel'] text-base font-bold text-white truncate shadow-sm">
-                      {streamInfo.title ?? ''}
-                    </h2>
-                    <div className="flex items-center gap-2 mt-1 text-xs">
-                      <span className="bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/30 text-purple-300">
-                        {streamInfo.game ?? 'No game set'}
-                      </span>
-                      <span className={`font-bold flex items-center gap-1 ${streamInfo.live ? 'text-red-500' : 'text-gray-500'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${streamInfo.live ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></span>
-                        {streamInfo.live ? 'Live' : 'Offline'}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* Admin Controls */}
-                  {isOwner && (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        placeholder="Title..."
-                        className="w-[200px] bg-black/50 border border-white/20 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-purple-500"
-                      />
-                      <input
-                        type="text"
-                        value={editGame}
-                        onChange={(e) => setEditGame(e.target.value)}
-                        placeholder="Game..."
-                        className="w-[120px] bg-black/50 border border-white/20 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-purple-500"
-                      />
-                      <button
-                        onClick={handleSaveStreamInfo}
-                        disabled={savingStream}
-                        className="bg-white/10 border border-white/20 text-white px-3 py-1.5 rounded text-xs hover:bg-white/20 transition disabled:opacity-50"
-                      >
-                        {savingStream ? '...' : 'Save'}
-                      </button>
-                      <button className="bg-white/10 border border-white/20 text-white px-3 py-1.5 rounded text-xs hover:bg-white/20 transition">
-                        🎬 Clip
-                      </button>
-                      <button
-                        onClick={handleClearChat}
-                        className="bg-red-600/80 border border-red-800 text-white px-3 py-1.5 rounded text-xs hover:bg-red-700/90 transition"
-                      >
-                        🧹 Clear Chat
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
+              <Flex align="center" justify="space-between" bg="blackAlpha.700" borderBottom="1px solid" borderColor="whiteAlpha.200" px={6} py={3}>
+                <Box fontSize="xl" fontWeight="bold" color="purple.200" fontFamily="Cinzel, serif">{streamInfo.title || 'Live Stream'}</Box>
+                {/* ...existing code... */}
+              </Flex>
               {/* Stream Player */}
-              <div className="flex-shrink-0 w-full aspect-video bg-black">
+              <Box w="full" aspectRatio={16/9} bg="black">
                 <StreamPlayer />
-              </div>
-
-              {/* Stream Interactions */}
-              <div className="flex-1 bg-black/40 border-t border-white/10 p-4 overflow-y-auto">
-                <div className="flex gap-5">
-                  <div className="w-72 flex-shrink-0 border-r border-white/10 pr-5">
-                    <div className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-2">
-                      Text-To-Speech
-                    </div>
-                    <form onSubmit={handleTTSSubmit} className="flex flex-col gap-2">
-                      <textarea
-                        value={ttsMessage}
-                        onChange={(e) => setTtsMessage(e.target.value)}
-                        placeholder="Type message..."
-                        maxLength={150}
-                        className="w-full bg-black/50 border border-white/20 rounded-lg p-3 text-white text-sm resize-none h-20 focus:outline-none focus:border-purple-500"
-                      />
-                      <div className="flex items-center justify-between">
-                        <div className="text-xs">
-                          Cost: <span className="text-purple-400 font-bold">250</span>{' '}
-                          <img
-                             src="/assets/wolfe_crystal.png"
-                            alt="crystal"
-                            className="inline w-3.5 h-3.5"
-                          />
-                        </div>
-                        <button
-                          type="submit"
-                          disabled={ttsLoading || !ttsMessage.trim()}
-                          className="px-4 py-1.5 bg-purple-500/20 border border-purple-500 text-purple-200 rounded text-xs font-bold hover:bg-purple-500/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {ttsLoading ? '...' : '➜'}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-2">
-                      Quick Redeems
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      {/* Placeholder redeem cards */}
-                      <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-center hover:border-purple-500/50 transition cursor-pointer">
-                        <div className="text-2xl mb-1">🎉</div>
-                        <div className="text-xs text-white font-bold">Celebration</div>
-                        <div className="text-xs text-purple-400 mt-1">500 💎</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+              </Box>
+              </Box>
+              <Separator borderColor="purple.800" borderWidth="1px" />
+              <Box flex={1} minH={0} bg="blackAlpha.300">
+                <Marketplace />
+              </Box>
+            </Flex>
           ) : selectedVOD && selectedVOD.videoUrl ? (
-            <div className="panel h-full">
+            <Box h="full" minH={0} overflow="auto" bg="rgba(40,0,60,0.45)" borderRadius="xl" boxShadow="md" backdropFilter="blur(10px)" border="1px solid rgba(255,150,255,0.20)">
               <VODPlayer
                 videoUrl={selectedVOD.videoUrl}
                 title={selectedVOD.title ?? ''}
@@ -295,43 +148,40 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                 provider={selectedVOD.platform === 'youtube' ? 'youtube' : selectedVOD.platform === 'twitch' ? 'twitch' : 'youtube'}
                 onClose={handleCloseVOD}
               />
-            </div>
+            </Box>
           ) : selectedVOD ? (
-            <div className="panel h-full flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-gray-400 mb-4">Video URL not available</p>
-                <button onClick={handleCloseVOD} className="btn-secondary">Close</button>
-              </div>
-            </div>
+            <Box h="full" minH={0} display="flex" alignItems="center" justifyContent="center" overflow="auto" bg="rgba(40,0,60,0.45)" borderRadius="xl" boxShadow="md" backdropFilter="blur(10px)" border="1px solid rgba(255,150,255,0.20)">
+              <Box textAlign="center">
+                <Box fontFamily="Cinzel, serif" color="gray.400" mb={4}>Video URL not available</Box>
+                <Button fontFamily="Cinzel, serif" onClick={handleCloseVOD} colorPalette="purple" variant="outline">Close</Button>
+              </Box>
+            </Box>
           ) : (
-            <div className="panel h-full flex flex-col">
-              <div className="panel-header">
-                <span>All VODs</span>
-              </div>
-              <div className="panel-body">
+            <Box h="full" minH={0} display="flex" flexDirection="column" overflow="auto" bg="rgba(40,0,60,0.45)" borderRadius="xl" boxShadow="md" backdropFilter="blur(10px)" border="1px solid rgba(255,150,255,0.20)">
+              <Box bgGradient="to-r" gradientFrom="rgba(20,5,30,0.9)" gradientTo="rgba(40,0,60,0.6)" borderBottom="1px solid" borderColor="rgba(197,140,255,0.65)" px={4} py={3} fontFamily="Cinzel, serif" fontSize="md" fontWeight="bold" color="#e1a6ff" textShadow="0 0 10px rgba(213,123,255,0.3)" textTransform="uppercase" letterSpacing="1px" display="flex" justifyContent="space-between" alignItems="center" flexShrink={0}>All VODs</Box>
+              <Box flex={1} overflowY="auto" minH={0}>
                 {vods.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-3">
+                  <Grid templateColumns="repeat(3, 1fr)" gap={3}>
                     {vods.map((video: Video) => (
-                      <div key={video.id} onClick={() => setSelectedVOD(video)}>
+                      <Box key={video.id} onClick={() => setSelectedVOD(video)} cursor="pointer">
                         <VideoCard video={video} onPlay={() => setSelectedVOD(video)} />
-                      </div>
+                      </Box>
                     ))}
-                  </div>
+                  </Grid>
                 ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-gray-400 italic">No VODs available</p>
-                  </div>
+                  <Flex align="center" justify="center" h="full">
+                    <Box fontFamily="Cinzel, serif" color="gray.400" fontStyle="italic">No VODs available</Box>
+                  </Flex>
                 )}
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
-        </div>
-
+        </Box>
         {/* RIGHT COLUMN - Chat */}
-        <div className="h-full overflow-hidden">
+        <Box h="full" minH={0} minW="480px" flex={1} overflow="hidden" display="flex" flexDirection="column" bg="rgba(20, 10, 40, 0.4)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="whiteAlpha.100" backdropFilter="blur(8px)">
           <Chat />
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Grid>
+    </Box>
   );
 };

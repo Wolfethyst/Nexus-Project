@@ -1,4 +1,6 @@
+
 import React from 'react';
+import { Box, Image, Text } from '@chakra-ui/react';
 
 interface VideoCardProps {
   video: {
@@ -15,30 +17,41 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onPlay }) => {
   const dateStr = new Date(video.createdAt).toLocaleDateString();
 
   return (
-    <div
+    <Box
       onClick={() => onPlay(video.id)}
-      className="group cursor-pointer rounded-lg overflow-hidden bg-nexus-dark/50 hover:bg-nexus-dark/80 transition-colors"
+      cursor="pointer"
+      rounded="lg"
+      overflow="hidden"
+      bg="whiteAlpha.50"
+      border="1px solid"
+      borderColor="whiteAlpha.100"
+      _hover={{ bg: 'whiteAlpha.100', borderColor: 'purple.400', boxShadow: '0 0 15px rgba(168, 85, 247, 0.2)' }}
+      transition="all 0.2s"
     >
-      <div className="relative w-full aspect-video bg-black overflow-hidden">
+      <Box position="relative" w="full" aspectRatio={16/9} bg="black" overflow="hidden">
         {video.thumbnail && (
-          <img
+          <Image
             src={video.thumbnail}
             alt={video.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            w="full"
+            h="full"
+            objectFit="cover"
+            transition="transform 0.2s"
+            _groupHover={{ transform: 'scale(1.05)' }}
           />
         )}
         {video.duration && (
-          <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-1 text-xs rounded">
+          <Box position="absolute" bottom={2} right={2} bg="blackAlpha.800" px={2} py={1} fontSize="xs" rounded="md">
             {video.duration}
-          </div>
+          </Box>
         )}
-      </div>
-      <div className="p-3">
-        <h3 className="font-heading font-semibold line-clamp-2 text-sm">
+      </Box>
+      <Box p={3}>
+        <Text as="h3" fontWeight="semibold" fontSize="sm" noOfLines={2} fontFamily="Cinzel, serif">
           {video.title}
-        </h3>
-        <p className="text-xs text-muted mt-1">{dateStr}</p>
-      </div>
-    </div>
+        </Text>
+        <Text fontSize="xs" color="gray.400" mt={1}>{dateStr}</Text>
+      </Box>
+    </Box>
   );
 };

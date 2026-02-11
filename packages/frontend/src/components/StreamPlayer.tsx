@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
+import { Box, Flex, Text, Button } from '@chakra-ui/react';
 
 const streamUrl = import.meta.env.VITE_STREAM_HLS_URL as string | undefined;
 
@@ -69,48 +70,43 @@ export const StreamPlayer: React.FC = () => {
   };
 
   return (
-    <div className="panel lg:col-span-3">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold">Live Stream</h3>
-        <span className="text-xs text-muted">Cloudflare Stream</span>
-      </div>
-      <div className="bg-black/40 rounded-lg overflow-hidden relative" style={{ aspectRatio: '16 / 9' }}>
+    <Box 
+      w="full"
+      h="full"
+      bg="black" 
+      overflow="hidden" 
+      position="relative" 
+    >
         {streamUrl ? (
           <video
             ref={videoRef}
-            className="w-full h-full"
-            controls={false}
-            playsInline
-            muted
+            style={{ width: '100%', height: '100%' }}
+            controls
             autoPlay
-            disablePictureInPicture
-            controlsList="nodownload noplaybackrate noremoteplayback"
+            muted
+            playsInline
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-sm text-muted">
-            Stream URL not configured
-          </div>
+          <Flex align="center" justify="center" h="full" color="gray.400">
+            No stream URL
+          </Flex>
         )}
-        {streamUrl && (
-          <div className="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent">
-            <div className="flex items-center gap-2 text-xs text-white">
-              <span className="inline-flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                LIVE
-              </span>
-              <span className="text-white/70">Low latency</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleGoLive}
-              className="btn-secondary text-xs"
-              disabled={!canGoLive}
-            >
-              Go Live
-            </button>
-          </div>
+
+        {/* GO LIVE BUTTON */}
+        {canGoLive && (
+          <Button
+            onClick={handleGoLive}
+            position="absolute"
+            bottom={2}
+            right={2}
+            colorPalette="purple" 
+            variant="solid"
+            boxShadow="md"
+            size="sm"
+          >
+            Go Live
+          </Button>
         )}
-      </div>
-    </div>
+    </Box>
   );
 };

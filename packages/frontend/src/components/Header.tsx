@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Box, Flex, Avatar, Button, Text, HStack, Center } from '@chakra-ui/react';
 
 interface HeaderProps {
   user?: {
@@ -15,65 +17,105 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'live', onTabChange }) => {
   return (
-    <header className="bg-nexus-dark border-b border-purple-500/20 px-8 py-4">
-      <div className="flex items-center justify-between">
+    <Box 
+      as="header" 
+      bg="rgba(15, 5, 25, 0.7)" 
+      backdropFilter="blur(12px)"
+      borderBottom="1px solid" 
+      borderColor="whiteAlpha.100" 
+      px={8} 
+      py={5} 
+      position="relative"
+      zIndex={50}
+    >
+      <Flex align="center" justify="space-between" position="relative">
         {/* LEFT - Sign In / User Profile */}
-        <div className="flex items-center gap-4">
+        <HStack spacing={4} align="center">
           {user ? (
-            <div className="flex items-center gap-3">
+            <HStack spacing={3} align="center">
               {user.avatar && (
-                <img
-                  src={user.avatar}
-                  alt={user.display || user.displayName || 'User'}
-                  className="w-8 h-8 rounded-full"
-                />
+                <Avatar.Root size="md">
+                  <Avatar.Image src={user.avatar} />
+                  <Avatar.Fallback name={user.display || user.displayName || 'User'} />
+                </Avatar.Root>
               )}
-              <span className="text-sm text-primary">{user.display || user.displayName || 'User'}</span>
+              <Text fontFamily="Cinzel, serif" fontSize="md" fontWeight="bold" color="purple.200">{user.display || user.displayName || 'User'}</Text>
               {onLogout && (
-                <button
-                  onClick={onLogout}
-                  className="ml-2 px-3 py-1 text-xs bg-white/10 border border-white/20 rounded hover:bg-white/20 transition"
-                >
+                <Button fontFamily="Cinzel, serif" onClick={onLogout} size="xs" bg="whiteAlpha.100" border="1px solid" borderColor="whiteAlpha.300" color="white" _hover={{ bg: 'whiteAlpha.200' }}>
                   Logout
-                </button>
+                </Button>
               )}
-            </div>
+            </HStack>
           ) : (
-            <a href="https://api.wolfethyst.tv/auth/twitch/login" className="px-4 py-2 bg-purple-500/20 border border-purple-500 text-purple-200 rounded font-bold text-sm hover:bg-purple-500/30 transition">
+            <Button
+              as="a"
+              href="https://api.wolfethyst.tv/auth/twitch/login"
+              size="lg"
+              bgGradient="to-r"
+              gradientFrom="purple.600"
+              gradientTo="pink.600"
+              color="white"
+              border="1px solid"
+              borderColor="whiteAlpha.300"
+              fontWeight="bold"
+              fontFamily="Cinzel, serif"
+              fontSize="lg"
+              _hover={{ bgGradient: "to-r", gradientFrom: "purple.500", gradientTo: "pink.500", boxShadow: "0 0 15px rgba(236, 72, 153, 0.4)" }}
+              transition="all 0.2s"
+              px={8}
+            >
               Sign in
-            </a>
+            </Button>
           )}
-        </div>
+        </HStack>
 
         {/* CENTER - Tab Navigation */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 flex gap-1 bg-black/30 p-1 rounded-full border border-white/10">
-          <button
-            onClick={() => onTabChange?.('live')}
-            className={`px-6 py-2 rounded-full font-['Cinzel'] text-xs font-bold uppercase transition-all ${
-              activeTab === 'live'
-                ? 'bg-purple-500 text-black shadow-lg shadow-purple-500/50'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            LIVE
-          </button>
-          <button
-            onClick={() => onTabChange?.('vods')}
-            className={`px-6 py-2 rounded-full font-['Cinzel'] text-xs font-bold uppercase transition-all ${
-              activeTab === 'vods'
-                ? 'bg-purple-500 text-black shadow-lg shadow-purple-500/50'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            VODS
-          </button>
-        </div>
+        <Center position="absolute" left="50%" transform="translateX(-50%)">
+          <HStack spacing={1} bg="blackAlpha.700" p={1} rounded="full" border="1px solid" borderColor="whiteAlpha.200">
+            <Button
+              onClick={() => onTabChange?.('live')}
+              px={6}
+              py={6}
+              rounded="full"
+              fontFamily="Cinzel, serif"
+              fontSize="sm"
+              fontWeight="bold"
+              textTransform="uppercase"
+              boxShadow={activeTab === 'live' ? '0 0 10px 2px #a78bfa80' : undefined}
+              bg={activeTab === 'live' ? 'purple.500' : 'transparent'}
+              color={activeTab === 'live' ? 'white' : 'gray.400'}
+              _hover={{ color: 'white' }}
+              transition="all 0.2s"
+            >
+              LIVE
+            </Button>
+            <Button
+              onClick={() => onTabChange?.('vods')}
+              px={6}
+              py={6}
+              rounded="full"
+              fontFamily="Cinzel, serif"
+              fontSize="sm"
+              fontWeight="bold"
+              textTransform="uppercase"
+              boxShadow={activeTab === 'vods' ? '0 0 10px 2px #a78bfa80' : undefined}
+              bg={activeTab === 'vods' ? 'purple.500' : 'transparent'}
+              color={activeTab === 'vods' ? 'white' : 'gray.400'}
+              _hover={{ color: 'white' }}
+              transition="all 0.2s"
+            >
+              VODS
+            </Button>
+          </HStack>
+        </Center>
 
         {/* RIGHT - NEXUS Brand */}
-        <Link to="/" className="font-['Cinzel'] text-2xl font-bold text-purple-400 hover:text-purple-300 transition">
-          NEXUS
+        <Link to="/">
+          <Text fontFamily="Cinzel, serif" fontSize="3xl" fontWeight="bold" color="purple.400" _hover={{ color: 'purple.300' }} transition="color 0.2s" letterSpacing="widest">
+            NEXUS
+          </Text>
         </Link>
-      </div>
-    </header>
+      </Flex>
+    </Box>
   );
 };

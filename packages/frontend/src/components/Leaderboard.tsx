@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ApiClient } from '../lib/api';
+import { Box, Flex, Text, Avatar, Spinner, Image } from '@chakra-ui/react';
 
 interface LeaderboardEntry {
   user_id: string;
@@ -32,85 +33,103 @@ export const Leaderboard: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="panel h-full">
-        <div className="panel-header">
-          <span>Crystals Leaderboard</span>
-        </div>
-        <div className="panel-body flex items-center justify-center">
-          <p className="text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // Helper for rank colors in v3
+  const getRankStyles = (rank: number) => {
+    switch (rank) {
+      case 1: return { bg: 'yellow.500/10', border: 'yellow.400', color: 'yellow.400' };
+      case 2: return { bg: 'gray.300/10', border: 'gray.300', color: 'gray.300' };
+      case 3: return { bg: 'orange.600/10', border: 'orange.600', color: 'orange.600' };
+      default: return { bg: 'white/5', border: 'white/10', color: 'purple.400' };
+    }
+  };
 
   return (
-    <div className="panel h-full">
-      <div className="panel-header">
-        <span>Crystals Leaderboard</span>
-      </div>
+    <Box 
+      h="full" 
+      display="flex" 
+      flexDirection="column" 
+      bg="rgba(40,0,60,0.45)" 
+      borderRadius="xl" 
+      boxShadow="md" 
+      backdropFilter="blur(10px)" 
+      border="1px solid" 
+      borderColor="rgba(255,150,255,0.20)"
+    >
+      {/* HEADER SECTION */}
+      <Box 
+        bgGradient="to-r" 
+        gradientFrom="rgba(20,5,30,0.9)" 
+        gradientTo="rgba(40,0,60,0.6)" 
+        borderBottom="1px solid" 
+        borderColor="rgba(197,140,255,0.65)" 
+        px={5} py={4} 
+        fontFamily="Cinzel, serif" 
+        fontSize="lg" 
+        fontWeight="bold" 
+        color="#e1a6ff" 
+        textShadow="0 0 10px rgba(213,123,255,0.3)" 
+        textTransform="uppercase" 
+        letterSpacing="1px"
+      >
+        Crystals Leaderboard
+      </Box>
 
-      <div className="panel-body flex flex-col gap-1.5 overflow-y-auto">
-        {entries.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-gray-400 italic">No leaderboard data</p>
-          </div>
+      {/* CONTENT SECTION */}
+      <Box flex={1} overflowY="auto" display="flex" flexDirection="column" gap={2} p={2}>
+        {loading ? (
+          <Flex flex={1} align="center" justify="center" direction="column" gap={3}>
+            <Spinner colorPalette="purple" size="lg" />
+            <Text fontFamily="Cinzel, serif" color="gray.400" fontSize="sm">Loading High Scores...</Text>
+          </Flex>
+        ) : entries.length === 0 ? (
+          <Flex align="center" justify="center" h="full">
+            <Text color="gray.400" fontStyle="italic">No leaderboard data</Text>
+          </Flex>
         ) : (
-          entries.map((entry) => (
-            <div
-              key={entry.user_id}
-              className={`flex items-center justify-between p-2 rounded-md bg-white/5 border border-white/10 font-['Marcellus'] transition-all ${
-                entry.rank === 1
-                  ? 'bg-gradient-to-r from-yellow-500/15 to-transparent border-l-4 border-l-yellow-500'
-                  : entry.rank === 2
-                  ? 'bg-gradient-to-r from-gray-300/10 to-transparent border-l-4 border-l-gray-300'
-                  : entry.rank === 3
-                  ? 'bg-gradient-to-r from-amber-600/10 to-transparent border-l-4 border-l-amber-600'
-                  : ''
-              }`}
-            >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div
-                  className={`text-sm font-bold w-6 text-center ${
-                    entry.rank === 1
-                      ? 'text-yellow-400'
-                      : entry.rank === 2
-                      ? 'text-gray-300'
-                      : entry.rank === 3
-                      ? 'text-amber-600'
-                      : 'text-purple-400'
-                  }`}
-                >
-                  #{entry.rank}
-                </div>
-                {entry.profile_image && (
-                  <img
-                    src={entry.profile_image}
-                    alt={entry.username}
-                    className="w-6 h-6 rounded-full"
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-white truncate text-sm">
-                    {entry.username}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-bold text-purple-300">
-                  {entry.points.toLocaleString()}
-                </span>
-                <img
-                  src="/assets/wolfe_crystal.png"
-                  alt="crystals"
-                  className="w-5 h-5"
-                />
-              </div>
-            </div>
-          ))
+          entries.map((entry) => {
+            const styles = getRankStyles(entry.rank);
+            return (
+              <Flex
+                key={entry.user_id}
+                align="center"
+                justify="space-between"
+                p={2}
+                borderRadius="md"
+                bg={styles.bg}
+                borderLeft="4px solid"
+                borderLeftColor={styles.border}
+                transition="all 0.2s"
+                _hover={{ bg: 'white/10' }}
+              >
+                <Flex align="center" gap={3} flex={1} minW={0}>
+                  <Text fontFamily="Cinzel, serif" fontSize="md" fontWeight="bold" w={6} textAlign="center" color={styles.color}>
+                    #{entry.rank}
+                  </Text>
+                  
+                  {/* v3 Avatar Pattern */}
+                  <Avatar.Root size="md">
+                    <Avatar.Image src={entry.profile_image} alt={entry.username} />
+                    <Avatar.Fallback name={entry.username} />
+                  </Avatar.Root>
+
+                  <Box flex={1} minW={0}>
+                    <Text fontFamily="Cinzel, serif" fontWeight="semibold" color="white" fontSize="md" truncate>
+                      {entry.username}
+                    </Text>
+                  </Box>
+                </Flex>
+
+                <Flex align="center" gap={1.5}>
+                  <Text fontFamily="Cinzel, serif" fontSize="md" fontWeight="bold" color="purple.300">
+                    {entry.points.toLocaleString()}
+                  </Text>
+                  <Image src="/assets/crystal_icon" alt="crystals" boxSize="20px" />
+                </Flex>
+              </Flex>
+            );
+          })
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };

@@ -38,7 +38,6 @@ export const ProfilePage: React.FC = () => {
     e.preventDefault();
     setSaving(true);
     setMessage(null);
-
     try {
       const response = await ApiClient.post<ProfileData>('/nexus/profile', profile);
       if (response.ok) {
@@ -55,82 +54,114 @@ export const ProfilePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-nexus-accent border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <Flex align="center" justify="center" h="full">
+        <Spinner size="xl" color="purple.500" />
+      </Flex>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h2 className="font-heading text-3xl font-bold mb-6">Profile Settings</h2>
-      
-      <form onSubmit={handleSubmit} className="panel space-y-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">Display Name</label>
-          <input
+    <Box h="full" overflowY="auto" p={4}>
+      <Box maxW="2xl" mx="auto" mt={8}>
+        <Heading as="h2" size="xl" mb={8} fontFamily="Cinzel, serif" color="purple.100" textAlign="center" textShadow="0 0 10px rgba(168,85,247,0.5)">
+          Profile Settings
+        </Heading>
+        
+        <Box 
+          as="form" 
+          onSubmit={handleSubmit} 
+          bg="rgba(30, 10, 60, 0.5)" 
+          backdropFilter="blur(16px)"
+          border="1px solid"
+          borderColor="whiteAlpha.200"
+          p={8} 
+          borderRadius="2xl" 
+          boxShadow="xl" 
+          display="flex" 
+          flexDirection="column" 
+          gap={6}
+        >
+        <Box>
+          <Text fontFamily="Cinzel, serif" fontWeight="bold" mb={2} color="purple.200">Display Name</Text>
+          <Input
             type="text"
             value={profile.displayName}
-            onChange={(e) => setProfile({ ...profile, displayName: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfile({ ...profile, displayName: e.target.value })}
             maxLength={25}
-            className="w-full px-4 py-2 bg-nexus-dark border border-gray-700 rounded-lg focus:border-nexus-accent focus:outline-none"
             placeholder={session?.user?.username || 'Your display name'}
+            bg="blackAlpha.400"
+            border="1px solid"
+            borderColor="whiteAlpha.200"
+            _focus={{ borderColor: 'purple.400', boxShadow: '0 0 0 1px #9f7aea' }}
+            color="white"
           />
-          <p className="text-xs text-muted mt-1">{profile.displayName.length}/25 characters</p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Name Color</label>
-          <div className="flex items-center gap-4">
-            <input
+          <Text fontSize="xs" color="gray.400" mt={1}>{profile.displayName.length}/25 characters</Text>
+        </Box>
+        <Box>
+          <Text fontFamily="Cinzel, serif" fontWeight="bold" mb={2} color="purple.200">Name Color</Text>
+          <Flex align="center" gap={4}>
+            <Input
               type="color"
               value={profile.nameColor}
-              onChange={(e) => setProfile({ ...profile, nameColor: e.target.value })}
-              className="h-10 w-20 rounded cursor-pointer"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfile({ ...profile, nameColor: e.target.value })}
+              w="20"
+              h="10"
+              p={0}
+              borderRadius="md"
+              cursor="pointer"
+              bg="transparent"
+              border="none"
             />
-            <input
+            <Input
               type="text"
               value={profile.nameColor}
-              onChange={(e) => setProfile({ ...profile, nameColor: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfile({ ...profile, nameColor: e.target.value })}
               pattern="^#[0-9A-Fa-f]{6}$"
-              className="flex-1 px-4 py-2 bg-nexus-dark border border-gray-700 rounded-lg focus:border-nexus-accent focus:outline-none font-mono"
+              fontFamily="mono"
               placeholder="#ffffff"
+              bg="blackAlpha.400"
+              border="1px solid"
+              borderColor="whiteAlpha.200"
+              color="white"
             />
-          </div>
-          <p className="text-xs text-muted mt-1">This color will appear in chat next to your name</p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Pronouns</label>
-          <input
+          </Flex>
+          <Text fontSize="xs" color="gray.400" mt={1}>This color will appear in chat next to your name</Text>
+        </Box>
+        <Box>
+          <Text fontFamily="Cinzel, serif" fontWeight="bold" mb={2} color="purple.200">Pronouns</Text>
+          <Input
             type="text"
             value={profile.pronouns}
-            onChange={(e) => setProfile({ ...profile, pronouns: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfile({ ...profile, pronouns: e.target.value })}
             maxLength={15}
-            className="w-full px-4 py-2 bg-nexus-dark border border-gray-700 rounded-lg focus:border-nexus-accent focus:outline-none"
             placeholder="they/them"
+            bg="blackAlpha.400"
+            border="1px solid"
+            borderColor="whiteAlpha.200"
+            color="white"
           />
-          <p className="text-xs text-muted mt-1">{profile.pronouns.length}/15 characters</p>
-        </div>
-
+          <Text fontSize="xs" color="gray.400" mt={1}>{profile.pronouns.length}/15 characters</Text>
+        </Box>
         {message && (
-          <div
-            className={`p-4 rounded-lg ${
-              message.type === 'success' ? 'bg-green-900/20 text-green-400' : 'bg-red-900/20 text-red-400'
-            }`}
-          >
-            {message.text}
-          </div>
+          <Box borderRadius="md" p={3} bg={message.type === 'success' ? 'green.500/20' : 'red.500/20'} border="1px solid" borderColor={message.type === 'success' ? 'green.500/50' : 'red.500/50'}>
+            <Text color={message.type === 'success' ? 'green.300' : 'red.300'}>{message.text}</Text>
+          </Box>
         )}
-
-        <button
+        <Button
           type="submit"
-          disabled={saving}
-          className="w-full py-3 bg-nexus-accent hover:bg-nexus-accent-hover disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-semibold transition"
+          isLoading={saving}
+          colorPalette="purple"
+          variant="solid"
+          w="full"
+          fontFamily="Cinzel, serif"
+          size="lg"
+          boxShadow="0 0 15px rgba(128, 90, 213, 0.4)"
+          _hover={{ bg: 'purple.400', boxShadow: '0 0 20px rgba(128, 90, 213, 0.6)' }}
         >
-          {saving ? 'Saving...' : 'Save Profile'}
-        </button>
-      </form>
-    </div>
+          Save Profile
+        </Button>
+      </Box>
+      </Box>
+    </Box>
   );
 };

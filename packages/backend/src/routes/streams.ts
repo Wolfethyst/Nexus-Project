@@ -58,6 +58,24 @@ router.get('/now', async (c) => {
   }
 });
 
+// GET /stream/info - Alias for /now to match frontend
+router.get('/info', async (c) => {
+  try {
+    // Check cache for current stream info
+    const streamInfo = await c.env.SESSIONS.get('stream:current', 'json') as any;
+    
+    return c.json({
+      ok: true,
+      title: streamInfo?.title || 'Live Stream',
+      game: streamInfo?.game || '',
+      live: streamInfo?.live || false,
+    });
+  } catch (error: any) {
+    console.error('Stream info error:', error);
+    return c.json({ ok: false, error: 'Failed to fetch stream info' }, 500);
+  }
+});
+
 // POST /stream/title - Update stream title (admin only)
 router.post('/title', async (c) => {
   const body = await c.req.json() as { title?: string; game?: string };

@@ -1,3 +1,5 @@
+
+import path from 'path';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +15,12 @@ export default defineConfig(({ mode }) => {
     'https://customer-gc5hjo8ti1eiebgs.cloudflarestream.com/c6f83f068cf1847b267b41c4689c85a1/manifest/video.m3u8?protocol=llhlsbeta';
 
   return {
+    resolve: {
+      alias: {
+        '@emotion/react': path.resolve(__dirname, 'node_modules/@emotion/react'),
+        '@emotion/styled': path.resolve(__dirname, 'node_modules/@emotion/styled'),
+      },
+    },
     root: __dirname,
     plugins: [react()],
     build: {
@@ -31,6 +39,23 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
         },
       },
+    },
+    optimizeDeps: {
+      include: [
+        '@emotion/react',
+        '@emotion/styled',
+        'framer-motion',
+        '@chakra-ui/react',
+      ],
+      exclude: [],
+    },
+    ssr: {
+      noExternal: [
+        '@chakra-ui/react',
+        '@emotion/react',
+        '@emotion/styled',
+        'framer-motion',
+      ],
     },
   };
 });

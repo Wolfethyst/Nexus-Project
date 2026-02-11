@@ -4,6 +4,7 @@ import { Layout } from './components';
 import { HomePage, OwnerPage, ProfilePage, NotFoundPage } from './pages';
 import { useAuth } from './hooks';
 import { useAuthStore } from './store';
+import { Center, Spinner, Text, VStack } from '@chakra-ui/react';
 
 export const App: React.FC = () => {
   const { session } = useAuthStore();
@@ -14,12 +15,12 @@ export const App: React.FC = () => {
 
   if (!isInitialized) {
     return (
-      <div className="flex items-center justify-center h-screen bg-nexus-dark">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-nexus-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted">Initializing Nexus...</p>
-        </div>
-      </div>
+      <Center h="100vh" bg="#05010a" bgImage="radial-gradient(circle at 50% 50%, #1a052e 0%, #05010a 100%)">
+        <VStack gap={4}>
+          <Spinner size="xl" color="purple.500" borderWidth="4px" animationDuration="0.65s" />
+          <Text color="purple.200" fontFamily="Cinzel, serif" animation="pulse 2s infinite">Initializing Nexus...</Text>
+        </VStack>
+      </Center>
     );
   }
 

@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
+import { Box, Flex, Text, Button, Image, Grid, GridItem, Textarea, VStack } from '@chakra-ui/react';
 import { useStore } from '../hooks/useStore';
 import { useAuthStore } from '../store';
 
 export const Marketplace: React.FC = () => {
   const { session } = useAuthStore();
-  const { items, loading: itemsLoading } = useStore();
-  const { purchase } = useStore();
+  const { items, purchase } = useStore();
   const [purchasing, setPurchasing] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  
+  // TTS State
+  const [ttsText, setTtsText] = useState('');
+  const [sendingTTS, setSendingTTS] = useState(false);
 
   const handlePurchase = async (itemId: string) => {
     if (!session) return;
-
     setPurchasing(true);
     const result = await purchase(itemId);
-
     if (result.ok) {
       setMessage({ type: 'success', text: `Purchased! Points remaining: ${result.pointsAfter}` });
       setTimeout(() => setMessage(null), 3000);
@@ -25,80 +27,164 @@ export const Marketplace: React.FC = () => {
     setPurchasing(false);
   };
 
-  if (!session) {
-    return (
-      <div className="panel h-full">
-        <div className="panel-header">
-          <span>Marketplace</span>
-        </div>
-        <div className="panel-body flex items-center justify-center">
-          <p className="text-gray-400">Please log in to access the marketplace</p>
-        </div>
-      </div>
-    );
-  }
+  const handleTTS = async () => {
+    if (!session) return;
+    if (!ttsText.trim()) return;
+    
+    setSendingTTS(true);
+    // Mock TTS purchase for now - in reality this would hit an endpoint
+    setTimeout(() => {
+        setMessage({ type: 'success', text: 'TTS Message Sent!' });
+        setTtsText('');
+        setSendingTTS(false);
+        setTimeout(() => setMessage(null), 3000);
+    }, 1000);
+  };
 
-  if (itemsLoading) {
-    return (
-      <div className="panel h-full">
-        <div className="panel-header">
-          <span>Marketplace</span>
-        </div>
-        <div className="panel-body flex items-center justify-center">
-          <p className="text-gray-400">Loading marketplace...</p>
-        </div>
-      </div>
-    );
-  }
-
+  // Only one return, all logic inside the component
   return (
-    <div className="panel h-full">
-      <div className="panel-header">
-        <span>Marketplace</span>
-      </div>
-
-      <div className="panel-body flex flex-col gap-2 overflow-y-auto">
+    <Box h="full" display="flex" flexDirection="column" position="relative">
         {message && (
-          <div className={`p-2 rounded-md text-sm ${message.type === 'success' ? 'bg-green-500/20 border border-green-500/50 text-green-400' : 'bg-red-500/20 border border-red-500/50 text-red-400'}`}>
+          <Box 
+            position="absolute" 
+            top={4} 
+            left="50%" 
+            transform="translateX(-50%)" 
+            zIndex={20} 
+            p={2} 
+            borderRadius="md" 
+            fontSize="sm" 
+            bg={message.type === 'success' ? 'green.500' : 'red.500'} 
+            color="white"
+            boxShadow="lg"
+          >
             {message.text}
-          </div>
+          </Box>
         )}
-
-        {items.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-gray-400 italic">No items available</p>
-          </div>
-        ) : (
-          items.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-between justify-between p-3 rounded-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
-            >
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-white truncate">{item.name}</h3>
-                {item.description && (
-                  <p className="text-sm text-gray-400 truncate">{item.description}</p>
+        
+      <Flex h="full" direction={{ base: 'column', lg: 'row' }}>
+        {/* LEFT: TTS Section */}
+        <Box 
+            w={{ base: 'full', lg: '500px' }} 
+            p={6} 
+            borderRight={{ lg: '1px solid' }} 
+            borderBottom={{ base: '1px solid', lg: 'none' }}
+            borderColor="whiteAlpha.100" 
+            bg="blackAlpha.200"
+        >
+            <VStack align="stretch" gap={4}>
+                <Flex align="center" justify="space-between">
+                    <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.200" fontSize="2xl">TTS Message</Text>
+                </Flex>
+                
+                <Text fontFamily="Cinzel, serif" fontSize="md" color="gray.400" lineHeight="tall">
+                    Send a message that will be read aloud on stream by the AI voice.
+                </Text>
+                
+                <Box position="relative">
+                    <Textarea 
+                        placeholder="Type your message here..." 
+                        value={ttsText}
+                        onChange={(e) => setTtsText(e.target.value)}
+                        bg="blackAlpha.400"
+                        border="1px solid"
+                        borderColor="whiteAlpha.200"
+                        fontFamily="Marcellus, serif"
+                        _focus={{ borderColor: 'purple.400', boxShadow: '0 0 0 1px #a78bfa' }}
+                        rows={5}
+                        resize="none"
+                        maxLength={200}
+                        color="white"
+                        fontSize="md"
+                        p={3}
+                    />
+                    <Text fontFamily="Cinzel, serif" position="absolute" bottom={2} right={2} fontSize="sm" color="gray.500">
+                        {ttsText.length}/200
+                    </Text>
+                </Box>
+                
+                <Button 
+                    colorPalette="purple" 
+                    onClick={handleTTS}
+                    isLoading={sendingTTS}
+                    disabled={!ttsText.trim() || !session}
+                    w="full"
+                    variant="solid"
+                    size="lg"
+                    fontFamily="Cinzel, serif"
+                >
+                    <Image src="/assets/crystal_icon" alt="crystals" boxSize={5} mr={2} />
+                    Send TTS - 500
+                </Button>
+                
+                {!session && (
+                    <Text fontFamily="Cinzel, serif" fontSize="sm" color="red.300" textAlign="center">
+                        Must be signed in to use TTS
+                    </Text>
                 )}
-              </div>
-              <div className="flex items-center gap-3 ml-2">
-                <div className="text-right">
-                  <div className="text-sm font-bold text-purple-300">{item.cost}</div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePurchase(item.id);
-                    }}
-                    disabled={purchasing}
-                    className="mt-1 px-3 py-1 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-600 rounded text-xs font-semibold text-white transition-colors"
-                  >
-                    {purchasing ? 'Buying...' : 'Buy'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
+            </VStack>
+        </Box>
+
+        {/* RIGHT: Redeems Grid */}
+        <Box flex={1} overflowY="auto" p={6}>
+            <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.200" fontSize="2xl" mb={4}>Stream Redeems</Text>
+            
+            {items.length === 0 ? (
+                <Flex align="center" justify="center" h="40">
+                    <Text color="gray.400" fontStyle="italic">No redeems available</Text>
+                </Flex>
+            ) : (
+                <Grid templateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={4}>
+                    {items.map((item) => (
+                    <GridItem key={item.id} w="100%">
+                        <Flex
+                        direction="column"
+                        h="full"
+                        p={3}
+                        borderRadius="lg"
+                        bg="whiteAlpha.50"
+                        border="1px solid"
+                        borderColor="whiteAlpha.100"
+                        _hover={{ bg: 'whiteAlpha.100', borderColor: 'purple.400', transform: 'translateY(-2px)' }}
+                        transition="all 0.2s"
+                        boxShadow="md"
+                        position="relative"
+                        overflow="hidden"
+                        >
+                        {/* Glow effect */}
+                        <Box position="absolute" top={0} left={0} right={0} h="1px" bgGradient="to-r" gradientFrom="transparent" gradientVia="purple.500/50" gradientTo="transparent" opacity={0.5} />
+                        
+                        <Box flex={1} minW={0} mb={3}>
+                            <Text fontFamily="Cinzel, serif" fontWeight="bold" color="white" fontSize="lg" mb={1} lineHeight="short">{item.name}</Text>
+                            {item.description && (
+                            <Text fontFamily="Cinzel, serif" fontSize="sm" color="gray.400" noOfLines={2}>{item.description}</Text>
+                            )}
+                        </Box>
+                        
+                        <Flex align="center" justify="space-between" mt="auto" pt={2} borderTop="1px solid" borderColor="whiteAlpha.100">
+                            <Flex align="center" gap={1.5}>
+                            <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.300" fontSize="md">{item.cost}</Text>
+                            <Image src="/assets/crystal_icon" alt="crystals" boxSize={4} />
+                            </Flex>
+                            <Button
+                            size="sm"
+                            colorPalette="purple"
+                            variant="subtle"
+                            onClick={() => handlePurchase(item.id)}
+                            disabled={purchasing}
+                            fontSize="sm"
+                            fontFamily="Cinzel, serif"
+                            >
+                            Redeem
+                            </Button>
+                        </Flex>
+                        </Flex>
+                    </GridItem>
+                    ))}
+                </Grid>
+            )}
+        </Box>
+      </Flex>
+    </Box>
   );
 };
