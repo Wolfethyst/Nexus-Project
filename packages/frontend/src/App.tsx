@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components';
 import { HomePage, OwnerPage, ProfilePage, NotFoundPage } from './pages';
 import { useAuth } from './hooks';
@@ -8,7 +8,7 @@ import { Center, Spinner, Text, VStack } from '@chakra-ui/react';
 
 export const App: React.FC = () => {
   const { session } = useAuthStore();
-  const { isInitialized, isOwner } = useAuth();
+  const { isInitialized } = useAuth();
   const [activeTab, setActiveTab] = useState<'live' | 'vods'>('live');
 
   // Removed unused setAuthError
