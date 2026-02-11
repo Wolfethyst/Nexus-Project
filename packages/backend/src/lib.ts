@@ -7,17 +7,13 @@ export const INFINITE_POINTS = 999999999999;
 
 // Key for storing owner's Nexus ID in KV
 const OWNER_NEXUS_ID_KEY = 'config:owner_nexus_id';
-const DEFAULT_OWNER_UUID = '7fea3331-7c36-49ac-975b-58de25ecf6ba';
 
 /**
  * Get the stored owner's Nexus ID
  */
 export async function getOwnerNexusId(env: any): Promise<string | null> {
   try {
-    const stored = await env.SESSIONS.get(OWNER_NEXUS_ID_KEY);
-    if (stored) return stored;
-    // If not set, use default owner UUID
-    return DEFAULT_OWNER_UUID;
+    return await env.SESSIONS.get(OWNER_NEXUS_ID_KEY);
   } catch (error) {
     console.error('Failed to get owner nexus id:', error);
     return null;
@@ -332,5 +328,56 @@ export async function getOwnerStats(env: any): Promise<{
   } catch (error) {
     console.error('Failed to get owner stats:', error);
     return { vods: 0, clips: 0, users: 0 };
+  }
+}
+
+/**
+ * Get IGDB cover URL for a given game name
+ */
+export async function getIgdbCover(gameName: string, env: any): Promise<string | null> {
+  const { TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, SESSIONS } = env;
+
+  if (!TWITCH_CLIENT_ID || !TWITCH_CLIENT_SECRET) {
+    console.warn("Twitch client ID or secret missing for IGDB auth.");
+    return null;
+  }
+
+  // 1. Check for a cached token
+  let token = await SESSIONS.get('igdb_token');
+
+  // 2. If no token, fetch a new one from Twitch
+  if (!token) {
+    const tokenResponse = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${TWITCH_CLIENT_ID}&client_secret=${TWITCH_CLIENT_SECRET}&grant_type=client_credentials`, {
+      method: 'POST',
+    });
+    if (!tokenResponse.ok) {
+      console.error('Failed to fetch IGDB access token from Twitch');
+      return null;
+    }
+    const tokenData = await tokenResponse.json() as { access_token: string; expires_in: number };
+    token = tokenData.access_token;
+    // Cache the token with a TTL slightly less than its expiry
+    await SESSIONS.put('igdb_token', token, { expirationTtl: tokenData.expires_in - 60 });
+  }
+
+  // 3. Use the token to fetch game cover from IGDB
+  try {
+    const response = await fetch("https://api.igdb.com/v4/games", {
+      method: "POST",
+      headers: { "Accept": "application/json", "Client-ID": TWITCH_CLIENT_ID, "Authorization": `Bearer ${token}` },
+      body: `fields cover.url; search "${gameName}"; limit 1;`,
+    });
+
+    if (!response.ok) {
+      console.error("IGDB API error:", response.status, await response.text());
+      return null;
+    }
+
+    const data = await response.json() as any[];
+    const coverUrl = data[0]?.cover?.url;
+    return coverUrl ? `https:${coverUrl.replace('t_thumb', 't_cover_big')}` : null;
+  } catch (error) {
+    console.error("Error fetching IGDB cover:", error);
+    return null;
   }
 }

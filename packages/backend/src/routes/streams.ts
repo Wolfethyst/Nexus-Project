@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import type { Env } from '../index.js';
-import { getIgdbCover } from '../lib';
+import { getIgdbCover } from '../lib.js';
 const router = new Hono<Env>();
 
 // GET /streams/list - List streams/VODs
