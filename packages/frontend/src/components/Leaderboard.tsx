@@ -123,7 +123,7 @@ export const Leaderboard: React.FC = () => {
                   <Text fontFamily="Cinzel, serif" fontSize="sm" fontWeight="bold" color="purple.300">
                     {entry.points.toLocaleString()}
                   </Text>
-                  <Image src={`${ApiClient.baseURL}/assets/crystal_icon`} alt="crystals" boxSize="20px" />
+                  <Image src={`${ApiClient.baseURL}/assets/crystal_icon`} alt="crystals" boxSize="20px" objectFit="contain" />
                 </Flex>
               </Flex>
             );
