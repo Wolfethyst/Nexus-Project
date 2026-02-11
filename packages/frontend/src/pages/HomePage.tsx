@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { StreamPlayer, VideoCard, VODPlayer, Chat, Leaderboard, Marketplace } from '../components';
-import { useVideoStore, useAuthStore } from '../store';
+import { useVideoStore } from '../store';
 import { useAuth } from '../hooks/useAuth';
 import { useVideoData } from '../hooks/useVideo';
 import { ApiClient } from '../lib/api';
@@ -21,7 +21,6 @@ interface HomePageProps {
 
 export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) => {
   const { isOwner } = useAuth(); // Ensure session and roles are loaded
-  const { session } = useAuthStore();
   useVideoData(); // Load VODs from backend
   const { vods } = useVideoStore();
   const [streamInfo, setStreamInfo] = useState<StreamInfo>({ title: 'Stream Title Loading...', game: 'Loading...', live: false });
@@ -31,9 +30,6 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
   // Owner editing state
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ title: '', game: '' });
-
-  // Fallback check for owner if role is missing
-  const isOwnerUser = isOwner || session?.user?.display?.toLowerCase() === 'wolfethyst' || session?.user?.displayName?.toLowerCase() === 'wolfethyst';
 
   useEffect(() => {
     if (streamInfo) {
@@ -138,7 +134,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                   <Box fontFamily="Cinzel, serif" fontSize="xs" color="purple.300" fontWeight="bold" letterSpacing="wider" textTransform="uppercase">
                     Current Session
                   </Box>
-                  {isOwnerUser && !isEditing && (
+                  {isOwner && !isEditing && (
                     <Button 
                       size="xs" 
                       variant="ghost" 

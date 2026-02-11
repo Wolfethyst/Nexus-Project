@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from '../components';
 import { useAuth } from '../hooks';
-import { useAuthStore } from '../store';
 import { ApiClient } from '../lib/api';
 import {
   Box,
@@ -31,7 +30,6 @@ interface StoreItem {
 export const OwnerPage: React.FC = () => {
   console.log('OwnerPage rendered');
   const { isOwner } = useAuth();
-  const { session } = useAuthStore();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [stats, setStats] = useState({ vods: 0, clips: 0, users: 0 });
 
@@ -63,16 +61,13 @@ export const OwnerPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Fallback check for owner if role is missing
-  const isOwnerUser = isOwner || session?.user?.display?.toLowerCase() === 'wolfethyst' || session?.user?.displayName?.toLowerCase() === 'wolfethyst';
-
   useEffect(() => {
-    console.log('isOwner:', isOwnerUser);
-    if (!isOwnerUser) return;
+    console.log('isOwner:', isOwner);
+    if (!isOwner) return;
     loadStats();
     loadStoreItems();
     loadRedeems();
-  }, [isOwnerUser]);
+  }, [isOwner]);
 
   const loadStats = async () => {
     console.log('Loading stats...');
@@ -160,7 +155,7 @@ export const OwnerPage: React.FC = () => {
     }
   };
 
-  if (!isOwnerUser) {
+  if (!isOwner) {
     return (
       <Layout>
         <Flex align="center" justify="center" h="full">

@@ -13,6 +13,7 @@ interface SessionData {
   accessToken?: string;
   expiresAt?: number;
   email?: string; // Add email property for compatibility
+  roles?: string[];
 }
 
 function parseCookies(headerValue?: string): Record<string, string> {
@@ -245,6 +246,11 @@ router.get('/twitch/callback', async (c) => {
     await setOwnerNexusId(c.env, nexusId);
   }
 
+  const roles: string[] = [];
+  if (await isOwner(c.env, nexusId)) {
+    roles.push('owner');
+  }
+
   // Create session
   const sessionId = crypto.randomUUID();
   const sessionData: SessionData = {
@@ -254,6 +260,7 @@ router.get('/twitch/callback', async (c) => {
     avatar: user.profile_image_url,
     accessToken: tokens.access_token,
     expiresAt: Date.now() + tokens.expires_in * 1000,
+    roles,
   };
 
   await c.env.SESSIONS.put(`session:${sessionId}`, JSON.stringify(sessionData), {
@@ -282,14 +289,22 @@ router.get('/session', async (c) => {
       return c.json({ loggedIn: false, user: null, roles: [] });
     }
 
-    // Determine user roles
-    const roles: string[] = [];
-    if (session.nexusId && await isOwner(c.env, session.nexusId)) {
-      roles.push('owner');
+    // Self-healing: If KV was wiped, ensure owner is set if this is Wolfethyst
+    let currentOwnerId = await getOwnerNexusId(c.env);
+    if (!currentOwnerId && session.userId === '186790958' && session.nexusId) {
+       await setOwnerNexusId(c.env, session.nexusId);
+       currentOwnerId = session.nexusId;
     }
-    // Force owner role for Wolfethyst (Twitch ID: 186790958)
-    if (session.userId === '186790958' && !roles.includes('owner')) {
+
+    // Determine user roles
+    const roles: string[] = session.roles || [];
+    const isOwnerRole = session.nexusId && await isOwner(c.env, session.nexusId);
+    
+    if (isOwnerRole && !roles.includes('owner')) {
       roles.push('owner');
+      // Update session in KV with new roles so middleware can see it
+      session.roles = roles;
+      await c.env.SESSIONS.put(`session:${sessionId}`, JSON.stringify(session));
     }
 
     // Try to get user data from D1 for nexusId if not in session
