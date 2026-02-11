@@ -12,6 +12,7 @@ interface StreamInfo {
   title?: string;
   game?: string;
   live?: boolean;
+  cover?:string | null;
 }
 
 interface HomePageProps {
@@ -121,11 +122,21 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                 flexShrink={0}
                 border="1px solid"
                 borderColor="whiteAlpha.200"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
               >
-                {/* Placeholder for Game Cover - Replace src with dynamic data later */}
-                <Box w="full" h="full" bgGradient="to-br" gradientFrom="purple.900" gradientTo="gray.900" display="flex" alignItems="center" justifyContent="center">
-                  <Box fontSize="2xl">🎮</Box>
-                </Box>
+                {streamInfo.cover ? (
+                  <img
+                    src={streamInfo.cover}
+                    alt={streamInfo.game || 'Game Cover'}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                ) : (
+                  <Box w="full" h="full" bgGradient="to-br" gradientFrom="purple.900" gradientTo="gray.900" display="flex" alignItems="center" justifyContent="center">
+                    <Box fontSize="2xl">🎮</Box>
+                  </Box>
+                )}
               </Box>
 
               {/* Info Text */}
