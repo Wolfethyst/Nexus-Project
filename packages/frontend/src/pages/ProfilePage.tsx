@@ -150,7 +150,7 @@ export const ProfilePage: React.FC = () => {
         )}
         <Button
           type="submit"
-          isLoading={saving}
+          loading={saving}
           colorPalette="purple"
           variant="solid"
           w="full"

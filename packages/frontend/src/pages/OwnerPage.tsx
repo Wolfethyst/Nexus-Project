@@ -12,9 +12,6 @@ import {
   Grid,
   Input,
   Textarea,
-  Checkbox,
-  Select,
-  Slider, SliderTrack, SliderFilledTrack, SliderThumb,
 } from '@chakra-ui/react';
 
 type Tab = 'overview' | 'store' | 'redeems' | 'tala' | 'chat' | 'users';
@@ -323,15 +320,67 @@ export const OwnerPage: React.FC = () => {
             <Tabs.Content value="tala">
               <Box bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100" p={6} rounded="md">
                 <Heading as="h2" size="lg" mb={4}>Tala - Chat AI Settings</Heading>
-                {/* This section can be converted similarly */}
-                <Text color="gray.400">Tala settings UI coming soon.</Text>
+                <Flex direction="column" gap={6}>
+                  <Flex align="center" gap={2}>
+                    <input 
+                      type="checkbox" 
+                      checked={talaSettings.enabled} 
+                      onChange={(e) => setTalaSettings({ ...talaSettings, enabled: e.target.checked })}
+                      style={{ width: '1.2rem', height: '1.2rem' }}
+                    />
+                    <Text>Enable Tala AI</Text>
+                  </Flex>
+
+                  <Box>
+                    <Text mb={2} fontWeight="semibold">Personality</Text>
+                    <Box as="select" 
+                      value={talaSettings.personality} 
+                      onChange={(e: any) => setTalaSettings({ ...talaSettings, personality: e.target.value })}
+                      bg="blackAlpha.400" border="1px solid" borderColor="whiteAlpha.200" p={2} rounded="md" w="full" color="white"
+                    >
+                      <option value="friendly" style={{ color: 'black' }}>Friendly & Helpful</option>
+                      <option value="sarcastic" style={{ color: 'black' }}>Sarcastic & Witty</option>
+                      <option value="professional" style={{ color: 'black' }}>Professional</option>
+                      <option value="meme" style={{ color: 'black' }}>Meme Lord</option>
+                    </Box>
+                  </Box>
+
+                  <Box>
+                    <Text mb={2} fontWeight="semibold">Response Rate: {talaSettings.responseRate}%</Text>
+                    <Input type="number" min={0} max={100} value={talaSettings.responseRate} onChange={(e) => setTalaSettings({ ...talaSettings, responseRate: Number(e.target.value) })} />
+                  </Box>
+
+                  <Flex align="center" gap={2}>
+                    <input type="checkbox" checked={talaSettings.learnFromChat} onChange={(e) => setTalaSettings({ ...talaSettings, learnFromChat: e.target.checked })} style={{ width: '1.2rem', height: '1.2rem' }} />
+                    <Text>Learn from chat (improve over time)</Text>
+                  </Flex>
+
+                  <Button onClick={saveTalaSettings} loading={saving} colorPalette="purple" alignSelf="flex-start">
+                    Save Tala Settings
+                  </Button>
+                </Flex>
               </Box>
             </Tabs.Content>
             <Tabs.Content value="chat">
               <Box bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100" p={6} rounded="md">
                 <Heading as="h2" size="lg" mb={4}>Chat Settings</Heading>
-                {/* This section can be converted similarly */}
-                <Text color="gray.400">Chat settings UI coming soon.</Text>
+                <Flex direction="column" gap={4}>
+                  <Box>
+                    <Text mb={2} fontWeight="semibold">Max Message Length</Text>
+                    <Input type="number" value={chatSettings.maxMessageLength} onChange={(e) => setChatSettings({ ...chatSettings, maxMessageLength: Number(e.target.value) })} />
+                  </Box>
+                  <Box>
+                    <Text mb={2} fontWeight="semibold">Slowmode (seconds)</Text>
+                    <Input type="number" value={chatSettings.slowmodeSeconds} onChange={(e) => setChatSettings({ ...chatSettings, slowmodeSeconds: Number(e.target.value) })} />
+                  </Box>
+                  <Flex align="center" gap={2}>
+                    <input type="checkbox" checked={chatSettings.emoteOnly} onChange={(e) => setChatSettings({ ...chatSettings, emoteOnly: e.target.checked })} style={{ width: '1.2rem', height: '1.2rem' }} />
+                    <Text>Emote Only Mode</Text>
+                  </Flex>
+                  <Button onClick={saveChatSettings} loading={saving} colorPalette="purple" alignSelf="flex-start">
+                    Save Chat Settings
+                  </Button>
+                </Flex>
               </Box>
             </Tabs.Content>
             <Tabs.Content value="users">
