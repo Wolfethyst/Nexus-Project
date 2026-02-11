@@ -166,6 +166,7 @@ export const Chat: React.FC = () => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Send a message..."
+                variant="unstyled"
                 color="white"
                 _placeholder={{ color: 'gray.400' }}
                 fontFamily="Marcellus, serif"

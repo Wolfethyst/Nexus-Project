@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Flex, Text, Button, Image, Grid, GridItem, Textarea, VStack, Input } from '@chakra-ui/react';
 import { useStore } from '../hooks/useStore';
 import { useAuthStore } from '../store';
+import { ApiClient } from '../lib/api';
 
 export const Marketplace: React.FC = () => {
   const { session } = useAuthStore();
@@ -117,7 +118,7 @@ export const Marketplace: React.FC = () => {
                     fontFamily="Cinzel, serif"
                 >
                     Send TTS -&nbsp;
-                    <Image src="/assets/crystal_icon" alt="crystals" boxSize={4} mx={1} display="inline-block" verticalAlign="middle" />
+                    <Image src={`${ApiClient.baseURL}/assets/crystal_icon`} alt="crystals" boxSize={4} mx={1} display="inline-block" verticalAlign="middle" />
                     500
                 </Button>
                 
@@ -181,7 +182,7 @@ export const Marketplace: React.FC = () => {
                         <Flex align="center" justify="space-between" mt="auto" pt={2} borderTop="1px solid" borderColor="whiteAlpha.100">
                             <Flex align="center" gap={1.5}>
                             <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.300" fontSize="sm">{item.cost}</Text>
-                            <Image src="/assets/crystal_icon" alt="crystals" boxSize={4} />
+                            <Image src={`${ApiClient.baseURL}/assets/crystal_icon`} alt="crystals" boxSize={4} />
                             </Flex>
                             <Button
                             size="sm"

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Box, Flex, Avatar, Button, Text, HStack, Center, Image, Link as ChakraLink } from '@chakra-ui/react';
+import { ApiClient } from '../lib/api';
 
 interface HeaderProps {
   user?: {
@@ -111,7 +112,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
 
         {/* RIGHT - NEXUS Brand */}
         <Link to="/">
-          <Image src="/assets/nexus_icon.png" alt="Nexus Logo" h="40px" _hover={{ filter: 'brightness(1.2)' }} transition="filter 0.2s" />
+          <Image src={`${ApiClient.baseURL}/assets/nexus_icon.png`} alt="Nexus Logo" h="40px" _hover={{ filter: 'brightness(1.2)' }} transition="filter 0.2s" />
         </Link>
       </Flex>
     </Box>
