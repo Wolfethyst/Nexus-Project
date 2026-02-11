@@ -41,7 +41,7 @@ export const App: React.FC = () => {
           <Route path="/" element={<HomePage activeTab={activeTab} onTabChange={setActiveTab} />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route 
-            path="/admin" 
+            path="/owner" 
             element={isOwner ? <OwnerPage /> : <Navigate to="/" replace />} 
           />
           <Route path="*" element={<NotFoundPage />} />

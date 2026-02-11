@@ -19,7 +19,7 @@ export type Env = {
     MODERATION: KVNamespace;
     CLIPS: KVNamespace;
     CHAT_ROOM: DurableObjectNamespace;
-    REDEEM_SOUNDS: R2Bucket;
+    REDEEMS: R2Bucket;
     TWITCH_CLIENT_ID?: string;
     TWITCH_CLIENT_SECRET?: string;
     YOUTUBE_CLIENT_ID?: string;
@@ -61,7 +61,7 @@ app.get('/assets/:key', async (c) => {
 // Serve redeem sounds (and other files) from R2: /sounds/*
 app.get('/sounds/*', async (c) => {
   const key = c.req.path.replace(/^\/sounds\//, '');
-  const obj = await c.env.REDEEM_SOUNDS.get(key);
+  const obj = await c.env.REDEEMS.get(key);
   if (!obj) {
     return c.text('Not found', 404);
   }

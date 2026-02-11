@@ -23,7 +23,8 @@ export const Leaderboard: React.FC = () => {
       setLoading(true);
       const response = await ApiClient.get<{ leaderboard: LeaderboardEntry[] }>('/points/leaderboard?limit=50');
       if (response.ok && response.data?.leaderboard) {
-        setEntries(response.data.leaderboard);
+        // Filter out the owner (Wolfethyst) from the leaderboard
+        setEntries(response.data.leaderboard.filter(entry => entry.username.toLowerCase() !== 'wolfethyst'));
       }
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error);
@@ -79,7 +80,7 @@ export const Leaderboard: React.FC = () => {
         {loading ? (
           <Flex flex={1} align="center" justify="center" direction="column" gap={3}>
             <Spinner colorPalette="purple" size="lg" />
-            <Text fontFamily="Cinzel, serif" color="gray.400" fontSize="sm">Loading High Scores...</Text>
+            <Text fontFamily="Marcellus, serif" color="gray.400" fontSize="sm">Loading High Scores...</Text>
           </Flex>
         ) : entries.length === 0 ? (
           <Flex align="center" justify="center" h="full">
@@ -102,7 +103,7 @@ export const Leaderboard: React.FC = () => {
                 _hover={{ bg: 'white/10' }}
               >
                 <Flex align="center" gap={3} flex={1} minW={0}>
-                  <Text fontFamily="Cinzel, serif" fontSize="sm" fontWeight="bold" w={6} textAlign="center" color={styles.color}>
+                  <Text fontFamily="Marcellus, serif" fontSize="sm" fontWeight="bold" w={6} textAlign="center" color={styles.color}>
                     #{entry.rank}
                   </Text>
                   
@@ -113,14 +114,14 @@ export const Leaderboard: React.FC = () => {
                   </Avatar.Root>
 
                   <Box flex={1} minW={0}>
-                    <Text fontFamily="Cinzel, serif" fontWeight="semibold" color="white" fontSize="sm" truncate>
+                    <Text fontFamily="Marcellus, serif" fontWeight="semibold" color="white" fontSize="sm" truncate>
                       {entry.username}
                     </Text>
                   </Box>
                 </Flex>
 
                 <Flex align="center" gap={1.5}>
-                  <Text fontFamily="Cinzel, serif" fontSize="sm" fontWeight="bold" color="purple.300">
+                  <Text fontFamily="Marcellus, serif" fontSize="sm" fontWeight="bold" color="purple.300">
                     {entry.points.toLocaleString()}
                   </Text>
                   <Image src={`${ApiClient.baseURL}/assets/crystal_icon`} alt="crystals" boxSize="20px" objectFit="contain" />

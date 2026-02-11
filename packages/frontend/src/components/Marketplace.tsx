@@ -81,7 +81,7 @@ export const Marketplace: React.FC = () => {
                     <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.200" fontSize="lg">TTS Message</Text>
                 </Flex>
                 
-                <Text fontFamily="Cinzel, serif" fontSize="sm" color="gray.400" lineHeight="tall">
+                <Text fontFamily="Marcellus, serif" fontSize="sm" color="gray.400" lineHeight="tall">
                     Send a message that will be read aloud on stream by the AI voice.
                 </Text>
                 
@@ -102,7 +102,7 @@ export const Marketplace: React.FC = () => {
                         fontSize="sm"
                         p={3}
                     />
-                    <Text fontFamily="Cinzel, serif" position="absolute" bottom={2} right={2} fontSize="sm" color="gray.500">
+                    <Text fontFamily="Marcellus, serif" position="absolute" bottom={2} right={2} fontSize="sm" color="gray.500">
                         {ttsText.length}/200
                     </Text>
                 </Box>
@@ -115,7 +115,7 @@ export const Marketplace: React.FC = () => {
                     w="full"
                     variant="solid"
                     size="md"
-                    fontFamily="Cinzel, serif"
+                    fontFamily="Marcellus, serif"
                 >
                     Send TTS -&nbsp;
                     <Image src={`${ApiClient.baseURL}/assets/crystal_icon`} alt="crystals" boxSize={3} mx={1} display="inline-block" verticalAlign="middle" objectFit="contain" />
@@ -123,7 +123,7 @@ export const Marketplace: React.FC = () => {
                 </Button>
                 
                 {!session && (
-                    <Text fontFamily="Cinzel, serif" fontSize="sm" color="red.300" textAlign="center">
+                    <Text fontFamily="Marcellus, serif" fontSize="sm" color="red.300" textAlign="center">
                         Must be signed in to use TTS
                     </Text>
                 )}
@@ -173,9 +173,9 @@ export const Marketplace: React.FC = () => {
                         <Box position="absolute" top={0} left={0} right={0} h="1px" bgGradient="to-r" gradientFrom="transparent" gradientVia="purple.500/50" gradientTo="transparent" opacity={0.5} />
                         
                         <Box flex={1} minW={0} mb={3}>
-                            <Text fontFamily="Cinzel, serif" fontWeight="bold" color="white" fontSize="sm" mb={1} lineHeight="short">{item.name}</Text>
+                            <Text fontFamily="Marcellus, serif" fontWeight="bold" color="white" fontSize="sm" mb={1} lineHeight="short">{item.name}</Text>
                             {item.description && (
-                            <Text fontFamily="Cinzel, serif" fontSize="xs" color="gray.400" lineClamp={2}>{item.description}</Text>
+                            <Text fontFamily="Marcellus, serif" fontSize="xs" color="gray.400" lineClamp={2}>{item.description}</Text>
                             )}
                         </Box>
                         
@@ -191,7 +191,7 @@ export const Marketplace: React.FC = () => {
                             onClick={() => handlePurchase(item.id)}
                             disabled={purchasing}
                             fontSize="xs"
-                            fontFamily="Cinzel, serif"
+                            fontFamily="Marcellus, serif"
                             >
                             Redeem
                             </Button>
