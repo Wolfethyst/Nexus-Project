@@ -65,12 +65,14 @@ router.get('/info', async (c) => {
   try {
     // Check cache for current stream info
     const streamInfo = await c.env.SESSIONS.get('stream:current', 'json') as any;
+    const coverUrl = streamInfo?.game ? await getIgdbCover(streamInfo.game, c.env) : null;
     
     return c.json({
       ok: true,
       title: streamInfo?.title || 'Live Stream',
       game: streamInfo?.game || '',
       live: streamInfo?.live || false,
+      cover: coverUrl,
     });
   } catch (error: any) {
     console.error('Stream info error:', error);
