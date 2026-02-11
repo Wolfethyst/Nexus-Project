@@ -379,4 +379,41 @@ router.post('/delete-account', async (c) => {
   }
 });
 
+/**
+ * GET /auth/owner - Debug: Get current owner Nexus ID
+ */
+router.get('/owner', async (c) => {
+  try {
+    const ownerId = await getOwnerNexusId(c.env);
+    return c.json({ ownerId });
+  } catch (e) {
+    return c.json({ error: e instanceof Error ? e.message : 'Unknown error' }, 500);
+  }
+});
+
+/**
+ * POST /auth/owner - Debug: Force set owner Nexus ID
+ */
+router.post('/owner', async (c) => {
+  try {
+    const body = await c.req.json() as { nexusId: string };
+    if (!body.nexusId) return c.json({ error: 'Missing nexusId' }, 400);
+
+    // Security check: Only allow Wolfethyst (Twitch ID 186790958) to set this
+    const cookies = parseCookies(c.req.header('Cookie'));
+    const sessionId = cookies.wolfesession;
+    if (!sessionId) return c.json({ error: 'Not logged in' }, 401);
+    
+    const session = await c.env.SESSIONS.get(`session:${sessionId}`, 'json') as SessionData | null;
+    if (session?.userId !== '186790958') {
+      return c.json({ error: 'Unauthorized' }, 403);
+    }
+
+    await setOwnerNexusId(c.env, body.nexusId);
+    return c.json({ success: true, ownerId: body.nexusId });
+  } catch (e) {
+    return c.json({ error: e instanceof Error ? e.message : 'Unknown error' }, 500);
+  }
+});
+
 export default router;
