@@ -1,122 +1,100 @@
-@import url('https://fonts.googleapis.com/css2?family=Marcellus&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Marcellus&display=swap');
 
- :root {
-    --bg: radial-gradient(circle at 50% 0%, #3d0066, #0b0014 80%);
-    --panel-bg: rgba(40, 0, 60, 0.45);
-    --panel-border: rgba(255,150,255,0.20);
-    --text: #f4eaff;
-    --text-muted: #cdb8d9;
-    --accent: #d57bff;
-    --accent-glow: rgba(197, 140, 255, 0.65);
-    --bright-1: #e1a6ff;
-    --danger: #ff4b91;
-    --success: #72ffb0;
-    --font-head: 'Marcellus', 'Cinzel', serif;
-    --font-body: "Space Grotesk", sans-serif;
-  }
-  
- body {
-    margin: 0;
-    background: linear-gradient(135deg, #2a1447 0%, #1a0933 100%);
-    color: var(--text);
-    font-family: var(--font-head);
-    height: 100vh;
-  }
+/* Base Theme Variables */
+:root, [data-theme="default"], [data-theme="dark"] {
+  --bg-primary: #05010a;
+  --bg-gradient-start: #3b0d60;
+  --bg-gradient-mid: #1a052e;
+  --bg-gradient-end: #05010a;
+  --panel-bg: rgba(255, 255, 255, 0.05);
+  --panel-border: rgba(255, 255, 255, 0.2);
+  --header-bg: rgba(15, 5, 25, 0.7);
+  --text-primary: #ffffff;
+  --text-secondary: #a0aec0;
+}
 
-@layer components {
-  .btn-primary {
-    @apply px-4 py-2 bg-nexus-accent text-white rounded font-medium hover:bg-purple-600 transition-colors;
-  }
+/* Light Theme */
+[data-theme="light"] {
+  --bg-primary: #f7fafc;
+  --bg-gradient-start: #e2e8f0;
+  --bg-gradient-mid: #f7fafc;
+  --bg-gradient-end: #ffffff;
+  --panel-bg: rgba(255, 255, 255, 0.7);
+  --panel-border: rgba(0, 0, 0, 0.1);
+  --header-bg: rgba(255, 255, 255, 0.8);
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+}
 
-  .btn-secondary {
-    @apply px-4 py-2 bg-nexus-dark border border-nexus-accent text-primary rounded font-medium hover:bg-nexus-dark/80 transition-colors;
-  }
+/* OLED Theme */
+[data-theme="oled"] {
+  --bg-primary: #000000;
+  --bg-gradient-start: #1a052e;
+  --bg-gradient-mid: #0d0217;
+  --bg-gradient-end: #000000;
+  --panel-bg: rgba(30, 30, 30, 0.5);
+  --panel-border: rgba(255, 255, 255, 0.15);
+  --header-bg: rgba(5, 0, 10, 0.7);
+  --text-primary: #ffffff;
+  --text-secondary: #a0aec0;
+}
 
-  .modal {
-    @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm;
-  }
+/* Accent Color Styles */
+[data-color="purple"] {
+  --accent: #a78bfa;
+  --accent-secondary: #c084fc;
+  --accent-glow: rgba(168, 85, 247, 0.3);
+}
+[data-color="blue"] {
+  --accent: #60a5fa;
+  --accent-secondary: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.3);
+}
+[data-color="green"] {
+  --accent: #4ade80;
+  --accent-secondary: #22c55e;
+  --accent-glow: rgba(34, 197, 94, 0.3);
+}
+[data-color="red"] {
+  --accent: #f87171;
+  --accent-secondary: #ef4444;
+  --accent-glow: rgba(239, 68, 68, 0.3);
+}
 
-  /* V1 Panel System */
-  .panel {
-    background: var(--panel-bg);
-    border: 1px solid var(--panel-border);
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    flex: 1;
-    height: 100%;
-    min-height: 0;
-  }
+/* Base Body Styles */
+body {
+  margin: 0;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Marcellus', serif;
+  height: 100vh;
+}
 
-  .panel-header {
-    background: linear-gradient(90deg, rgba(20,5,30,0.9), rgba(40,0,60,0.6));
-    border-bottom: 1px solid var(--accent);
-    padding: 12px 16px;
-    font-family: var(--font-head);
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--bright-1);
-    text-shadow: 0 0 10px rgba(213, 123, 255, 0.3);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-  }
+/* Scrollbar Styles */
+.scrollbar-thin,
+.panel-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.3) rgba(15, 5, 25, 0.5);
+}
 
-  .panel-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px;
-    min-height: 0;
-  }
+.scrollbar-thin::-webkit-scrollbar,
+.panel-body::-webkit-scrollbar {
+  width: 6px;
+}
 
-  /* Scrollbar Styles */
-  .scrollbar-thin,
-  .panel-body {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(168, 85, 247, 0.3) rgba(15, 5, 25, 0.5);
-  }
+.scrollbar-thin::-webkit-scrollbar-track,
+.panel-body::-webkit-scrollbar-track {
+  background: rgba(15, 5, 25, 0.5);
+  border-radius: 10px;
+}
 
-  .scrollbar-thin::-webkit-scrollbar,
-  .panel-body::-webkit-scrollbar {
-    width: 6px;
-  }
+.scrollbar-thin::-webkit-scrollbar-thumb,
+.panel-body::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);
+  border-radius: 10px;
+}
 
-  .scrollbar-thin::-webkit-scrollbar-track,
-  .panel-body::-webkit-scrollbar-track {
-    background: rgba(15, 5, 25, 0.5);
-    border-radius: 10px;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb,
-  .panel-body::-webkit-scrollbar-thumb {
-    background: rgba(168, 85, 247, 0.3);
-    border-radius: 10px;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover,
-  .panel-body::-webkit-scrollbar-thumb:hover {
-    background: rgba(168, 85, 247, 0.5);
-  }
-
-  /* Animations */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-fadeIn {
-    animation: fadeIn 0.3s ease-out;
-  }
+.scrollbar-thin::-webkit-scrollbar-thumb:hover,
+.panel-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.5);
 }

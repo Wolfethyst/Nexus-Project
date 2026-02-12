@@ -24,7 +24,6 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
     <Box 
       as="header" 
       bg="var(--header-bg)" 
-      backdropFilter="blur(12px)"
       borderBottom="1px solid" 
       borderColor="var(--panel-border)" 
       px={8} 
