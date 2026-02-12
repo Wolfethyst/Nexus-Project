@@ -28,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
       borderBottom="1px solid" 
       borderColor="var(--panel-border)" 
       px={8} 
-      py={5} 
+      py={3} 
       position="relative"
       zIndex={50}
     >
@@ -65,8 +65,8 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
               fontSize="sm"
               fontWeight="bold"
               textTransform="uppercase"
-              boxShadow={activeTab === 'live' ? '0 0 10px 2px #a78bfa80' : undefined}
-              bg={activeTab === 'live' ? 'purple.500' : 'transparent'}
+              boxShadow={activeTab === 'live' ? '0 0 10px 2px var(--accent-glow)' : undefined}
+              bg={activeTab === 'live' ? 'var(--accent-primary)' : 'transparent'}
               color={activeTab === 'live' ? 'white' : 'gray.400'}
               _hover={{ color: 'white' }}
               transition="all 0.2s"
@@ -82,8 +82,8 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
               fontSize="sm"
               fontWeight="bold"
               textTransform="uppercase"
-              boxShadow={activeTab === 'vods' ? '0 0 10px 2px #a78bfa80' : undefined}
-              bg={activeTab === 'vods' ? 'purple.500' : 'transparent'}
+              boxShadow={activeTab === 'vods' ? '0 0 10px 2px var(--accent-glow)' : undefined}
+              bg={activeTab === 'vods' ? 'var(--accent-primary)' : 'transparent'}
               color={activeTab === 'vods' ? 'white' : 'gray.400'}
               _hover={{ color: 'white' }}
               transition="all 0.2s"
@@ -95,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
 
         {/* RIGHT - NEXUS Brand */}
         <Link to="/">
-          <Image src={`${ApiClient.baseURL}/assets/nexus_icon`} alt="Nexus Logo" h="40px" _hover={{ filter: 'brightness(1.2)' }} transition="filter 0.2s" />
+          <Image src={`${ApiClient.baseURL}/assets/nexus_icon`} alt="Nexus Logo" h="48px" _hover={{ filter: 'brightness(1.2)' }} transition="filter 0.2s" />
         </Link>
       </Flex>
     </Box>

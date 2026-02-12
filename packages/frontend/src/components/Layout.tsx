@@ -35,7 +35,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, active
       color="var(--text-primary)"
     >
       <Header user={user} onLogout={onLogout} activeTab={activeTab} onTabChange={onTabChange} />
-      <Box as="main" flex="1" overflow="hidden" position="relative">
+      <Box as="main" flex="1" position="relative">
         {children}
       </Box>
     </Flex>

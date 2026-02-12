@@ -36,7 +36,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
           borderRadius="full"
           _focus={{ boxShadow: '0 0 0 2px #a78bfa' }}
         >
-          <Avatar.Root size="md">
+          <Avatar.Root size="lg">
             <Avatar.Image src={session?.user?.avatar} />
             <Avatar.Fallback name={session?.user?.displayName} />
           </Avatar.Root>
