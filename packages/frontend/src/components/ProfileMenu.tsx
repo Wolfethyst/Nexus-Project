@@ -28,19 +28,20 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
 
   return (
     <Menu.Root>
-      <Menu.Trigger
-        as={IconButton}
-        aria-label="Options"
-        icon={
-          <Avatar.Root size="md">
-            <Avatar.Image src={session?.user?.avatar} />
-            <Avatar.Fallback name={session?.user?.displayName} />
-          </Avatar.Root>
-        }
-        transition="all 0.2s"
-        borderRadius="full"
-        _focus={{ boxShadow: '0 0 0 2px #a78bfa' }}
-      />
+      <Menu.Trigger>
+        <IconButton
+          aria-label="Options"
+          icon={
+            <Avatar.Root size="md">
+              <Avatar.Image src={session?.user?.avatar} />
+              <Avatar.Fallback name={session?.user?.displayName} />
+            </Avatar.Root>
+          }
+          transition="all 0.2s"
+          borderRadius="full"
+          _focus={{ boxShadow: '0 0 0 2px #a78bfa' }}
+        />
+      </Menu.Trigger>
       <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={100} backdropFilter="blur(16px)">
         <Menu.Item value="profile-info">
           <Flex align="center" gap={3}>
@@ -62,7 +63,8 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
           </Menu.Item>
         </Link>
         <Menu.Separator />
-        <Menu.Group title="Theme" fontFamily="Cinzel, serif" color="gray.400">
+        <Box px={1} py={1.5}>
+            <Text px={2} fontSize="sm" fontWeight="semibold" color="gray.400" fontFamily="Cinzel, serif">Theme</Text>
             {themes.map((t) => (
               <Menu.Item
                 key={t.name}
@@ -73,9 +75,10 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
                 <Text fontFamily="Marcellus, serif">{t.label}</Text>
               </Menu.Item>
             ))}
-        </Menu.Group>
+        </Box>
         <Menu.Separator />
-        <Menu.Group title="Accent Color" fontFamily="Cinzel, serif" color="gray.400">
+        <Box px={1} py={1.5}>
+            <Text px={2} fontSize="sm" fontWeight="semibold" color="gray.400" fontFamily="Cinzel, serif">Accent Color</Text>
             <SimpleGrid columns={4} gap={2} p={2}>
                 {colors.map(c => (
                     <Button 
@@ -88,7 +91,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
                     />
                 ))}
             </SimpleGrid>
-        </Menu.Group>
+        </Box>
         <Menu.Separator />
         <Menu.Item value="logout" onClick={onLogout} fontFamily="Marcellus, serif">
           Logout
