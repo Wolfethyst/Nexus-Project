@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Box, Flex, HStack, Center, Image, Link as ChakraLink, Button } from '@chakra-ui/react';
+import { Box, Flex, HStack, Image, Link as ChakraLink, Button, Grid } from '@chakra-ui/react';
+import { Box, Flex, HStack, Image, Link as ChakraLink, Button, Grid } from '@chakra-ui/react';
 import { ProfileMenu } from './ProfileMenu';
 import { ApiClient } from '../lib/api';
 
@@ -41,9 +42,9 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
         zIndex: -1,
       }}
     >
-      <Flex align="center" justify="space-between" position="relative">
+      <Grid templateColumns="1fr auto 1fr" alignItems="center">
         {/* LEFT - Sign In / User Profile */}
-        <HStack gap={4} align="center">
+        <HStack gap={4} justify="flex-start">
           {user ? ( // if user show icon and points
             <ProfileMenu onLogout={onLogout}  />
            ) : (
@@ -63,8 +64,8 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
         </HStack>
 
         {/* CENTER - Tab Navigation */}
-        <Center position="absolute" left="50%" marginLeft="-150px"> {/* Adjust marginLeft based on actual HStack width */}
-          <HStack gap={1} bg="blackAlpha.700" p={1} rounded="full" border="1px solid" borderColor="whiteAlpha.200" w="300px"> {/* Explicit width for centering */}
+        <Flex justify="center">
+          <HStack gap={1} bg="blackAlpha.700" p={1} rounded="full" border="1px solid" borderColor="whiteAlpha.200">
             <Button
               onClick={() => onTabChange?.('live')}
               px={6}
@@ -100,13 +101,15 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
               VODS
             </Button>
           </HStack>
-        </Center>
+        </Flex>
 
         {/* RIGHT - NEXUS Brand */}
-        <Link to="/">
+        <Flex justify="flex-end">
+        <Link to="/" style={{ display: 'flex' }}>
           <Image src={`${ApiClient.baseURL}/assets/nexus_icon`} alt="Nexus Logo" h="48px" _hover={{ filter: 'brightness(1.2)' }} transition="filter 0.2s" />
         </Link>
-      </Flex>
+        </Flex>
+      </Grid>
     </Box>
   );
 };

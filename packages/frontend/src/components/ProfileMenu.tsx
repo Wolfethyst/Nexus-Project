@@ -16,7 +16,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
   return (
     <>
       <Menu.Root>
-        <Menu.Trigger>
+        <Menu.Trigger asChild>
           <IconButton
             variant="ghost"
             aria-label="Options"
