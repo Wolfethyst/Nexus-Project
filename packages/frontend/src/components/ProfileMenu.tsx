@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Flex, Menu, IconButton, Avatar, Text, Dialog, useDisclosure } from '@chakra-ui/react';
+import { Box, Flex, Menu, IconButton, Avatar, Text, Dialog, useDisclosure, Portal } from '@chakra-ui/react';
 import { useAuthStore } from '../store';
 import { ProfileSettings } from './ProfileSettings';
 import { ThemeSettings } from './ThemeSettings';
@@ -15,7 +15,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
 
   return (
     <>
-      <Menu.Root portal>
+      <Menu.Root>
         <Menu.Trigger>
           <IconButton
             variant="ghost"
@@ -30,35 +30,37 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
             </Avatar.Root>
           </IconButton>
         </Menu.Trigger>
-        <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={100} backdropFilter="blur(16px)" color="white">
-        <Menu.Item value="profile-info" closeOnSelect={false}>
-          <Flex align="center" gap={3}>
-            <Avatar.Root size="sm">
-              <Avatar.Image src={session?.user?.avatar} />
-              <Avatar.Fallback name={session?.user?.displayName} />
-            </Avatar.Root>
-            <Box>
-              <Text fontWeight="bold" fontFamily="Marcellus, serif">{session?.user?.displayName}</Text>
-              {/* Display point balance once implemented */}
-              {/* <Text fontSize="sm" color="gray.500">12,345 points</Text> */}
-            </Box>
-          </Flex>
-        </Menu.Item>
-        <Menu.Separator />
-        
-        <Menu.Item value="themes" fontFamily="Marcellus, serif" onClick={themeDisclosure.onOpen}>
-            Themes
-        </Menu.Item>
+        <Portal>
+          <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={100} backdropFilter="blur(16px)" color="white">
+          <Menu.Item value="profile-info" closeOnSelect={false}>
+            <Flex align="center" gap={3}>
+              <Avatar.Root size="sm">
+                <Avatar.Image src={session?.user?.avatar} />
+                <Avatar.Fallback name={session?.user?.displayName} />
+              </Avatar.Root>
+              <Box>
+                <Text fontWeight="bold" fontFamily="Marcellus, serif">{session?.user?.displayName}</Text>
+                {/* Display point balance once implemented */}
+                {/* <Text fontSize="sm" color="gray.500">12,345 points</Text> */}
+              </Box>
+            </Flex>
+          </Menu.Item>
+          <Menu.Separator />
+          
+          <Menu.Item value="themes" fontFamily="Marcellus, serif" onClick={themeDisclosure.onOpen}>
+              Themes
+          </Menu.Item>
 
-        <Menu.Item value="customization" fontFamily="Marcellus, serif" onClick={profileDisclosure.onOpen}>
-            Customization
-        </Menu.Item>
+          <Menu.Item value="customization" fontFamily="Marcellus, serif" onClick={profileDisclosure.onOpen}>
+              Customization
+          </Menu.Item>
 
-        <Menu.Separator />
-        <Menu.Item value="logout" onClick={onLogout} fontFamily="Marcellus, serif">
-          Logout
-        </Menu.Item>
-        </Menu.Content>
+          <Menu.Separator />
+          <Menu.Item value="logout" onClick={onLogout} fontFamily="Marcellus, serif">
+            Logout
+          </Menu.Item>
+          </Menu.Content>
+        </Portal>
       </Menu.Root>
 
       {/* Customization Modal */}
