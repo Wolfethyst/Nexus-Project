@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import type { Env } from '../index.js';
-import { ensureUserInD1, getOwnerNexusId, setOwnerNexusId, isOwner } from '../lib.js';
+import { ensureUserInD1, getOwnerNexusId, setOwnerNexusId, isOwner, getUserPoints } from '../lib.js';
 
 const router = new Hono<Env>();
 
@@ -320,6 +320,8 @@ router.get('/session', async (c) => {
       }
     }
 
+    const points = await getUserPoints(c.env, session.userId);
+
     return c.json({
       loggedIn: true,
       user: {
@@ -329,6 +331,7 @@ router.get('/session', async (c) => {
         displayName: session.name || session.email,
         avatar: session.avatar,
         email: session.email,
+        points,
       },
       roles,
     });

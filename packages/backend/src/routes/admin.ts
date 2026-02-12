@@ -76,4 +76,19 @@ router.post('/settings/chat', async (c) => {
   }
 });
 
+router.post('/upload/sound', async (c) => {
+  try {
+    const body = await c.req.parseBody();
+    const file = body['file'];
+    if (file instanceof File) {
+      const key = `redeems/${file.name}`;
+      await c.env.REDEEMS.put(key, file);
+      return c.json({ ok: true, key });
+    }
+    return c.json({ ok: false, error: 'No file provided' }, 400);
+  } catch (error: any) {
+    return c.json({ ok: false, error: error.message }, 500);
+  }
+});
+
 export default router;

@@ -156,6 +156,28 @@ export const OwnerPage: React.FC = () => {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch(`${ApiClient.baseURL}/admin/upload/sound`, {
+        method: 'POST',
+        body: formData,
+        // Note: Content-Type header is not set manually to let browser set boundary
+      });
+      const data = await res.json();
+      if (data.ok && data.key) {
+        editingRedeem ? setEditingRedeem({ ...editingRedeem, soundKey: data.key }) : setNewRedeem({ ...newRedeem, soundKey: data.key });
+      }
+    } catch (err) {
+      console.error('Upload failed', err);
+    }
+  };
+
   if (!isOwner) {
     return (
       <Layout>
@@ -167,7 +189,7 @@ export const OwnerPage: React.FC = () => {
   }
 
   return (
-    <Layout>
+    <Layout showNav={false}>
       <Box w="full" maxW="6xl" mx="auto" p={4}>
         <Flex align="center" gap={3} mb={6}>
           <Heading fontFamily="Cinzel, serif" as="h1" size="xl" color="white">Owner Dashboard</Heading>
@@ -290,12 +312,20 @@ export const OwnerPage: React.FC = () => {
                     value={editingRedeem?.description || newRedeem.description || ''}
                     onChange={(e) => editingRedeem ? setEditingRedeem({ ...editingRedeem, description: e.target.value }) : setNewRedeem({ ...newRedeem, description: e.target.value })}
                   />
-                  <Input
-                    gridColumn="span 2"
-                    placeholder="Sound Key (e.g., alert.mp3)"
-                    value={editingRedeem?.soundKey || newRedeem.soundKey || ''}
-                    onChange={(e) => editingRedeem ? setEditingRedeem({ ...editingRedeem, soundKey: e.target.value }) : setNewRedeem({ ...newRedeem, soundKey: e.target.value })}
-                  />
+                  <Box gridColumn="span 2">
+                    <Text mb={1} fontSize="sm" color="gray.400">Sound File</Text>
+                    <Flex gap={2}>
+                      <Input
+                        placeholder="Sound Key (e.g., redeems/alert.mp3)"
+                        value={editingRedeem?.soundKey || newRedeem.soundKey || ''}
+                        onChange={(e) => editingRedeem ? setEditingRedeem({ ...editingRedeem, soundKey: e.target.value }) : setNewRedeem({ ...newRedeem, soundKey: e.target.value })}
+                      />
+                      <Button as="label" htmlFor="sound-upload" cursor="pointer" colorPalette="blue">
+                        Upload
+                        <input id="sound-upload" type="file" accept="audio/*" onChange={handleFileUpload} style={{ display: 'none' }} />
+                      </Button>
+                    </Flex>
+                  </Box>
                   <Button
                     gridColumn="span 2"
                     onClick={saveRedeem}
