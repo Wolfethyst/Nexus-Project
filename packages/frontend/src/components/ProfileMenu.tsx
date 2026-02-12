@@ -15,7 +15,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
 
   return (
     <>
-      <Menu.Root>
+      <Menu.Root portal>
         <Menu.Trigger>
           <IconButton
             variant="ghost"
@@ -30,7 +30,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
             </Avatar.Root>
           </IconButton>
         </Menu.Trigger>
-        <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={100} backdropFilter="blur(16px)">
+        <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={100} backdropFilter="blur(16px)" color="white">
         <Menu.Item value="profile-info" closeOnSelect={false}>
           <Flex align="center" gap={3}>
             <Avatar.Root size="sm">
