@@ -30,7 +30,6 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, active
     <Flex 
       direction="column" 
       h="100vh" 
-      overflow="hidden"
       bg="var(--bg-primary)"
       bgImage="radial-gradient(circle at 50% -10%, var(--bg-gradient-start) 0%, var(--bg-gradient-mid) 40%, var(--bg-gradient-end) 100%)"
       color="var(--text-primary)"

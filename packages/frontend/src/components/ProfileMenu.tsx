@@ -30,17 +30,17 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
     <Menu.Root>
       <Menu.Trigger>
         <IconButton
+          variant="ghost"
           aria-label="Options"
-          icon={
-            <Avatar.Root size="md">
-              <Avatar.Image src={session?.user?.avatar} />
-              <Avatar.Fallback name={session?.user?.displayName} />
-            </Avatar.Root>
-          }
           transition="all 0.2s"
           borderRadius="full"
           _focus={{ boxShadow: '0 0 0 2px #a78bfa' }}
-        />
+        >
+          <Avatar.Root size="md">
+            <Avatar.Image src={session?.user?.avatar} />
+            <Avatar.Fallback name={session?.user?.displayName} />
+          </Avatar.Root>
+        </IconButton>
       </Menu.Trigger>
       <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={100} backdropFilter="blur(16px)">
         <Menu.Item value="profile-info">
