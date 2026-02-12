@@ -42,9 +42,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
                 <Avatar.Fallback name={session?.user?.displayName} />
               </Avatar.Root>
               <Box>
-                <Text fontWeight="bold" fontFamily="Marcellus, serif" color="inherit">{session?.user?.displayName}</Text>
-                {/* Display point balance once implemented */}
-                {/* <Text fontSize="sm" color="gray.500">12,345 points</Text> */}
+                <Text fontWeight="bold" fontFamily="Marcellus, serif" color="var(--text-primary)">{session?.user?.displayName}</Text>
               </Box>
             </Flex>
           </Menu.Item>

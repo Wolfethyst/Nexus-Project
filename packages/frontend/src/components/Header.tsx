@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Box, Flex, HStack, Image, Link as ChakraLink, Button, Grid } from '@chakra-ui/react';
+import { Box, Flex, HStack, Image, Link as ChakraLink, Button, Grid, Text } from '@chakra-ui/react';
 import { ProfileMenu } from './ProfileMenu';
 import { ApiClient } from '../lib/api';
 
@@ -44,7 +44,15 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
         {/* LEFT - Sign In / User Profile */}
         <HStack gap={4} justify="flex-start">
           {user ? ( // if user show icon and points
-            <ProfileMenu onLogout={onLogout}  />
+            <HStack gap={3}>
+              <Flex align="center" gap={1.5} bg="blackAlpha.500" px={3} py={1} rounded="full" border="1px solid" borderColor="whiteAlpha.300">
+                <Image src={`${ApiClient.baseURL}/assets/crystal_icon`} boxSize="14px" objectFit="contain" />
+                <Text fontFamily="Cinzel, serif" fontSize="xs" fontWeight="bold" color="purple.200">
+                  {user.roles?.includes('owner') ? '∞' : (user.points || 0).toLocaleString()}
+                </Text>
+              </Flex>
+              <ProfileMenu onLogout={onLogout}  />
+            </HStack>
            ) : (
              <ChakraLink href="https://api.wolfethyst.tv/auth/twitch/login" _hover={{ bgGradient: "to-r", gradientFrom: "purple.500", gradientTo: "pink.500", boxShadow: "0 0 15px rgba(236, 72, 153, 0.4)", textDecoration: 'none' }} transition="all 0.2s" px={4} py={1.5} borderRadius="md" bgGradient="to-r"
               gradientFrom="purple.600"
