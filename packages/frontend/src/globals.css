@@ -21,7 +21,6 @@
     color: var(--text);
     font-family: var(--font-head);
     height: 100vh;
-    overflow: hidden;
   }
 
 @layer components {

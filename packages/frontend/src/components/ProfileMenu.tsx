@@ -1,8 +1,8 @@
 import React from 'react';
-import { Box, Flex, Menu, IconButton, Avatar, Text, SimpleGrid, Button } from '@chakra-ui/react';
-import { Link } from 'react-router-dom';
+import { Box, Flex, Menu, IconButton, Avatar, Text, SimpleGrid, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, useDisclosure } from '@chakra-ui/react';
 import { useAuthStore } from '../store';
 import { useThemeStore, ThemeName, ColorStyle } from '../store/useThemeStore';
+import { ProfileSettings } from './ProfileSettings';
 
 interface ProfileMenuProps {
   onLogout?: () => void;
@@ -10,6 +10,7 @@ interface ProfileMenuProps {
 
 export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
   const { session } = useAuthStore();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const { theme, colorStyle, setTheme, setColorStyle } = useThemeStore();
 
   const themes: { name: ThemeName; label: string }[] = [
@@ -27,6 +28,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
   ];
 
   return (
+    <>
     <Menu.Root>
       <Menu.Trigger>
         <IconButton
@@ -57,11 +59,9 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
           </Flex>
         </Menu.Item>
         <Menu.Separator />
-        <Link to="/profile" style={{ textDecoration: 'none' }}>
-          <Menu.Item value="settings" fontFamily="Marcellus, serif">
-            Profile Settings
-          </Menu.Item>
-        </Link>
+        <Menu.Item value="settings" fontFamily="Marcellus, serif" onClick={onOpen}>
+          Profile Settings
+        </Menu.Item>
         <Menu.Separator />
         <Box px={1} py={1.5}>
             <Text px={2} fontSize="sm" fontWeight="semibold" color="gray.400" fontFamily="Cinzel, serif">Theme</Text>
@@ -98,6 +98,18 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
         </Menu.Item>
       </Menu.Content>
     </Menu.Root>
+
+    <Modal isOpen={isOpen} onClose={onClose} isCentered>
+        <ModalOverlay bg="blackAlpha.700" backdropFilter="blur(10px)" />
+        <ModalContent bg="var(--panel-bg)" border="1px solid" borderColor="var(--panel-border)" borderRadius="2xl">
+          <ModalHeader fontFamily="Cinzel, serif" color="purple.200">Profile Settings</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <ProfileSettings />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
 

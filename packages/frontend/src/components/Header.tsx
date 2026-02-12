@@ -66,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
               fontWeight="bold"
               textTransform="uppercase"
               boxShadow={activeTab === 'live' ? '0 0 10px 2px var(--accent-glow)' : undefined}
-              bg={activeTab === 'live' ? 'var(--accent-primary)' : 'transparent'}
+              bg={activeTab === 'live' ? 'var(--accent)' : 'transparent'}
               color={activeTab === 'live' ? 'white' : 'gray.400'}
               _hover={{ color: 'white' }}
               transition="all 0.2s"
@@ -83,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
               fontWeight="bold"
               textTransform="uppercase"
               boxShadow={activeTab === 'vods' ? '0 0 10px 2px var(--accent-glow)' : undefined}
-              bg={activeTab === 'vods' ? 'var(--accent-primary)' : 'transparent'}
+              bg={activeTab === 'vods' ? 'var(--accent)' : 'transparent'}
               color={activeTab === 'vods' ? 'white' : 'gray.400'}
               _hover={{ color: 'white' }}
               transition="all 0.2s"
