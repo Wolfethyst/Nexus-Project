@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Header } from './Header';
 import { Flex, Box } from '@chakra-ui/react';
+import { useThemeStore } from '../store/useThemeStore';
 
 
 interface LayoutProps {
@@ -18,14 +19,21 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, onTabChange }) => {
+  const { theme, colorStyle } = useThemeStore();
+
+  useEffect(() => {
+    document.body.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-color', colorStyle);
+  }, [theme, colorStyle]);
+
   return (
     <Flex 
       direction="column" 
       h="100vh" 
       overflow="hidden"
-      bg="#05010a"
-      bgImage="radial-gradient(circle at 50% -10%, #3b0d60 0%, #1a052e 40%, #05010a 100%)"
-      color="white"
+      bg="var(--bg-primary)"
+      bgImage="radial-gradient(circle at 50% -10%, var(--bg-gradient-start) 0%, var(--bg-gradient-mid) 40%, var(--bg-gradient-end) 100%)"
+      color="var(--text-primary)"
     >
       <Header user={user} onLogout={onLogout} activeTab={activeTab} onTabChange={onTabChange} />
       <Box as="main" flex="1" overflow="hidden" position="relative">

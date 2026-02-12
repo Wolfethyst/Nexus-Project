@@ -70,12 +70,12 @@ export const Marketplace: React.FC = () => {
         {/* LEFT: TTS Section */}
         <Box 
             w={{ base: 'full', lg: '450px' }} 
-            bg="rgba(20, 10, 40, 0.4)" 
+            bg="var(--panel-bg)"
             borderRadius="2xl" 
             boxShadow="xl" 
             border="1px solid" 
-            borderColor="whiteAlpha.100" 
-            backdropFilter="blur(8px)"
+            borderColor="var(--panel-border)" 
+            backdropFilter="blur(16px)"
             display="flex"
             flexDirection="column"
             overflow="hidden"
@@ -87,10 +87,6 @@ export const Marketplace: React.FC = () => {
 
             <Box p={4} overflowY="auto" flex={1}>
             <VStack align="stretch" gap={4}>
-                
-                <Text fontFamily="Marcellus, serif" fontSize="sm" color="gray.400" lineHeight="tall">
-                    Send a message that will be read aloud on stream by the AI voice.
-                </Text>
                 
                 <Box position="relative">
                     <Textarea 
@@ -142,12 +138,12 @@ export const Marketplace: React.FC = () => {
             display="flex" 
             flexDirection="column" 
             minW={0}
-            bg="rgba(20, 10, 40, 0.4)" 
+            bg="var(--panel-bg)"
             borderRadius="2xl" 
             boxShadow="xl" 
             border="1px solid" 
-            borderColor="whiteAlpha.100" 
-            backdropFilter="blur(8px)"
+            borderColor="var(--panel-border)" 
+            backdropFilter="blur(16px)"
             overflow="hidden"
         >
             {/* Redeems Header */}
@@ -202,7 +198,7 @@ export const Marketplace: React.FC = () => {
                         
                         <Flex align="center" justify="space-between" mt="auto" pt={2} borderTop="1px solid" borderColor="whiteAlpha.100">
                             <Flex align="center" gap={1.5}>
-                            <Text fontFamily="Cinzel, serif" fontWeight="bold" color="purple.300" fontSize="sm">{item.cost}</Text>
+                            <Text fontFamily="Marcellus, serif" fontWeight="bold" color="purple.300" fontSize="sm">{item.cost}</Text>
                             <Image src={`${ApiClient.baseURL}/assets/crystal_icon`} alt="crystals" boxSize={4} objectFit="contain" />
                             </Flex>
                             <Button

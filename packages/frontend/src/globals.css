@@ -1,4 +1,6 @@
-  :root {
+@import url('https://fonts.googleapis.com/css2?family=Marcellus&display=swap');
+
+ :root {
     --bg: radial-gradient(circle at 50% 0%, #3d0066, #0b0014 80%);
     --panel-bg: rgba(40, 0, 60, 0.45);
     --panel-border: rgba(255,150,255,0.20);
@@ -13,7 +15,7 @@
     --font-body: "Space Grotesk", sans-serif;
   }
   
-  body {
+ body {
     margin: 0;
     background: linear-gradient(135deg, #2a1447 0%, #1a0933 100%);
     color: var(--text);
@@ -119,4 +121,3 @@
     animation: fadeIn 0.3s ease-out;
   }
 }
-@import url('https://fonts.googleapis.com/css2?family=Marcellus&display=swap');

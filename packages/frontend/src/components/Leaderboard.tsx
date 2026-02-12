@@ -49,12 +49,12 @@ export const Leaderboard: React.FC = () => {
       h="full" 
       display="flex" 
       flexDirection="column" 
-      bg="rgba(20, 10, 40, 0.4)" 
+      bg="var(--panel-bg)"
       borderRadius="2xl" 
       boxShadow="xl" 
-      backdropFilter="blur(8px)" 
+      backdropFilter="blur(16px)" 
       border="1px solid" 
-      borderColor="whiteAlpha.100"
+      borderColor="var(--panel-border)"
     >
       {/* HEADER SECTION */}
       <Box 
