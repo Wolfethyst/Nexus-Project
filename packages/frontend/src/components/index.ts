@@ -6,3 +6,4 @@ export { VODPlayer } from './VODPlayer';
 export { Chat } from './Chat';
 export { Leaderboard } from './Leaderboard';
 export { Marketplace } from './Marketplace';
+export { ThemeSettings } from './ThemeSettings';

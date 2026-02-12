@@ -1,8 +1,8 @@
 import React from 'react';
-import { Box, Flex, Menu, IconButton, Avatar, Text, SimpleGrid, Button, Dialog, useDisclosure } from '@chakra-ui/react';
+import { Box, Flex, Menu, IconButton, Avatar, Text, Dialog, useDisclosure } from '@chakra-ui/react';
 import { useAuthStore } from '../store';
-import { useThemeStore, ThemeName, ColorStyle } from '../store/useThemeStore';
 import { ProfileSettings } from './ProfileSettings';
+import { ThemeSettings } from './ThemeSettings';
 
 interface ProfileMenuProps {
   onLogout?: () => void;
@@ -10,22 +10,8 @@ interface ProfileMenuProps {
 
 export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
   const { session } = useAuthStore();
-  const { open, onOpen, onClose } = useDisclosure();
-  const { theme, colorStyle, setTheme, setColorStyle } = useThemeStore();
-
-  const themes: { name: ThemeName; label: string }[] = [
-    { name: 'default', label: 'Default' },
-    { name: 'light', label: 'Light' },
-    { name: 'dark', label: 'Dark' },
-    { name: 'oled', label: 'OLED' },
-  ];
-
-  const colors: { name: ColorStyle; hex: string }[] = [
-      { name: 'purple', hex: '#a78bfa' },
-      { name: 'blue', hex: '#60a5fa' },
-      { name: 'green', hex: '#4ade80' },
-      { name: 'red', hex: '#f87171' },
-  ];
+  const profileDisclosure = useDisclosure();
+  const themeDisclosure = useDisclosure();
 
   return (
     <>
@@ -45,7 +31,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
           </IconButton>
         </Menu.Trigger>
         <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={100} backdropFilter="blur(16px)">
-        <Menu.Item value="profile-info">
+        <Menu.Item value="profile-info" closeOnSelect={false}>
           <Flex align="center" gap={3}>
             <Avatar.Root size="sm">
               <Avatar.Image src={session?.user?.avatar} />
@@ -59,39 +45,15 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
           </Flex>
         </Menu.Item>
         <Menu.Separator />
-        <Menu.Item value="settings" fontFamily="Marcellus, serif" onClick={onOpen}>
-          Profile Settings
+        
+        <Menu.Item value="themes" fontFamily="Marcellus, serif" onClick={themeDisclosure.onOpen}>
+            Themes
         </Menu.Item>
-        <Menu.Separator />
-        <Box px={1} py={1.5}>
-            <Text px={2} fontSize="sm" fontWeight="semibold" color="gray.400" fontFamily="Cinzel, serif">Theme</Text>
-            {themes.map((t) => (
-              <Menu.Item
-                key={t.name}
-                value={t.name}
-                onClick={() => setTheme(t.name)}
-                bg={theme === t.name ? 'purple.500/20' : 'transparent'}
-              >
-                <Text fontFamily="Marcellus, serif">{t.label}</Text>
-              </Menu.Item>
-            ))}
-        </Box>
-        <Menu.Separator />
-        <Box px={1} py={1.5}>
-            <Text px={2} fontSize="sm" fontWeight="semibold" color="gray.400" fontFamily="Cinzel, serif">Accent Color</Text>
-            <SimpleGrid columns={4} gap={2} p={2}>
-                {colors.map(c => (
-                    <Button 
-                        key={c.name}
-                        h="2rem"
-                        bg={c.hex}
-                        onClick={() => setColorStyle(c.name)}
-                        border={colorStyle === c.name ? '2px solid white' : '2px solid transparent'}
-                        _hover={{ transform: 'scale(1.1)'}}
-                    />
-                ))}
-            </SimpleGrid>
-        </Box>
+
+        <Menu.Item value="customization" fontFamily="Marcellus, serif" onClick={profileDisclosure.onOpen}>
+            Customization
+        </Menu.Item>
+
         <Menu.Separator />
         <Menu.Item value="logout" onClick={onLogout} fontFamily="Marcellus, serif">
           Logout
@@ -99,16 +61,33 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
         </Menu.Content>
       </Menu.Root>
 
-      <Dialog.Root open={open} onOpenChange={(details) => !details.open && onClose()}>
+      {/* Customization Modal */}
+      <Dialog.Root open={profileDisclosure.open} onOpenChange={(details) => !details.open && profileDisclosure.onClose()}>
         <Dialog.Backdrop bg="blackAlpha.700" backdropFilter="blur(10px)" />
         <Dialog.Positioner>
           <Dialog.Content bg="var(--panel-bg)" border="1px solid" borderColor="var(--panel-border)" borderRadius="2xl">
-            <Dialog.Header fontFamily="Cinzel, serif" color="purple.200">Profile Settings</Dialog.Header>
+            <Dialog.Header fontFamily="Cinzel, serif" color="purple.200">Customization</Dialog.Header>
             <Dialog.CloseTrigger asChild>
               <IconButton aria-label="Close" variant="ghost" size="sm" position="absolute" top={2} right={2} />
             </Dialog.CloseTrigger>
             <Dialog.Body pb={6}>
               <ProfileSettings />
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Dialog.Root>
+
+      {/* Theme Modal */}
+      <Dialog.Root open={themeDisclosure.open} onOpenChange={(details) => !details.open && themeDisclosure.onClose()}>
+        <Dialog.Backdrop bg="blackAlpha.700" backdropFilter="blur(10px)" />
+        <Dialog.Positioner>
+          <Dialog.Content bg="var(--panel-bg)" border="1px solid" borderColor="var(--panel-border)" borderRadius="2xl">
+            <Dialog.Header fontFamily="Cinzel, serif" color="purple.200">Theme Settings</Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <IconButton aria-label="Close" variant="ghost" size="sm" position="absolute" top={2} right={2} />
+            </Dialog.CloseTrigger>
+            <Dialog.Body pb={6}>
+              <ThemeSettings />
             </Dialog.Body>
           </Dialog.Content>
         </Dialog.Positioner>
