@@ -63,8 +63,8 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
         </HStack>
 
         {/* CENTER - Tab Navigation */}
-        <Center position="absolute" left="50%" transform="translateX(-50%)">
-          <HStack gap={1} bg="blackAlpha.700" p={1} rounded="full" border="1px solid" borderColor="whiteAlpha.200">
+        <Center position="absolute" left="50%" marginLeft="-150px"> {/* Adjust marginLeft based on actual HStack width */}
+          <HStack gap={1} bg="blackAlpha.700" p={1} rounded="full" border="1px solid" borderColor="whiteAlpha.200" w="300px"> {/* Explicit width for centering */}
             <Button
               onClick={() => onTabChange?.('live')}
               px={6}

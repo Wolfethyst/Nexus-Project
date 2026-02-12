@@ -30,8 +30,8 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
             </Avatar.Root>
           </IconButton>
         </Menu.Trigger>
-        <Portal>
-          <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={9999} backdropFilter="blur(16px)" color="white">
+        <Portal> {/* Portal renders content directly into document.body */}
+          <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={9999} backdropFilter="blur(16px)" color="white" position="fixed">
           <Menu.Item value="profile-info" closeOnSelect={false}>
             <Flex align="center" gap={3}>
               <Avatar.Root size="sm">
