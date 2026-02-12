@@ -31,7 +31,12 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
       <Menu.Button
         as={IconButton}
         aria-label="Options"
-        icon={<Avatar src={session?.user?.avatar} size="md" />}
+        icon={
+          <Avatar.Root size="md">
+            <Avatar.Image src={session?.user?.avatar} />
+            <Avatar.Fallback name={session?.user?.displayName} />
+          </Avatar.Root>
+        }
         transition="all 0.2s"
         borderRadius="full"
         _focus={{ boxShadow: '0 0 0 2px #a78bfa' }}
@@ -39,7 +44,10 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
       <Menu.List bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={100} backdropFilter="blur(16px)">
         <Menu.Item>
           <Flex align="center" gap={3}>
-            <Avatar src={session?.user?.avatar} size="sm" />
+            <Avatar.Root size="sm">
+              <Avatar.Image src={session?.user?.avatar} />
+              <Avatar.Fallback name={session?.user?.displayName} />
+            </Avatar.Root>
             <Box>
               <Text fontWeight="bold" fontFamily="Marcellus, serif">{session?.user?.displayName}</Text>
               {/* Display point balance once implemented */}
