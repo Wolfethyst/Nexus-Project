@@ -28,7 +28,6 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
       px={8} 
       py={3} 
       position="relative"
-      zIndex={50}
       _before={{
         content: '""',
         position: 'absolute',

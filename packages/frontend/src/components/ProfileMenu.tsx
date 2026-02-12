@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Flex, Menu, IconButton, Avatar, Text, Dialog, useDisclosure, Portal } from '@chakra-ui/react';
+import { Box, Flex, Menu, IconButton, Avatar, Text, Dialog, useDisclosure, Portal, Button } from '@chakra-ui/react';
 import { useAuthStore } from '../store';
 import { ProfileSettings } from './ProfileSettings';
 import { ThemeSettings } from './ThemeSettings';
@@ -17,21 +17,24 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
     <>
       <Menu.Root>
         <Menu.Trigger asChild>
-          <IconButton
+          <Button
             variant="ghost"
-            aria-label="Options"
-            transition="all 0.2s"
-            borderRadius="full"
+            rounded="full"
+            p={0}
+            minW={0}
+            w="auto"
+            h="auto"
             _focus={{ boxShadow: '0 0 0 2px #a78bfa' }}
           >
             <Avatar.Root size="lg">
               <Avatar.Image src={session?.user?.avatar} />
               <Avatar.Fallback name={session?.user?.displayName} />
             </Avatar.Root>
-          </IconButton>
+          </Button>
         </Menu.Trigger>
-        <Portal> {/* Portal renders content directly into document.body */}
-          <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={9999} backdropFilter="blur(16px)" color="white" position="fixed">
+        <Portal>
+          <Menu.Positioner>
+            <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={9999} backdropFilter="blur(16px)" color="white">
           <Menu.Item value="profile-info" closeOnSelect={false}>
             <Flex align="center" gap={3}>
               <Avatar.Root size="sm">
@@ -59,7 +62,8 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
           <Menu.Item value="logout" onClick={onLogout} fontFamily="Marcellus, serif">
             Logout
           </Menu.Item>
-          </Menu.Content>
+            </Menu.Content>
+          </Menu.Positioner>
         </Portal>
       </Menu.Root>
 
