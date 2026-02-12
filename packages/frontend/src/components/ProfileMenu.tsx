@@ -31,7 +31,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
           </IconButton>
         </Menu.Trigger>
         <Portal>
-          <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={100} backdropFilter="blur(16px)" color="white">
+          <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={9999} backdropFilter="blur(16px)" color="white">
           <Menu.Item value="profile-info" closeOnSelect={false}>
             <Flex align="center" gap={3}>
               <Avatar.Root size="sm">

@@ -23,14 +23,23 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
   return (
     <Box 
       as="header" 
-      bg="var(--header-bg)" 
-      backdropFilter="blur(12px)"
       borderBottom="1px solid" 
       borderColor="var(--panel-border)" 
       px={8} 
       py={3} 
       position="relative"
       zIndex={50}
+      _before={{
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        bg: 'var(--header-bg)',
+        backdropFilter: 'blur(12px)',
+        zIndex: -1,
+      }}
     >
       <Flex align="center" justify="space-between" position="relative">
         {/* LEFT - Sign In / User Profile */}
