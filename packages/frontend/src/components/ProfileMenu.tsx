@@ -27,8 +27,8 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
   ];
 
   return (
-    <Menu>
-      <Menu.Button
+    <Menu.Root>
+      <Menu.Trigger
         as={IconButton}
         aria-label="Options"
         icon={
@@ -41,8 +41,8 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
         borderRadius="full"
         _focus={{ boxShadow: '0 0 0 2px #a78bfa' }}
       />
-      <Menu.List bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={100} backdropFilter="blur(16px)">
-        <Menu.Item>
+      <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={100} backdropFilter="blur(16px)">
+        <Menu.Item value="profile-info">
           <Flex align="center" gap={3}>
             <Avatar.Root size="sm">
               <Avatar.Image src={session?.user?.avatar} />
@@ -57,7 +57,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
         </Menu.Item>
         <Menu.Separator />
         <Link to="/profile" style={{ textDecoration: 'none' }}>
-          <Menu.Item fontFamily="Marcellus, serif">
+          <Menu.Item value="settings" fontFamily="Marcellus, serif">
             Profile Settings
           </Menu.Item>
         </Link>
@@ -66,6 +66,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
             {themes.map((t) => (
               <Menu.Item
                 key={t.name}
+                value={t.name}
                 onClick={() => setTheme(t.name)}
                 bg={theme === t.name ? 'purple.500/20' : 'transparent'}
               >
@@ -75,7 +76,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
         </Menu.Group>
         <Menu.Separator />
         <Menu.Group title="Accent Color" fontFamily="Cinzel, serif" color="gray.400">
-            <SimpleGrid columns={4} spacing={2} p={2}>
+            <SimpleGrid columns={4} gap={2} p={2}>
                 {colors.map(c => (
                     <Button 
                         key={c.name}
@@ -89,11 +90,11 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
             </SimpleGrid>
         </Menu.Group>
         <Menu.Separator />
-        <Menu.Item onClick={onLogout} fontFamily="Marcellus, serif">
+        <Menu.Item value="logout" onClick={onLogout} fontFamily="Marcellus, serif">
           Logout
         </Menu.Item>
-      </Menu.List>
-    </Menu>
+      </Menu.Content>
+    </Menu.Root>
   );
 };
 

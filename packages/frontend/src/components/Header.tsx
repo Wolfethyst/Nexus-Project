@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Box, Flex, Text, HStack, Center, Image, Link as ChakraLink, Avatar, Button } from '@chakra-ui/react';
+import { Box, Flex, HStack, Center, Image, Link as ChakraLink, Button } from '@chakra-ui/react';
 import { ProfileMenu } from './ProfileMenu';
 import { ApiClient } from '../lib/api';
 

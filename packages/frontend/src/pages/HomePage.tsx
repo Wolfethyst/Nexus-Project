@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { StreamPlayer, VideoCard, VODPlayer, Chat, Leaderboard, Marketplace } from '../components';
-import { useVideoStore } from '../store';
 import { useAuth } from '../hooks/useAuth';
-import { useVideoData } from '../hooks/useVideo';
 import { ApiClient } from '../lib/api';
 import type { Video } from '@nexus/shared';
 import { Grid, Box, Flex, Button, Text, Input, Tabs } from '@chakra-ui/react';
@@ -28,18 +26,18 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
   // --- Placeholder Data for Layout Testing ---
   const placeholderVideos: (Video & { gameName?: string, type?: 'vod' | 'video' | 'clip' })[] = [
     // Game 1: Elden Ring
-    { id: 'vod1', title: '[Elden Ring] First Playthrough - Part 1', gameName: 'Elden Ring', type: 'vod', createdAt: new Date('2023-03-01T18:00:00Z').toISOString(), thumbnailUrl: 'https://static-cdn.jtvnw.net/ttv-boxart/512953_IGDB-285x380.jpg', videoUrl: 'some_video_id_1', platform: 'youtube', duration: '3:45:10' },
-    { id: 'vod2', title: '[Elden Ring] Malenia Attempts', gameName: 'Elden Ring', type: 'vod', createdAt: new Date('2023-03-02T18:00:00Z').toISOString(), thumbnailUrl: 'https://static-cdn.jtvnw.net/ttv-boxart/512953_IGDB-285x380.jpg', videoUrl: 'some_video_id_2', platform: 'youtube', duration: '4:12:30' },
-    { id: 'vid1', title: 'Elden Ring Review - 100 Hours Later', gameName: 'Elden Ring', type: 'video', createdAt: new Date('2023-03-05T12:00:00Z').toISOString(), thumbnailUrl: 'https://static-cdn.jtvnw.net/ttv-boxart/512953_IGDB-285x380.jpg', videoUrl: 'some_video_id_3', platform: 'youtube', duration: '15:22' },
-    { id: 'clip1', title: 'Gravity is the real boss', gameName: 'Elden Ring', type: 'clip', createdAt: new Date('2023-03-01T19:30:00Z').toISOString(), thumbnailUrl: 'https://static-cdn.jtvnw.net/ttv-boxart/512953_IGDB-285x380.jpg', videoUrl: 'some_video_id_4', platform: 'youtube', duration: '0:45' },
+    { id: 'vod1', title: '[Elden Ring] First Playthrough - Part 1', gameName: 'Elden Ring', type: 'vod', createdAt: new Date('2023-03-01T18:00:00Z').toISOString(), thumbnail: 'https://static-cdn.jtvnw.net/ttv-boxart/512953_IGDB-285x380.jpg', videoUrl: 'some_video_id_1', platform: 'youtube', duration: '3:45:10' },
+    { id: 'vod2', title: '[Elden Ring] Malenia Attempts', gameName: 'Elden Ring', type: 'vod', createdAt: new Date('2023-03-02T18:00:00Z').toISOString(), thumbnail: 'https://static-cdn.jtvnw.net/ttv-boxart/512953_IGDB-285x380.jpg', videoUrl: 'some_video_id_2', platform: 'youtube', duration: '4:12:30' },
+    { id: 'vid1', title: 'Elden Ring Review - 100 Hours Later', gameName: 'Elden Ring', type: 'video', createdAt: new Date('2023-03-05T12:00:00Z').toISOString(), thumbnail: 'https://static-cdn.jtvnw.net/ttv-boxart/512953_IGDB-285x380.jpg', videoUrl: 'some_video_id_3', platform: 'youtube', duration: '15:22' },
+    { id: 'clip1', title: 'Gravity is the real boss', gameName: 'Elden Ring', type: 'clip', createdAt: new Date('2023-03-01T19:30:00Z').toISOString(), thumbnail: 'https://static-cdn.jtvnw.net/ttv-boxart/512953_IGDB-285x380.jpg', videoUrl: 'some_video_id_4', platform: 'youtube', duration: '0:45' },
   
     // Game 2: Cyberpunk 2077
-    { id: 'vod3', title: '[Cyberpunk 2077] Phantom Liberty DLC', gameName: 'Cyberpunk 2077', type: 'vod', createdAt: new Date('2023-09-28T20:00:00Z').toISOString(), thumbnailUrl: 'https://static-cdn.jtvnw.net/ttv-boxart/65873_IGDB-285x380.jpg', videoUrl: 'some_video_id_5', platform: 'youtube', duration: '5:02:11' },
-    { id: 'vid2', title: 'Best Cyberpunk 2.0 Builds', gameName: 'Cyberpunk 2077', type: 'video', createdAt: new Date('2023-10-01T15:00:00Z').toISOString(), thumbnailUrl: 'https://static-cdn.jtvnw.net/ttv-boxart/65873_IGDB-285x380.jpg', videoUrl: 'some_video_id_6', platform: 'youtube', duration: '12:48' },
-    { id: 'clip2', title: 'Netrunner Hacking Spree', gameName: 'Cyberpunk 2077', type: 'clip', createdAt: new Date('2023-09-28T21:15:00Z').toISOString(), thumbnailUrl: 'https://static-cdn.jtvnw.net/ttv-boxart/65873_IGDB-285x380.jpg', videoUrl: 'some_video_id_7', platform: 'youtube', duration: '1:12' },
+    { id: 'vod3', title: '[Cyberpunk 2077] Phantom Liberty DLC', gameName: 'Cyberpunk 2077', type: 'vod', createdAt: new Date('2023-09-28T20:00:00Z').toISOString(), thumbnail: 'https://static-cdn.jtvnw.net/ttv-boxart/65873_IGDB-285x380.jpg', videoUrl: 'some_video_id_5', platform: 'youtube', duration: '5:02:11' },
+    { id: 'vid2', title: 'Best Cyberpunk 2.0 Builds', gameName: 'Cyberpunk 2077', type: 'video', createdAt: new Date('2023-10-01T15:00:00Z').toISOString(), thumbnail: 'https://static-cdn.jtvnw.net/ttv-boxart/65873_IGDB-285x380.jpg', videoUrl: 'some_video_id_6', platform: 'youtube', duration: '12:48' },
+    { id: 'clip2', title: 'Netrunner Hacking Spree', gameName: 'Cyberpunk 2077', type: 'clip', createdAt: new Date('2023-09-28T21:15:00Z').toISOString(), thumbnail: 'https://static-cdn.jtvnw.net/ttv-boxart/65873_IGDB-285x380.jpg', videoUrl: 'some_video_id_7', platform: 'youtube', duration: '1:12' },
   
     // Game 3: Other
-    { id: 'vod4', title: 'Just Chatting & Chill', gameName: 'Other', type: 'vod', createdAt: new Date('2023-10-05T18:00:00Z').toISOString(), thumbnailUrl: 'https://static-cdn.jtvnw.net/ttv-boxart/509658-285x380.jpg', videoUrl: 'some_video_id_8', platform: 'youtube', duration: '2:30:00' },
+    { id: 'vod4', title: 'Just Chatting & Chill', gameName: 'Other', type: 'vod', createdAt: new Date('2023-10-05T18:00:00Z').toISOString(), thumbnail: 'https://static-cdn.jtvnw.net/ttv-boxart/509658-285x380.jpg', videoUrl: 'some_video_id_8', platform: 'youtube', duration: '2:30:00' },
   ];
   const vods = placeholderVideos;
   const clips: Video[] = [];
@@ -253,7 +251,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                   </Box>
                 ) : (
                   <>
-                    <Text fontFamily="Marcellus, serif" fontSize="lg" lineHeight="1.2" color="white" mb={1} noOfLines={1}>
+                    <Text fontFamily="Marcellus, serif" fontSize="lg" lineHeight="1.2" color="white" mb={1} lineClamp={1}>
                       {streamInfo.game ?? 'Just Chatting'}
                     </Text>
                     <Text fontFamily="Marcellus, serif" fontSize="xs" color="gray.300" mb={2} lineClamp={2}>
