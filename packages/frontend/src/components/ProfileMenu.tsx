@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Flex, Menu, IconButton, Avatar, Text, SimpleGrid, Button, Modal, useDisclosure } from '@chakra-ui/react';
+import { Box, Flex, Menu, IconButton, Avatar, Text, SimpleGrid, Button, Dialog, useDisclosure } from '@chakra-ui/react';
 import { useAuthStore } from '../store';
 import { useThemeStore, ThemeName, ColorStyle } from '../store/useThemeStore';
 import { ProfileSettings } from './ProfileSettings';
@@ -10,7 +10,7 @@ interface ProfileMenuProps {
 
 export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
   const { session } = useAuthStore();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   const { theme, colorStyle, setTheme, setColorStyle } = useThemeStore();
 
   const themes: { name: ThemeName; label: string }[] = [
@@ -99,18 +99,20 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
         </Menu.Content>
       </Menu.Root>
 
-      <Modal.Root open={isOpen} onOpenChange={(details: { open: boolean }) => !details.open && onClose()} isCentered>
-        <Modal.Overlay bg="blackAlpha.700" backdropFilter="blur(10px)" />
-        <Modal.Content bg="var(--panel-bg)" border="1px solid" borderColor="var(--panel-border)" borderRadius="2xl">
-          <Modal.Header fontFamily="Cinzel, serif" color="purple.200">Profile Settings</Modal.Header>
-          <Modal.CloseTrigger asChild>
-            <IconButton aria-label="Close" variant="ghost" size="sm" position="absolute" top={2} right={2} />
-          </Modal.CloseTrigger>
-          <Modal.Body pb={6}>
-            <ProfileSettings />
-          </Modal.Body>
-        </Modal.Content>
-      </Modal.Root>
+      <Dialog.Root open={open} onOpenChange={(details) => !details.open && onClose()}>
+        <Dialog.Backdrop bg="blackAlpha.700" backdropFilter="blur(10px)" />
+        <Dialog.Positioner>
+          <Dialog.Content bg="var(--panel-bg)" border="1px solid" borderColor="var(--panel-border)" borderRadius="2xl">
+            <Dialog.Header fontFamily="Cinzel, serif" color="purple.200">Profile Settings</Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <IconButton aria-label="Close" variant="ghost" size="sm" position="absolute" top={2} right={2} />
+            </Dialog.CloseTrigger>
+            <Dialog.Body pb={6}>
+              <ProfileSettings />
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Dialog.Root>
     </>
   );
 };
