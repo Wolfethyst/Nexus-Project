@@ -22,7 +22,7 @@ export const ThemeSettings: React.FC = () => {
   return (
     <VStack align="stretch" gap={6}>
         <Box>
-            <Text fontFamily="Cinzel, serif" fontWeight="bold" mb={3} color="purple.200">Base Theme</Text>
+            <Text fontFamily="Cinzel, serif" fontWeight="bold" mb={3} color="var(--text-primary)">Base Theme</Text>
             <SimpleGrid columns={2} gap={3}>
                 {themes.map((t) => (
                 <Button
@@ -43,7 +43,7 @@ export const ThemeSettings: React.FC = () => {
         </Box>
 
         <Box>
-            <Text fontFamily="Cinzel, serif" fontWeight="bold" mb={3} color="purple.200">Accent Color</Text>
+            <Text fontFamily="Cinzel, serif" fontWeight="bold" mb={3} color="var(--text-primary)">Accent Color</Text>
             <SimpleGrid columns={4} gap={3}>
                 {colors.map(c => (
                     <Button 

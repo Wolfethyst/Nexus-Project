@@ -34,7 +34,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
         </Menu.Trigger>
         <Portal>
           <Menu.Positioner>
-            <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={9999} backdropFilter="blur(16px)" color="white">
+            <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={9999} backdropFilter="blur(16px)" color="var(--text-primary)">
           <Menu.Item value="profile-info" closeOnSelect={false}>
             <Flex align="center" gap={3}>
               <Avatar.Root size="sm">
@@ -42,7 +42,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
                 <Avatar.Fallback name={session?.user?.displayName} />
               </Avatar.Root>
               <Box>
-                <Text fontWeight="bold" fontFamily="Marcellus, serif">{session?.user?.displayName}</Text>
+                <Text fontWeight="bold" fontFamily="Marcellus, serif" color="inherit">{session?.user?.displayName}</Text>
                 {/* Display point balance once implemented */}
                 {/* <Text fontSize="sm" color="gray.500">12,345 points</Text> */}
               </Box>
@@ -50,16 +50,16 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
           </Menu.Item>
           <Menu.Separator />
           
-          <Menu.Item value="themes" fontFamily="Marcellus, serif" onClick={themeDisclosure.onOpen}>
+          <Menu.Item value="themes" fontFamily="Marcellus, serif" onClick={themeDisclosure.onOpen} color="inherit">
               Themes
           </Menu.Item>
 
-          <Menu.Item value="customization" fontFamily="Marcellus, serif" onClick={profileDisclosure.onOpen}>
+          <Menu.Item value="customization" fontFamily="Marcellus, serif" onClick={profileDisclosure.onOpen} color="inherit">
               Customization
           </Menu.Item>
 
           <Menu.Separator />
-          <Menu.Item value="logout" onClick={onLogout} fontFamily="Marcellus, serif">
+          <Menu.Item value="logout" onClick={onLogout} fontFamily="Marcellus, serif" color="inherit">
             Logout
           </Menu.Item>
             </Menu.Content>
@@ -72,7 +72,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
         <Dialog.Backdrop bg="blackAlpha.700" backdropFilter="blur(10px)" />
         <Dialog.Positioner>
           <Dialog.Content bg="var(--panel-bg)" border="1px solid" borderColor="var(--panel-border)" borderRadius="2xl">
-            <Dialog.Header fontFamily="Cinzel, serif" color="purple.200">Customization</Dialog.Header>
+            <Dialog.Header fontFamily="Cinzel, serif" color="var(--text-primary)">Customization</Dialog.Header>
             <Dialog.CloseTrigger asChild>
               <IconButton aria-label="Close" variant="ghost" size="sm" position="absolute" top={2} right={2} />
             </Dialog.CloseTrigger>
@@ -88,7 +88,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
         <Dialog.Backdrop bg="blackAlpha.700" backdropFilter="blur(10px)" />
         <Dialog.Positioner>
           <Dialog.Content bg="var(--panel-bg)" border="1px solid" borderColor="var(--panel-border)" borderRadius="2xl">
-            <Dialog.Header fontFamily="Cinzel, serif" color="purple.200">Theme Settings</Dialog.Header>
+            <Dialog.Header fontFamily="Cinzel, serif" color="var(--text-primary)">Theme Settings</Dialog.Header>
             <Dialog.CloseTrigger asChild>
               <IconButton aria-label="Close" variant="ghost" size="sm" position="absolute" top={2} right={2} />
             </Dialog.CloseTrigger>

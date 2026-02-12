@@ -70,7 +70,7 @@ export const ProfileSettings: React.FC = () => {
       gap={6}
     >
       <Box>
-        <Text fontFamily="Cinzel, serif" fontWeight="bold" mb={2} color="purple.200">Display Name</Text>
+        <Text fontFamily="Cinzel, serif" fontWeight="bold" mb={2} color="var(--text-primary)">Display Name</Text>
         <Input
           type="text"
           value={profile.displayName}
@@ -86,7 +86,7 @@ export const ProfileSettings: React.FC = () => {
         <Text fontSize="xs" color="gray.400" mt={1}>{profile.displayName.length}/25 characters</Text>
       </Box>
       <Box>
-        <Text fontFamily="Cinzel, serif" fontWeight="bold" mb={2} color="purple.200">Name Color</Text>
+        <Text fontFamily="Cinzel, serif" fontWeight="bold" mb={2} color="var(--text-primary)">Name Color</Text>
         <Flex align="center" gap={4}>
           <Input
             type="color"
