@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Flex, Menu, IconButton, Avatar, Text, SimpleGrid, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, useDisclosure } from '@chakra-ui/react';
+import { Box, Flex, Menu, IconButton, Avatar, Text, SimpleGrid, Button, Modal, useDisclosure } from '@chakra-ui/react';
 import { useAuthStore } from '../store';
 import { useThemeStore, ThemeName, ColorStyle } from '../store/useThemeStore';
 import { ProfileSettings } from './ProfileSettings';
@@ -29,22 +29,22 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
 
   return (
     <>
-    <Menu.Root>
-      <Menu.Trigger>
-        <IconButton
-          variant="ghost"
-          aria-label="Options"
-          transition="all 0.2s"
-          borderRadius="full"
-          _focus={{ boxShadow: '0 0 0 2px #a78bfa' }}
-        >
-          <Avatar.Root size="lg">
-            <Avatar.Image src={session?.user?.avatar} />
-            <Avatar.Fallback name={session?.user?.displayName} />
-          </Avatar.Root>
-        </IconButton>
-      </Menu.Trigger>
-      <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={100} backdropFilter="blur(16px)">
+      <Menu.Root>
+        <Menu.Trigger>
+          <IconButton
+            variant="ghost"
+            aria-label="Options"
+            transition="all 0.2s"
+            borderRadius="full"
+            _focus={{ boxShadow: '0 0 0 2px #a78bfa' }}
+          >
+            <Avatar.Root size="lg">
+              <Avatar.Image src={session?.user?.avatar} />
+              <Avatar.Fallback name={session?.user?.displayName} />
+            </Avatar.Root>
+          </IconButton>
+        </Menu.Trigger>
+        <Menu.Content bg="var(--panel-bg)" borderColor="var(--panel-border)" zIndex={100} backdropFilter="blur(16px)">
         <Menu.Item value="profile-info">
           <Flex align="center" gap={3}>
             <Avatar.Root size="sm">
@@ -96,19 +96,21 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
         <Menu.Item value="logout" onClick={onLogout} fontFamily="Marcellus, serif">
           Logout
         </Menu.Item>
-      </Menu.Content>
-    </Menu.Root>
+        </Menu.Content>
+      </Menu.Root>
 
-    <Modal isOpen={isOpen} onClose={onClose} isCentered>
-        <ModalOverlay bg="blackAlpha.700" backdropFilter="blur(10px)" />
-        <ModalContent bg="var(--panel-bg)" border="1px solid" borderColor="var(--panel-border)" borderRadius="2xl">
-          <ModalHeader fontFamily="Cinzel, serif" color="purple.200">Profile Settings</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
+      <Modal.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()} isCentered>
+        <Modal.Overlay bg="blackAlpha.700" backdropFilter="blur(10px)" />
+        <Modal.Content bg="var(--panel-bg)" border="1px solid" borderColor="var(--panel-border)" borderRadius="2xl">
+          <Modal.Header fontFamily="Cinzel, serif" color="purple.200">Profile Settings</Modal.Header>
+          <Modal.CloseTrigger asChild>
+            <IconButton aria-label="Close" variant="ghost" size="sm" position="absolute" top={2} right={2} />
+          </Modal.CloseTrigger>
+          <Modal.Body pb={6}>
             <ProfileSettings />
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+          </Modal.Body>
+        </Modal.Content>
+      </Modal.Root>
     </>
   );
 };
