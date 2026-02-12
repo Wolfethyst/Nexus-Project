@@ -99,7 +99,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout }) => {
         </Menu.Content>
       </Menu.Root>
 
-      <Modal.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()} isCentered>
+      <Modal.Root open={isOpen} onOpenChange={(details: { open: boolean }) => !details.open && onClose()} isCentered>
         <Modal.Overlay bg="blackAlpha.700" backdropFilter="blur(10px)" />
         <Modal.Content bg="var(--panel-bg)" border="1px solid" borderColor="var(--panel-border)" borderRadius="2xl">
           <Modal.Header fontFamily="Cinzel, serif" color="purple.200">Profile Settings</Modal.Header>
