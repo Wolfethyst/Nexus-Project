@@ -91,8 +91,10 @@ router.post('/upload/sound', async (c) => {
     const formData = await c.req.formData();
     const file = formData.get('file');
     if (file && typeof file === 'object') {
-      const key = `sounds/${(file as File).name}`;
-      await c.env.REDEEMS.put(key, file as File);
+      const fileObj = file as File;
+      const key = `sounds/${fileObj.name}`;
+      const buffer = await fileObj.arrayBuffer();
+      await c.env.REDEEMS.put(key, buffer);
       return c.json({ ok: true, key });
     }
     return c.json({ ok: false, error: 'No file provided' }, 400);
