@@ -92,11 +92,11 @@ router.post('/redeem', async (c) => {
   }
   
   const session = await c.env.SESSIONS.get(`session:${sessionId}`, 'json') as any;
-  if (!session?.user?.id) {
+  if (!session?.userId) {
     return c.json({ ok: false, error: 'Invalid session' }, 401);
   }
   
-  const userId = session.user.id;
+  const userId = session.userId;
   
   try {
     // Get redeem details
@@ -173,11 +173,11 @@ router.post('/tts', async (c) => {
   }
   
   const session = await c.env.SESSIONS.get(`session:${sessionId}`, 'json') as any;
-  if (!session?.user?.id) {
+  if (!session?.userId) {
     return c.json({ ok: false, error: 'Invalid session' }, 401);
   }
   
-  const userId = session.user.id;
+  const userId = session.userId;
   const TTS_COST = 250;
   
   try {
@@ -193,14 +193,14 @@ router.post('/tts', async (c) => {
     const stub = c.env.CHAT_ROOM.get(id);
     const ttsRes = await stub.fetch('https://do/tts', {
       method: 'POST',
-      body: JSON.stringify({ text: message, user: session.user.displayName }),
+      body: JSON.stringify({ text: message, user: session.name }),
     });
 
     if (!ttsRes.ok) {
       console.error(`TTS forwarding failed: ${ttsRes.status}`);
     }
 
-    console.log(`TTS from ${session.user.displayName}: ${message}`);
+    console.log(`TTS from ${session.name}: ${message}`);
     
     return c.json({
       ok: true,

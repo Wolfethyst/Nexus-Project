@@ -142,21 +142,6 @@ app.route('/redeems', redeemsRouter);
 app.route('/admin', adminRouter);
 app.route('/chat', chat);
 
-// TTS Endpoint - Forward to ChatRoom Durable Object
-app.post('/tts', async (c) => {
-  const body = await c.req.json();
-  const id = c.env.CHAT_ROOM.idFromName('global');
-  const stub = c.env.CHAT_ROOM.get(id);
-  
-  // Forward the TTS request to the Durable Object
-  await stub.fetch('https://do/tts', {
-    method: 'POST',
-    body: JSON.stringify(body),
-  });
-  
-  return c.json({ ok: true });
-});
-
 // Leaderboard endpoint (public) - delegate to /points/leaderboard
 app.get('/leaderboard', (c) => {
   // Redirect to the new /points/leaderboard endpoint using query params
