@@ -178,6 +178,7 @@ export const OwnerPage: React.FC = () => {
       const res = await fetch(`${ApiClient.baseURL}/admin/upload/sound`, {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Fix: Include cookies for auth
         // Note: Content-Type header is not set manually to let browser set boundary
       });
       const data = await res.json();

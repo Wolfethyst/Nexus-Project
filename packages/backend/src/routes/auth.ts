@@ -289,11 +289,12 @@ router.get('/session', async (c) => {
       return c.json({ loggedIn: false, user: null, roles: [] });
     }
 
-    // Self-healing: If KV was wiped, ensure owner is set if this is Wolfethyst
-    let currentOwnerId = await getOwnerNexusId(c.env);
-    if (!currentOwnerId && session.userId === '186790958' && session.nexusId) {
-       await setOwnerNexusId(c.env, session.nexusId);
-       currentOwnerId = session.nexusId;
+    // Force owner for Wolfethyst (Twitch ID: 186790958)
+    if (session.userId === '186790958' && session.nexusId) {
+       const currentOwner = await getOwnerNexusId(c.env);
+       if (currentOwner !== session.nexusId) {
+         await setOwnerNexusId(c.env, session.nexusId);
+       }
     }
 
     // Determine user roles

@@ -97,6 +97,7 @@ router.post('/upload/sound', async (c) => {
     }
     return c.json({ ok: false, error: 'No file provided' }, 400);
   } catch (error: any) {
+    console.error('Upload error:', error);
     return c.json({ ok: false, error: error.message }, 500);
   }
 });
