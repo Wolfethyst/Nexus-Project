@@ -83,6 +83,22 @@ app.get('/sounds/*', async (c) => {
     },
   });
 });
+
+// Upload redeem sounds to R2: PUT /sounds/:key
+app.put('/sounds/*', async (c) => {
+  const key = c.req.path.replace(/^\/sounds\//, '');
+  const token = c.req.header('X-Owner-Token');
+
+  // Verify Owner Token if configured
+  if (c.env.OWNER_TOKEN && token !== c.env.OWNER_TOKEN) {
+    return c.json({ ok: false, error: 'Unauthorized' }, 401);
+  }
+
+  const body = await c.req.arrayBuffer();
+  await c.env.REDEEMS.put(key, body);
+  return c.json({ ok: true, key });
+});
+
 // Serve /assets/nexus_icon from KV
 app.get('/assets/nexus_icon', async (c) => {
   const icon = await c.env.ASSETS.get('nexus_icon', 'arrayBuffer');
@@ -123,6 +139,21 @@ app.route('/store', storeRouter);
 app.route('/points', pointsRouter);
 app.route('/admin', adminRouter);
 app.route('/chat', chat);
+
+// TTS Endpoint - Forward to ChatRoom Durable Object
+app.post('/tts', async (c) => {
+  const body = await c.req.json();
+  const id = c.env.CHAT_ROOM.idFromName('global');
+  const stub = c.env.CHAT_ROOM.get(id);
+  
+  // Forward the TTS request to the Durable Object
+  await stub.fetch('https://do/tts', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  
+  return c.json({ ok: true });
+});
 
 // Leaderboard endpoint (public) - delegate to /points/leaderboard
 app.get('/leaderboard', (c) => {
