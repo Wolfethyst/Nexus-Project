@@ -78,7 +78,7 @@ router.post('/settings/chat', async (c) => {
 
 router.get('/sounds', async (c) => {
   try {
-    const listed = await c.env.REDEEMS.list({ prefix: 'sounds/' });
+    const listed = await c.env.REDEEMS.list();
     const files = listed.objects.map((o) => o.key);
     return c.json({ ok: true, files });
   } catch (error: any) {

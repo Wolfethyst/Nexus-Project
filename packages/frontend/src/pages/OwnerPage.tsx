@@ -201,7 +201,7 @@ export const OwnerPage: React.FC = () => {
   }
 
   return (
-    <Layout showNav={false}>
+    <Layout showNav={false} showHeader={true}>
       <Box w="full" maxW="6xl" mx="auto" p={4}>
         <Flex align="center" gap={3} mb={6}>
           <Heading fontFamily="Cinzel, serif" as="h1" size="xl" color="white">Owner Dashboard</Heading>
@@ -334,7 +334,7 @@ export const OwnerPage: React.FC = () => {
                       >
                         <option value="" style={{ color: 'black' }}>Select a sound...</option>
                         {soundFiles.map(file => (
-                          <option key={file} value={file} style={{ color: 'black' }}>{file}</option>
+                          <option key={file} value={file} style={{ color: 'black' }}>{file.replace(/^sounds\//, '')}</option>
                         ))}
                       </chakra.select>
                       <label style={{ cursor: 'pointer' }}>
