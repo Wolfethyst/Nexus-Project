@@ -61,22 +61,30 @@ app.get('/assets/:key', async (c) => {
 
 // Serve redeem sounds (and other files) from R2: /sounds/*
 app.get('/sounds/*', async (c) => {
-  const key = c.req.path.replace(/^\/sounds\//, '');
-  const obj = await c.env.REDEEMS.get(key);
+  const path = c.req.path.replace(/^\/sounds\//, '');
+  
+  // Try exact match first
+  let obj = await c.env.REDEEMS.get(path);
+  
+  // If not found, try adding sounds/ prefix (if not already there)
+  if (!obj && !path.startsWith('sounds/')) {
+    obj = await c.env.REDEEMS.get(`sounds/${path}`);
+  }
+
   if (!obj) {
     return c.text('Not found', 404);
   }
   // Guess content type by extension
   let contentType = 'application/octet-stream';
-  if (key.endsWith('.mp3')) contentType = 'audio/mpeg';
-  else if (key.endsWith('.wav')) contentType = 'audio/wav';
-  else if (key.endsWith('.ogg')) contentType = 'audio/ogg';
-  else if (key.endsWith('.png')) contentType = 'image/png';
-  else if (key.endsWith('.jpg') || key.endsWith('.jpeg')) contentType = 'image/jpeg';
-  else if (key.endsWith('.gif')) contentType = 'image/gif';
-  else if (key.endsWith('.webm')) contentType = 'video/webm';
-  else if (key.endsWith('.mp4')) contentType = 'video/mp4';
-  else if (key.endsWith('.webp')) contentType = 'image/webp';
+  if (path.endsWith('.mp3')) contentType = 'audio/mpeg';
+  else if (path.endsWith('.wav')) contentType = 'audio/wav';
+  else if (path.endsWith('.ogg')) contentType = 'audio/ogg';
+  else if (path.endsWith('.png')) contentType = 'image/png';
+  else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) contentType = 'image/jpeg';
+  else if (path.endsWith('.gif')) contentType = 'image/gif';
+  else if (path.endsWith('.webm')) contentType = 'video/webm';
+  else if (path.endsWith('.mp4')) contentType = 'video/mp4';
+  else if (path.endsWith('.webp')) contentType = 'image/webp';
   return new Response(obj.body, {
     headers: {
       'Content-Type': contentType,
