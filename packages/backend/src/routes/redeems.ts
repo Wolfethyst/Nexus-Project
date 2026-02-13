@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import type { Env } from '../index.js';
-import { chargePointsForRedeem, addPoints } from '../lib.js';
+import { chargePointsForRedeem, isOwner } from '../lib.js';
 
 const router = new Hono<Env>();
 
@@ -19,6 +19,66 @@ router.get('/list', async (c) => {
     console.error('Redeems list error:', error);
     return c.json({ ok: false, error: 'Failed to fetch redeems' }, 500);
   }
+});
+
+// POST /redeems/save - Create or update a redeem (Owner only)
+router.post('/save', async (c) => {
+  const sessionId = c.req.header('Cookie')?.match(/wolfesession=([^;]+)/)?.[1];
+  if (!sessionId) return c.json({ ok: false, error: 'Not logged in' }, 401);
+
+  const session = await c.env.SESSIONS.get(`session:${sessionId}`, 'json') as any;
+  if (!session?.nexusId || !(await isOwner(c.env, session.nexusId))) {
+    return c.json({ ok: false, error: 'Unauthorized' }, 403);
+  }
+
+  try {
+    const { redeem } = await c.req.json() as { redeem: any };
+    if (!redeem.name || !redeem.cost) {
+      return c.json({ ok: false, error: 'Missing required fields' }, 400);
+    }
+
+    const id = redeem.id || crypto.randomUUID();
+
+    await c.env.DB.prepare(`
+      INSERT INTO redeems (id, name, description, cost, sound_file, cooldown_seconds, enabled)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        name = excluded.name,
+        description = excluded.description,
+        cost = excluded.cost,
+        sound_file = excluded.sound_file,
+        cooldown_seconds = excluded.cooldown_seconds,
+        enabled = excluded.enabled
+    `).bind(
+      id,
+      redeem.name,
+      redeem.description || '',
+      redeem.cost,
+      redeem.soundFile || null,
+      redeem.cooldownSeconds || 0,
+      redeem.enabled !== false ? 1 : 0
+    ).run();
+
+    return c.json({ ok: true, id });
+  } catch (error: any) {
+    console.error('Redeem save error:', error);
+    return c.json({ ok: false, error: error.message }, 500);
+  }
+});
+
+// POST /redeems/delete - Delete a redeem (Owner only)
+router.post('/delete', async (c) => {
+  const sessionId = c.req.header('Cookie')?.match(/wolfesession=([^;]+)/)?.[1];
+  if (!sessionId) return c.json({ ok: false, error: 'Not logged in' }, 401);
+
+  const session = await c.env.SESSIONS.get(`session:${sessionId}`, 'json') as any;
+  if (!session?.nexusId || !(await isOwner(c.env, session.nexusId))) {
+    return c.json({ ok: false, error: 'Unauthorized' }, 403);
+  }
+
+  const { id } = await c.req.json() as { id: string };
+  await c.env.DB.prepare('DELETE FROM redeems WHERE id = ?').bind(id).run();
+  return c.json({ ok: true });
 });
 
 // POST /redeems/redeem - Redeem an item

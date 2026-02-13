@@ -15,14 +15,6 @@ interface StoreItem {
   active: boolean;
 }
 
-interface RedeemRequest {
-  id: string;
-  name: string;
-  cost: number;
-  inputLabel?: string;
-  soundKey?: string;
-}
-
 // Helper to get session from request
 async function getSessionFromRequest(env: Env['Bindings'], request: Request): Promise<{ userId?: string; nexusId?: string } | null> {
   const cookies = (request.headers.get('Cookie') || '')
@@ -84,22 +76,19 @@ router.post('/save', async (c) => {
     const now = new Date().getTime();
 
     await c.env.DB.prepare(`
-      INSERT INTO store_items (id, name, description, cost, type, sound_key, image_key, active)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+      INSERT INTO store_items (id, name, description, cost, type, image_key, active)
+      VALUES (?, ?, ?, ?, 'item', ?, 1)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         description = excluded.description,
         cost = excluded.cost,
-        type = excluded.type,
-        sound_key = excluded.sound_key,
+        type = 'item',
         image_key = excluded.image_key
     `).bind(
       id,
       item.name,
       item.description || '',
       item.cost,
-      item.type || 'item',
-      item.soundKey || null,
       item.imageKey || null
     ).run();
 
@@ -215,75 +204,6 @@ router.get('/inventory', async (c) => {
   } catch (error) {
     console.error('[STORE] Inventory fetch failed:', error);
     return c.json({ inventory: [] });
-  }
-});
-
-/**
- * GET /redeems/list or /nexus/redeems - Get available redeems
- */
-router.get('/redeems', async (c) => {
-  try {
-    const { results } = await c.env.DB.prepare(`
-      SELECT id, name, cost, description, sound_key as soundKey, image_key as imageKey
-      FROM store_items
-      WHERE active = 1 AND type = 'redeem'
-      ORDER BY cost ASC
-    `).all() as { results: RedeemRequest[] };
-
-    return c.json({ redeems: results || [] });
-  } catch (error) {
-    console.error('[STORE] Redeems list failed:', error);
-    return c.json({ redeems: [] });
-  }
-});
-
-/**
- * POST /redeems/redeem or /nexus/redeems/redeem - Redeem an item
- */
-router.post('/redeems/redeem', async (c) => {
-  const session = await getSessionFromRequest(c.env, c.req.raw);
-  if (!session?.userId) {
-    return c.json({ error: 'Not logged in' }, 401);
-  }
-
-  try {
-    const body = await c.req.json() as { id: string; input?: string };
-    const redeem = await c.env.DB.prepare(`
-      SELECT * FROM store_items WHERE id = ? AND type = 'redeem'
-    `).bind(body.id).first() as any;
-
-    if (!redeem) {
-      return c.json({ error: 'Redeem not found' }, 404);
-    }
-
-    // Get current points
-    const userPoints = await getUserPoints(c.env, session.userId);
-    if (userPoints < redeem.cost) {
-      return c.json({ error: 'Insufficient points' }, 400);
-    }
-
-    // Deduct points
-    await addPoints(c.env, session.userId, -redeem.cost, {
-      reason: 'redeem',
-      source: 'redeem',
-    });
-
-    // Broadcast redeem event (for chat, alerts, etc)
-    // TODO: Implement event broadcast for redeems
-
-    const newPoints = await getUserPoints(c.env, session.userId);
-    return c.json({
-      ok: true,
-      pointsAfter: newPoints,
-      redeem: {
-        id: redeem.id,
-        name: redeem.name,
-        soundKey: redeem.sound_key,
-      },
-    });
-  } catch (error) {
-    console.error('[STORE] Redeem failed:', error);
-    return c.json({ error: 'Redeem failed' }, 500);
   }
 });
 

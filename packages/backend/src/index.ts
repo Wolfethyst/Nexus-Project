@@ -7,6 +7,7 @@ import streamsRouter from './routes/streams';
 import clipsRouter from './routes/clips';
 import storeRouter from './routes/store';
 import pointsRouter from './routes/points';
+import redeemsRouter from './routes/redeems';
 import { chat } from './routes/chat';
 import adminRouter from './routes/admin';
 
@@ -137,6 +138,7 @@ app.route('/stream', streamsRouter); // Alias for singular usage
 app.route('/clips', clipsRouter);
 app.route('/store', storeRouter);
 app.route('/points', pointsRouter);
+app.route('/redeems', redeemsRouter);
 app.route('/admin', adminRouter);
 app.route('/chat', chat);
 
