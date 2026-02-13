@@ -88,6 +88,10 @@ router.get('/sounds', async (c) => {
 
 router.post('/upload/sound', async (c) => {
   try {
+    if (!c.env.REDEEMS) {
+      throw new Error('REDEEMS bucket not configured');
+    }
+
     const formData = await c.req.formData();
     const file = formData.get('file');
     if (file && typeof file === 'object') {

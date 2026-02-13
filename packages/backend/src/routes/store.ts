@@ -104,9 +104,9 @@ router.post('/save', async (c) => {
     ).run();
 
     return c.json({ success: true, id });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[STORE] Save failed:', error);
-    return c.json({ error: 'Failed to save item' }, 500);
+    return c.json({ error: `Failed to save item: ${error.message}` }, 500);
   }
 });
 

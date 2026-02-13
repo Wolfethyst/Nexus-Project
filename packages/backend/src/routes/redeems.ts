@@ -131,10 +131,14 @@ router.post('/tts', async (c) => {
     // Forward TTS to ChatRoom Durable Object
     const id = c.env.CHAT_ROOM.idFromName('global');
     const stub = c.env.CHAT_ROOM.get(id);
-    await stub.fetch('https://do/tts', {
+    const ttsRes = await stub.fetch('https://do/tts', {
       method: 'POST',
       body: JSON.stringify({ text: message, user: session.user.displayName }),
     });
+
+    if (!ttsRes.ok) {
+      console.error(`TTS forwarding failed: ${ttsRes.status}`);
+    }
 
     console.log(`TTS from ${session.user.displayName}: ${message}`);
     
