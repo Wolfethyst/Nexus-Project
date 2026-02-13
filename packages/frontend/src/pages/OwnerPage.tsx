@@ -44,6 +44,9 @@ export const OwnerPage: React.FC = () => {
   const [editingRedeem, setEditingRedeem] = useState<StoreItem | null>(null);
   const [newRedeem, setNewRedeem] = useState<StoreItem>({ name: '', cost: 0, type: 'redeem' });
 
+  // Sound Files
+  const [soundFiles, setSoundFiles] = useState<string[]>([]);
+
   // Tala AI Settings
   const [talaSettings, setTalaSettings] = useState({
     enabled: true,
@@ -68,6 +71,7 @@ export const OwnerPage: React.FC = () => {
     loadStats();
     loadStoreItems();
     loadRedeems();
+    loadSoundFiles();
   }, [isOwner]);
 
   const loadStats = async () => {
@@ -91,6 +95,13 @@ export const OwnerPage: React.FC = () => {
     const res = await ApiClient.get<{ redeems: StoreItem[] }>('/store/redeems');
     console.log('Redeems response:', res);
     if (res.ok) setRedeems(res.data?.redeems || []);
+  };
+
+  const loadSoundFiles = async () => {
+    const res = await ApiClient.get<{ files: string[] }>('/admin/sounds');
+    if (res.ok && res.data) {
+      setSoundFiles(res.data.files);
+    }
   };
 
   const saveStoreItem = async () => {
@@ -172,6 +183,7 @@ export const OwnerPage: React.FC = () => {
       const data = await res.json();
       if (data.ok && data.key) {
         editingRedeem ? setEditingRedeem({ ...editingRedeem, soundKey: data.key }) : setNewRedeem({ ...newRedeem, soundKey: data.key });
+        loadSoundFiles();
       }
     } catch (err) {
       console.error('Upload failed', err);
@@ -315,15 +327,20 @@ export const OwnerPage: React.FC = () => {
                   <Box gridColumn="span 2">
                     <Text mb={1} fontSize="sm" color="gray.400">Sound File</Text>
                     <Flex gap={2}>
-                      <Input
-                        placeholder="Sound Key (e.g., redeems/alert.mp3)"
+                      <chakra.select
                         value={editingRedeem?.soundKey || newRedeem.soundKey || ''}
                         onChange={(e) => editingRedeem ? setEditingRedeem({ ...editingRedeem, soundKey: e.target.value }) : setNewRedeem({ ...newRedeem, soundKey: e.target.value })}
-                      />
-                      <Button as="label" htmlFor="sound-upload" cursor="pointer" colorPalette="blue">
-                        Upload
-                        <input id="sound-upload" type="file" accept="audio/*" onChange={handleFileUpload} style={{ display: 'none' }} />
-                      </Button>
+                        bg="blackAlpha.400" border="1px solid" borderColor="whiteAlpha.200" p={2} rounded="md" flex={1} color="white"
+                      >
+                        <option value="" style={{ color: 'black' }}>Select a sound...</option>
+                        {soundFiles.map(file => (
+                          <option key={file} value={file} style={{ color: 'black' }}>{file}</option>
+                        ))}
+                      </chakra.select>
+                      <label style={{ cursor: 'pointer' }}>
+                        <Button as="span" colorPalette="blue" pointerEvents="none">Upload</Button>
+                        <input type="file" accept="audio/*" onChange={handleFileUpload} style={{ display: 'none' }} />
+                      </label>
                     </Flex>
                   </Box>
                   <Button

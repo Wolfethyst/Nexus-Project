@@ -76,12 +76,22 @@ router.post('/settings/chat', async (c) => {
   }
 });
 
+router.get('/sounds', async (c) => {
+  try {
+    const listed = await c.env.REDEEMS.list({ prefix: 'sounds/' });
+    const files = listed.objects.map((o) => o.key);
+    return c.json({ ok: true, files });
+  } catch (error: any) {
+    return c.json({ ok: false, error: error.message }, 500);
+  }
+});
+
 router.post('/upload/sound', async (c) => {
   try {
     const body = await c.req.parseBody();
     const file = body['file'];
     if (file instanceof File) {
-      const key = `redeems/${file.name}`;
+      const key = `sounds/${file.name}`;
       await c.env.REDEEMS.put(key, file);
       return c.json({ ok: true, key });
     }

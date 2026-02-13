@@ -46,7 +46,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeTab = 'liv
         <HStack gap={4} justify="flex-start">
           {user ? ( // if user show icon and points
             <HStack gap={3}>
-              <ProfileMenu onLogout={onLogout}  />
+              <ProfileMenu onLogout={onLogout} />
               <Flex align="center" gap={1.5} bg="blackAlpha.500" px={3} py={1} rounded="full" border="1px solid" borderColor="whiteAlpha.300">
                 <Image src={`${ApiClient.baseURL}/assets/crystal_icon`} boxSize="14px" objectFit="contain" />
                 <Text fontFamily="Cinzel, serif" fontSize="xs" fontWeight="bold" color="purple.200">

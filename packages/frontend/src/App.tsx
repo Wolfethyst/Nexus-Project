@@ -29,7 +29,7 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Layout 
-        user={session?.user}
+        user={session?.user ? { ...session.user, roles: session.roles } : undefined}
         onLogout={async () => {
           const { logout } = useAuthStore.getState();
           await logout();
