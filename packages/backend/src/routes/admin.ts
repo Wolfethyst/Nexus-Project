@@ -88,8 +88,8 @@ router.get('/sounds', async (c) => {
 
 router.post('/upload/sound', async (c) => {
   try {
-    const body = await c.req.parseBody();
-    const file = body['file'];
+    const formData = await c.req.formData();
+    const file = formData.get('file');
     if (file instanceof File) {
       const key = `sounds/${file.name}`;
       await c.env.REDEEMS.put(key, file);

@@ -107,7 +107,13 @@ export const OwnerPage: React.FC = () => {
   const saveStoreItem = async () => {
     setSaving(true);
     try {
-      const res = await ApiClient.post('/store/save', { item: editingStore || newStoreItem });
+      const itemToSave = editingStore || newStoreItem;
+      // Ensure cost is a number and clean up payload
+      const payload = {
+        ...itemToSave,
+        cost: parseInt(String(itemToSave.cost), 10) || 0
+      };
+      const res = await ApiClient.post('/store/save', { item: payload });
       if (res.ok) {
         setMessage({ type: 'success', text: 'Store item saved!' });
         setEditingStore(null);
@@ -126,7 +132,13 @@ export const OwnerPage: React.FC = () => {
   const saveRedeem = async () => {
     setSaving(true);
     try {
-      const res = await ApiClient.post('/store/save', { item: editingRedeem || newRedeem });
+      const itemToSave = editingRedeem || newRedeem;
+      // Ensure cost is a number and clean up payload
+      const payload = {
+        ...itemToSave,
+        cost: parseInt(String(itemToSave.cost), 10) || 0
+      };
+      const res = await ApiClient.post('/store/save', { item: payload });
       if (res.ok) {
         setMessage({ type: 'success', text: 'Redeem saved!' });
         setEditingRedeem(null);
@@ -202,7 +214,7 @@ export const OwnerPage: React.FC = () => {
   }
 
   return (
-    <Layout showNav={false} showHeader={true}>
+    <Layout showNav={false} showHeader={false}>
       <Box w="full" maxW="6xl" mx="auto" p={4}>
         <Flex align="center" gap={3} mb={6}>
           <Heading fontFamily="Cinzel, serif" as="h1" size="xl" color="white">Owner Dashboard</Heading>
