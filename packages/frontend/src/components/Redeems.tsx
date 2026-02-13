@@ -54,7 +54,7 @@ export const Redeems: React.FC = () => {
             </Box>
 
             <Box p={4} overflowY="auto" flex={1}>
-            <VStack align="stretch" spacing={4}>
+            <VStack align="stretch" gap={4}>
                 <Box position="relative">
                     <Textarea 
                         placeholder="Type your message here..." 
@@ -78,10 +78,10 @@ export const Redeems: React.FC = () => {
                 </Box>
                 
                 <Button 
-                    colorScheme="purple"
+                    colorPalette="purple"
                     onClick={handleTTS}
-                    isLoading={sendingTTS}
-                    disabled={!user || (!ttsMessage.trim() && !!user) || (user.points || 0) < 250}
+                    loading={sendingTTS}
+                    disabled={!user || (!ttsMessage.trim() && !!user) || ((user as any).points || 0) < 250}
                     w="full"
                     variant="solid"
                     size="md"
@@ -162,7 +162,7 @@ export const Redeems: React.FC = () => {
                         <Box flex={1} minW={0} mb={3}>
                             <Text fontFamily="Marcellus, serif" fontWeight="bold" color="white" fontSize="sm" mb={1} lineHeight="short">{item.name}</Text>
                             {item.description && (
-                            <Text fontFamily="Marcellus, serif" fontSize="xs" color="gray.400" noOfLines={2}>{item.description}</Text>
+                            <Text fontFamily="Marcellus, serif" fontSize="xs" color="gray.400" lineClamp={2}>{item.description}</Text>
                             )}
                         </Box>
                         
@@ -173,10 +173,10 @@ export const Redeems: React.FC = () => {
                             </Flex>
                             <Button
                             size="sm"
-                            colorScheme="purple"
+                            colorPalette="purple"
                             variant="solid"
                             onClick={() => triggerRedeem(item.id)}
-                            disabled={!user || (user.points || 0) < item.cost}
+                            disabled={!user || ((user as any).points || 0) < item.cost}
                             fontSize="xs"
                             fontFamily="Marcellus, serif"
                             >

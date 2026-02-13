@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from './useAuth';
+import { useAuthStore } from '../store';
+import { ApiClient } from '../lib/api';
+import type { Session } from '@nexus/shared';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://api.wolfethyst.tv';
 
@@ -15,16 +17,27 @@ export interface Redeem {
 }
 
 export function useRedeems() {
-  const { user, refreshSession } = useAuth();
+  const { session, setSession } = useAuthStore();
+  const user = session?.user;
   const [redeems, setRedeems] = useState<Redeem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const refreshSession = useCallback(async () => {
+    try {
+      const response = await ApiClient.get<Session>('/auth/session');
+      if (response.ok && response.data) {
+        setSession(response.data);
+      }
+    } catch (e) {
+      console.error('Failed to refresh session:', e);
+    }
+  }, [setSession]);
+
   const fetchRedeems = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/redeems/list`);
-      const data = await res.json();
+      const { data } = await ApiClient.get<{ ok: boolean; redeems: Redeem[] }>('/redeems/list');
       if (data.ok) {
         setRedeems(data.redeems);
       }
@@ -39,25 +52,17 @@ export function useRedeems() {
     if (!user) return { ok: false, error: 'Not logged in' };
 
     try {
-      const res = await fetch(`${API_BASE}/redeems/redeem`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({ redeemId }),
-      });
-      
-      const data = await res.json();
+      const { data } = await ApiClient.post<{ ok: boolean; soundFile?: string; remainingPoints?: number; error?: string }>('/redeems/redeem', { redeemId });
       
       if (data.ok) {
         // Play sound if returned
         if (data.soundFile) {
-          const audio = new Audio(`${API_BASE}/sounds/${data.soundFile}`);
+          const audio = new Audio(`${ApiClient.baseURL}/sounds/${data.soundFile}`);
           audio.volume = 0.5;
           audio.play().catch(e => console.error('Audio play failed:', e));
         }
-        if (refreshSession) refreshSession();
+        
+        refreshSession();
         return { ok: true, pointsAfter: data.remainingPoints };
       } else {
         return { ok: false, error: data.error };
@@ -70,15 +75,10 @@ export function useRedeems() {
   const triggerTTS = async (message: string) => {
     if (!user) return { ok: false, error: 'Not logged in' };
     try {
-      const res = await fetch(`${API_BASE}/redeems/tts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ message }),
-      });
-      const data = await res.json();
+      const { data } = await ApiClient.post<{ ok: boolean; remainingPoints?: number; error?: string }>('/redeems/tts', { message });
+      
       if (data.ok) {
-        if (refreshSession) refreshSession();
+        refreshSession();
         return { ok: true, pointsAfter: data.remainingPoints };
       } else {
         return { ok: false, error: data.error };
