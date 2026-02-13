@@ -84,16 +84,15 @@ router.post('/save', async (c) => {
     const now = new Date().getTime();
 
     await c.env.DB.prepare(`
-      INSERT INTO store_items (id, name, description, cost, type, sound_key, image_key, active, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+      INSERT INTO store_items (id, name, description, cost, type, sound_key, image_key, active)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 1)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         description = excluded.description,
         cost = excluded.cost,
         type = excluded.type,
         sound_key = excluded.sound_key,
-        image_key = excluded.image_key,
-        updated_at = excluded.updated_at
+        image_key = excluded.image_key
     `).bind(
       id,
       item.name,
@@ -101,9 +100,7 @@ router.post('/save', async (c) => {
       item.cost,
       item.type || 'item',
       item.soundKey || null,
-      item.imageKey || null,
-      now,
-      now
+      item.imageKey || null
     ).run();
 
     return c.json({ success: true, id });

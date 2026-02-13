@@ -91,7 +91,9 @@ router.post('/admin/reset', async (c) => {
         type TEXT,
         sound_key TEXT,
         image_key TEXT,
-        active INTEGER DEFAULT 1
+        active INTEGER DEFAULT 1,
+        created_at INTEGER,
+        updated_at INTEGER
       )
     `).run();
     await c.env.DB.prepare(`

@@ -128,8 +128,14 @@ router.post('/tts', async (c) => {
       return c.json({ ok: false, error: chargeResult.error }, 400);
     }
     
-    // TODO: Queue TTS message for processing
-    // For now, just log it
+    // Forward TTS to ChatRoom Durable Object
+    const id = c.env.CHAT_ROOM.idFromName('global');
+    const stub = c.env.CHAT_ROOM.get(id);
+    await stub.fetch('https://do/tts', {
+      method: 'POST',
+      body: JSON.stringify({ text: message, user: session.user.displayName }),
+    });
+
     console.log(`TTS from ${session.user.displayName}: ${message}`);
     
     return c.json({
