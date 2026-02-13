@@ -11,6 +11,10 @@ class_name = "ChatRoom"
 tag = "v1"
 new_classes = ["ChatRoom"]
 
+[[r2_buckets]]
+binding = "REDEEMS"
+bucket_name = "wolfethyst-redeems"
+
 [env.production]
 
 [[env.production.durable_objects.bindings]]
@@ -20,6 +24,10 @@ class_name = "ChatRoom"
 [[env.production.migrations]]
 tag = "v1"
 new_classes = ["ChatRoom"]
+
+[[env.production.r2_buckets]]
+binding = "REDEEMS"
+bucket_name = "wolfethyst-redeems"
 
 [env.production.vars]
 YOUTUBE_CHANNEL_ID = "UCGk1QRVYCzEMRCcVK9--_7Q"
