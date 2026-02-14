@@ -185,7 +185,7 @@ export const OwnerPage: React.FC = () => {
         setNewStoreItem({ name: '', cost: 0, type: 'item' });
         loadStoreItems();
       } else {
-        setMessage({ type: 'error', text: res.error || 'Failed to save' });
+        setMessage({ type: 'error', text: (res.data && res.data.error) || 'Failed to save' });
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message });
@@ -211,7 +211,7 @@ export const OwnerPage: React.FC = () => {
         setNewRedeem({ name: '', cost: 0, type: 'redeem' });
         loadRedeems();
       } else {
-        setMessage({ type: 'error', text: (isOkResponse(res.data) && res.data.error) || res.error || 'Failed to save' });
+        setMessage({ type: 'error', text: (isOkResponse(res.data) && res.data.error) || 'Failed to save' });
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message });
