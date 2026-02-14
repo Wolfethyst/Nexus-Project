@@ -3,8 +3,6 @@ import { useAuthStore } from '../store';
 import { ApiClient } from '../lib/api';
 import type { Session } from '@nexus/shared';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://api.wolfethyst.tv';
-
 export interface Redeem {
   id: string;
   name: string;
@@ -37,12 +35,14 @@ export function useRedeems() {
   const fetchRedeems = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const { data } = await ApiClient.get<{ ok: boolean; redeems: Redeem[] }>('/redeems/list');
-      if (data.ok) {
+      if (data?.ok) {
         setRedeems(data.redeems);
       }
     } catch (err) {
       console.error('Failed to fetch redeems:', err);
+      setError('Failed to fetch redeems');
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ export function useRedeems() {
     try {
       const { data } = await ApiClient.post<{ ok: boolean; soundFile?: string; remainingPoints?: number; error?: string }>('/redeems/redeem', { redeemId });
       
-      if (data.ok) {
+      if (data?.ok) {
         // Play sound if returned
         if (data.soundFile) {
           const audio = new Audio(`${ApiClient.baseURL}/sounds/${data.soundFile}`);
@@ -65,7 +65,7 @@ export function useRedeems() {
         refreshSession();
         return { ok: true, pointsAfter: data.remainingPoints };
       } else {
-        return { ok: false, error: data.error };
+        return { ok: false, error: data?.error || 'Unknown error' };
       }
     } catch (err) {
       return { ok: false, error: 'Failed to redeem' };
@@ -77,11 +77,11 @@ export function useRedeems() {
     try {
       const { data } = await ApiClient.post<{ ok: boolean; remainingPoints?: number; error?: string }>('/redeems/tts', { message });
       
-      if (data.ok) {
+      if (data?.ok) {
         refreshSession();
         return { ok: true, pointsAfter: data.remainingPoints };
       } else {
-        return { ok: false, error: data.error };
+        return { ok: false, error: data?.error || 'Unknown error' };
       }
     } catch (err) {
       return { ok: false, error: 'Failed to send TTS' };
