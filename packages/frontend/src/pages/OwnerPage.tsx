@@ -149,8 +149,16 @@ export const OwnerPage: React.FC = () => {
     const res = await ApiClient.get<{ ok: boolean; redeems: StoreItem[] }>(
       '/redeems/list'
     );
-    console.log('Redeems response:', res);
-    if (res.ok && isOkResponse(res.data) && res.data.ok) setRedeems(res.data.redeems || []);
+    console.log('Redeems API raw response:', res);
+    if (res && res.data) {
+      console.log('Redeems API data:', res.data);
+    }
+    if (res.ok && isOkResponse(res.data) && res.data.ok) {
+      console.log('Setting redeems:', res.data.redeems);
+      setRedeems(res.data.redeems || []);
+    } else {
+      console.warn('Redeems not set, response:', res);
+    }
   };
 
   const loadSoundFiles = async () => {
