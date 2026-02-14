@@ -16,12 +16,11 @@ router.get('/tts-cost', async (c) => {
 router.get('/list', async (c) => {
   try {
     const result = await c.env.DB.prepare(`
-      SELECT id, name, description, cost, icon, sound_file, cooldown_seconds, enabled
+      SELECT id, name, description, cost, sound_file, cooldown_seconds, enabled
       FROM redeems 
       WHERE enabled = 1 
-      ORDER BY sort_order ASC, cost ASC
+      ORDER BY cost ASC
     `).all();
-    
     return c.json({ ok: true, redeems: result.results || [] });
   } catch (error: any) {
     console.error('Redeems list error:', error);
