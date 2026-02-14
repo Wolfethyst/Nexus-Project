@@ -94,11 +94,15 @@ export const OwnerPage: React.FC = () => {
         '/tts/save',
         { cost: ttsCost }
       );
-      if (res.ok && typeof res.data === 'object' && res.data && (res.data as any).ok) {
+      if (res.ok && isTtsSaveResponse(res.data) && res.data.ok) {
         setMessage({ type: 'success', text: 'TTS cost updated!' });
       } else {
-        setMessage({ type: 'error', text: (res.data && typeof res.data === 'object' && 'error' in res.data ? (res.data as any).error : undefined) || 'Failed to update TTS cost' });
+        setMessage({ type: 'error', text: (isTtsSaveResponse(res.data) && res.data.error) || 'Failed to update TTS cost' });
       }
+    // Type guard for TTS save response
+    function isTtsSaveResponse(data: unknown): data is { ok?: boolean; error?: string } {
+      return typeof data === 'object' && data !== null && ('ok' in data || 'error' in data);
+    }
     } catch (e: any) {
       setMessage({ type: 'error', text: e?.message || 'Failed to update TTS cost' });
     }
