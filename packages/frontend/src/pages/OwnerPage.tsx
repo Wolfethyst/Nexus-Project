@@ -16,7 +16,10 @@ import {
   Checkbox,
 } from '@chakra-ui/react';
 
-type Tab = 'overview' | 'store' | 'redeems' | 'tala' | 'chat' | 'users';
+type Tab = 'overview' | 'store' | 'redeems' | 'tts' | 'tala' | 'chat' | 'users';
+  // TTS Settings
+  const [ttsCost, setTtsCost] = useState<number>(250);
+  const [ttsSaving, setTtsSaving] = useState(false);
 
 interface StoreItem {
   id?: string;
@@ -72,6 +75,32 @@ export const OwnerPage: React.FC = () => {
     loadStoreItems();
     loadRedeems();
     loadSoundFiles();
+    loadTtsCost();
+    const loadTtsCost = async () => {
+      const res = await ApiClient.get<{ cost: number }>("/tts/cost");
+      if (res.ok && typeof res.data?.cost === 'number') {
+        setTtsCost(res.data.cost);
+      }
+    };
+
+    const saveTtsCost = async () => {
+      setTtsSaving(true);
+      try {
+        const res = await ApiClient.post<{ ok: boolean; cost?: number; error?: string }>(
+          '/tts/save',
+          { cost: ttsCost }
+        );
+        if (res.ok && res.data?.ok) {
+          setMessage({ type: 'success', text: 'TTS cost updated!' });
+        } else {
+          setMessage({ type: 'error', text: res.data?.error || 'Failed to update TTS cost' });
+        }
+      } catch (e: any) {
+        setMessage({ type: 'error', text: e?.message || 'Failed to update TTS cost' });
+      }
+      setTtsSaving(false);
+      setTimeout(() => setMessage(null), 2000);
+    };
   }, [isOwner]);
 
   const loadStats = async () => {
@@ -92,9 +121,11 @@ export const OwnerPage: React.FC = () => {
 
   const loadRedeems = async () => {
     console.log('Loading redeems...');
-    const res = await ApiClient.get<{ redeems: StoreItem[] }>('/store/redeems');
+    const res = await ApiClient.get<{ ok: boolean; redeems: StoreItem[] }>(
+      '/redeems/list'
+    );
     console.log('Redeems response:', res);
-    if (res.ok) setRedeems(res.data?.redeems || []);
+    if (res.ok && res.data?.ok) setRedeems(res.data.redeems || []);
   };
 
   const loadSoundFiles = async () => {
@@ -138,14 +169,14 @@ export const OwnerPage: React.FC = () => {
         ...itemToSave,
         cost: parseInt(String(itemToSave.cost), 10) || 0
       };
-      const res = await ApiClient.post('/store/save', { item: payload });
-      if (res.ok) {
+      const res = await ApiClient.post('/redeems/save', { redeem: payload });
+      if (res.ok && res.data?.ok) {
         setMessage({ type: 'success', text: 'Redeem saved!' });
         setEditingRedeem(null);
         setNewRedeem({ name: '', cost: 0, type: 'redeem' });
         loadRedeems();
       } else {
-        setMessage({ type: 'error', text: res.error || 'Failed to save' });
+        setMessage({ type: 'error', text: res.data?.error || res.error || 'Failed to save' });
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message });
@@ -244,7 +275,22 @@ export const OwnerPage: React.FC = () => {
             <Tabs.Trigger value="overview" fontFamily="Cinzel, serif">Overview</Tabs.Trigger>
             <Tabs.Trigger value="store" fontFamily="Cinzel, serif">Store</Tabs.Trigger>
             <Tabs.Trigger value="redeems" fontFamily="Cinzel, serif">Redeems</Tabs.Trigger>
+            <Tabs.Trigger value="tts" fontFamily="Cinzel, serif">TTS</Tabs.Trigger>
             <Tabs.Trigger value="tala" fontFamily="Cinzel, serif">Tala AI</Tabs.Trigger>
+                        <Tabs.Content value="tts">
+                          <Box bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100" p={6} rounded="md">
+                            <Heading as="h2" size="lg" mb={4}>TTS Settings</Heading>
+                            <Flex direction="column" gap={4} maxW="sm">
+                              <Box>
+                                <Text mb={2} fontWeight="semibold">TTS Cost (points)</Text>
+                                <Input type="number" min={0} value={ttsCost} onChange={e => setTtsCost(Number(e.target.value))} />
+                              </Box>
+                              <Button onClick={saveTtsCost} loading={ttsSaving} colorPalette="purple" alignSelf="flex-start">
+                                Save TTS Cost
+                              </Button>
+                            </Flex>
+                          </Box>
+                        </Tabs.Content>
             <Tabs.Trigger value="chat" fontFamily="Cinzel, serif">Chat</Tabs.Trigger>
             <Tabs.Trigger value="users" fontFamily="Cinzel, serif">Users</Tabs.Trigger>
           </Tabs.List>
