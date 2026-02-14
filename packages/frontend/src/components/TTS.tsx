@@ -1,3 +1,8 @@
+import React, { useState, useEffect } from 'react';
+import { Box, Flex, Text, Input, Button, Image } from '@chakra-ui/react';
+import { useAuthStore } from '../store';
+import { ApiClient } from '../lib/api';
+
 export const TTS: React.FC = () => {
   const { session } = useAuthStore();
   const [ttsText, setTtsText] = useState('');
@@ -61,7 +66,7 @@ export const TTS: React.FC = () => {
               color="white"
               fontFamily="Marcellus, serif"
               _focus={{ borderColor: 'purple.400' }}
-              isDisabled={sending}
+              disabled={sending}
               as="textarea"
               resize="none"
             />
@@ -71,12 +76,12 @@ export const TTS: React.FC = () => {
               color="white"
               size="md"
               onClick={handleSendTTS}
-              isLoading={sending}
+              loading={sending}
               fontFamily="Marcellus, serif"
               mb={2}
-              isDisabled={sending || !ttsText.trim()}
-              leftIcon={<Image src={`${ApiClient.baseURL}/assets/crystal_icon`} alt="crystals" boxSize={5} objectFit="contain" />}
+              disabled={sending || !ttsText.trim()}
             >
+              <Image src={`${ApiClient.baseURL}/assets/crystal_icon`} alt="crystals" boxSize={5} objectFit="contain" mr={2} />
               Send TTS - {ttsCost}
             </Button>
             {message && (
