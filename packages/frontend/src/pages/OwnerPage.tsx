@@ -16,6 +16,17 @@ import {
   Checkbox,
 } from '@chakra-ui/react';
 
+// StoreItem type for store and redeems
+interface StoreItem {
+  id?: string;
+  name: string;
+  description?: string;
+  cost: number;
+  type: 'item' | 'redeem';
+  imageKey?: string;
+  soundKey?: string;
+}
+
 type Tab = 'overview' | 'store' | 'redeems' | 'tts' | 'tala' | 'chat' | 'users';
 
 export const OwnerPage: React.FC = () => {
