@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { StreamPlayer, VideoCard, VODPlayer, Chat, Leaderboard, Marketplace } from '../components';
+import { StreamPlayer, VideoCard, VODPlayer, Chat, Leaderboard, Redeems, TTS } from '../components';
 import { useAuth } from '../hooks/useAuth';
 import { ApiClient } from '../lib/api';
 import type { Video } from '@nexus/shared';
@@ -291,7 +291,36 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                 </Box>
               </Box>
               <Box flex={1} minH={0}>
-                <Marketplace />
+                <Tabs.Root defaultValue="redeems" h="full" display="flex" flexDirection="column">
+                  <Tabs.List px={4} pt={2} borderBottom="1px solid" borderColor="whiteAlpha.100" gap={2}>
+                    <Tabs.Trigger
+                      value="redeems"
+                      fontFamily="Cinzel, serif"
+                      px={4} py={1.5} borderRadius="md"
+                      _hover={{ bg: 'whiteAlpha.100', color: 'white' }}
+                      _selected={{ color: 'white', bg: 'purple.500/20', boxShadow: '0 0 10px rgba(168, 85, 247, 0.3)' }}
+                      transition="all 0.2s"
+                    >
+                      Redeems
+                    </Tabs.Trigger>
+                    <Tabs.Trigger
+                      value="tts"
+                      fontFamily="Cinzel, serif"
+                      px={4} py={1.5} borderRadius="md"
+                      _hover={{ bg: 'whiteAlpha.100', color: 'white' }}
+                      _selected={{ color: 'white', bg: 'purple.500/20', boxShadow: '0 0 10px rgba(168, 85, 247, 0.3)' }}
+                      transition="all 0.2s"
+                    >
+                      TTS
+                    </Tabs.Trigger>
+                  </Tabs.List>
+                  <Tabs.Content value="redeems" flex={1} overflowY="auto" p={4}>
+                    <Redeems />
+                  </Tabs.Content>
+                  <Tabs.Content value="tts" flex={1} overflowY="auto" p={4}>
+                    <TTS />
+                  </Tabs.Content>
+                </Tabs.Root>
               </Box>
             </>
           ) : selectedVideo && selectedVideo.videoUrl ? (

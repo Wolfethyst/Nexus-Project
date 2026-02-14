@@ -1,102 +1,46 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAuthStore } from '../store';
+import { useCallback, useState, useEffect } from 'react';
 import { ApiClient } from '../lib/api';
-import type { Session } from '@nexus/shared';
 
-export interface Redeem {
+export interface RedeemItem {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   cost: number;
-  icon?: string;
-  sound_file?: string;
-  cooldown_seconds?: number;
-  enabled: boolean;
+  type: 'redeem';
+  soundKey?: string;
+  imageKey?: string;
 }
 
 export function useRedeems() {
-  const { session, setSession } = useAuthStore();
-  const user = session?.user;
-  const [redeems, setRedeems] = useState<Redeem[]>([]);
+  const [items, setItems] = useState<RedeemItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const refreshSession = useCallback(async () => {
+  const fetchItems = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await ApiClient.get<Session>('/auth/session');
-      if (response.ok && response.data) {
-        setSession(response.data);
-      }
-    } catch (e) {
-      console.error('Failed to refresh session:', e);
-    }
-  }, [setSession]);
-
-  const fetchRedeems = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const { data } = await ApiClient.get<{ ok: boolean; redeems: Redeem[] }>('/redeems/list');
-      if (data?.ok) {
-        setRedeems(data.redeems);
-      }
-    } catch (err) {
-      console.error('Failed to fetch redeems:', err);
-      setError('Failed to fetch redeems');
+      const response = await ApiClient.get<{ data: RedeemItem[] }>('/redeems/list');
+      setItems(response.data?.data || []);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch store items');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const triggerRedeem = async (redeemId: string) => {
-    if (!user) return { ok: false, error: 'Not logged in' };
-
-    try {
-      const { data } = await ApiClient.post<{ ok: boolean; soundFile?: string; remainingPoints?: number; error?: string }>('/redeems/redeem', { redeemId });
-      
-      if (data?.ok) {
-        // Play sound if returned
-        if (data.soundFile) {
-          const audio = new Audio(`${ApiClient.baseURL}/sounds/${data.soundFile}`);
-          audio.volume = 0.5;
-          audio.play().catch(e => console.error('Audio play failed:', e));
-        }
-        
-        refreshSession();
-        return { ok: true, pointsAfter: data.remainingPoints };
-      } else {
-        return { ok: false, error: data?.error || 'Unknown error' };
-      }
-    } catch (err) {
-      return { ok: false, error: 'Failed to redeem' };
-    }
-  };
-
-  const triggerTTS = async (message: string) => {
-    if (!user) return { ok: false, error: 'Not logged in' };
-    try {
-      const { data } = await ApiClient.post<{ ok: boolean; remainingPoints?: number; error?: string }>('/redeems/tts', { message });
-      
-      if (data?.ok) {
-        refreshSession();
-        return { ok: true, pointsAfter: data.remainingPoints };
-      } else {
-        return { ok: false, error: data?.error || 'Unknown error' };
-      }
-    } catch (err) {
-      return { ok: false, error: 'Failed to send TTS' };
-    }
-  };
-
   useEffect(() => {
-    fetchRedeems();
-  }, [fetchRedeems]);
+    fetchItems();
+  }, [fetchItems]);
 
-  return {
-    redeems,
-    loading,
-    error,
-    triggerRedeem,
-    triggerTTS,
-  };
+  const purchase = useCallback(async (itemId: string) => {
+    try {
+      const response = await ApiClient.post<{ pointsAfter: number; item: RedeemItem }>('/redeems/purchase', { itemId });
+      return { ok: response.ok, pointsAfter: response.data?.pointsAfter, item: response.data?.item };
+    } catch (err: any) {
+      return { ok: false, error: err.message };
+    }
+  }, []);
+
+  return { items, loading, error, fetchItems, purchase };
 }

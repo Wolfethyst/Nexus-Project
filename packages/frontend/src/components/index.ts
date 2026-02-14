@@ -5,5 +5,6 @@ export { VideoCard } from './VideoCard';
 export { VODPlayer } from './VODPlayer';
 export { Chat } from './Chat';
 export { Leaderboard } from './Leaderboard';
-export { Marketplace } from './Marketplace';
+export { Redeems } from './Redeems';
+export { TTS } from './TTS';
 export { ThemeSettings } from './ThemeSettings';

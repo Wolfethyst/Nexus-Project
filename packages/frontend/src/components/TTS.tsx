@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Box, Flex, Text, Button, Image, Grid, GridItem, Input } from '@chakra-ui/react';
-import { useStore } from '../hooks/useStore';
+import { useTTS } from '../hooks';
 import { useAuthStore } from '../store';
 import { ApiClient } from '../lib/api';
 
-export const Marketplace: React.FC = () => {
+export const TTS: React.FC = () => {
   const { session } = useAuthStore();
-  const { items, purchase } = useStore();
+  const { items, purchase } = useTTS();
   const [purchasing, setPurchasing] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   
@@ -49,7 +49,7 @@ export const Marketplace: React.FC = () => {
           </Box>
         )}
         
-      {/* Marketplace Grid */}
+      {/* TTS Grid */}
         <Box 
             flex={1} 
             display="flex" 
@@ -63,9 +63,9 @@ export const Marketplace: React.FC = () => {
             backdropFilter="blur(16px)"
             overflow="hidden"
         >
-            {/* Marketplace Header */}
+            {/* TTS Header */}
             <Box bgGradient="to-r" gradientFrom="rgba(20,5,30,0.9)" gradientTo="rgba(40,0,60,0.6)" borderBottom="1px solid" borderColor="rgba(197,140,255,0.65)" px={6} h="52px" fontFamily="Cinzel, serif" fontSize="lg" fontWeight="bold" color="#e1a6ff" textShadow="0 0 10px rgba(213,123,255,0.3)" textTransform="uppercase" letterSpacing="1px" display="flex" alignItems="center" justifyContent="space-between" flexShrink={0}>
-                <span>Marketplace</span>
+                <span>TTS</span>
                 <Input 
                     placeholder="Search..." 
                     value={searchTerm}
