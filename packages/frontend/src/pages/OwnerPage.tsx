@@ -171,7 +171,8 @@ export const OwnerPage: React.FC = () => {
       // Ensure cost is a number and clean up payload
       const payload = {
         ...itemToSave,
-        cost: parseInt(String(itemToSave.cost), 10) || 0
+        cost: parseInt(String(itemToSave.cost), 10) || 0,
+        enabled: itemToSave.enabled !== false // default to true if undefined
       };
       const res = await ApiClient.post('/redeems/save', { redeem: payload });
       if (res.ok && isOkResponse(res.data) && res.data.ok) {
@@ -406,6 +407,15 @@ export const OwnerPage: React.FC = () => {
                       </label>
                     </Flex>
                   </Box>
+                  <Checkbox
+                    gridColumn="span 2"
+                    isChecked={editingRedeem?.enabled ?? newRedeem.enabled ?? true}
+                    onChange={e => editingRedeem
+                      ? setEditingRedeem({ ...editingRedeem, enabled: e.target.checked })
+                      : setNewRedeem({ ...newRedeem, enabled: e.target.checked })}
+                  >
+                    Enabled
+                  </Checkbox>
                   <Button
                     gridColumn="span 2"
                     onClick={saveRedeem}
