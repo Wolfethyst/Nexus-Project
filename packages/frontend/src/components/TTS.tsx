@@ -1,8 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Flex, Text, Button, Input, Image } from '@chakra-ui/react';
-import { useAuthStore } from '../store/useAuthStore';
-import { ApiClient } from '../lib/api';
-
+export const TTS: React.FC = () => {
   const { session } = useAuthStore();
   const [ttsText, setTtsText] = useState('');
   const [sending, setSending] = useState(false);
@@ -10,16 +6,13 @@ import { ApiClient } from '../lib/api';
   const [ttsCost, setTtsCost] = useState<number>(100);
 
   useEffect(() => {
-    // Fetch TTS cost from backend
     (async () => {
       try {
         const res = await ApiClient.get<{ cost: number }>("/redeems/tts-cost");
         if (res.ok && typeof res.data?.cost === 'number') {
           setTtsCost(res.data.cost);
         }
-      } catch (e) {
-        // fallback to default
-      }
+      } catch (e) {}
     })();
   }, []);
 
