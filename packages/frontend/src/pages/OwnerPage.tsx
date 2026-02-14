@@ -94,15 +94,11 @@ export const OwnerPage: React.FC = () => {
         '/tts/save',
         { cost: ttsCost }
       );
-      if (res.ok && isTtsSaveResponse(res.data) && res.data.ok) {
+      if (res.ok && isOkResponse(res.data) && res.data.ok) {
         setMessage({ type: 'success', text: 'TTS cost updated!' });
       } else {
-        setMessage({ type: 'error', text: (isTtsSaveResponse(res.data) && res.data.error) || 'Failed to update TTS cost' });
+        setMessage({ type: 'error', text: (isOkResponse(res.data) && res.data.error) || 'Failed to update TTS cost' });
       }
-    // Type guard for TTS save response
-    function isTtsSaveResponse(data: unknown): data is { ok?: boolean; error?: string } {
-      return typeof data === 'object' && data !== null && ('ok' in data || 'error' in data);
-    }
     } catch (e: any) {
       setMessage({ type: 'error', text: e?.message || 'Failed to update TTS cost' });
     }
@@ -132,7 +128,7 @@ export const OwnerPage: React.FC = () => {
       '/redeems/list'
     );
     console.log('Redeems response:', res);
-    if (res.ok && res.data?.ok) setRedeems(res.data.redeems || []);
+    if (res.ok && isOkResponse(res.data) && res.data.ok) setRedeems(res.data.redeems || []);
   };
 
   const loadSoundFiles = async () => {
@@ -177,13 +173,13 @@ export const OwnerPage: React.FC = () => {
         cost: parseInt(String(itemToSave.cost), 10) || 0
       };
       const res = await ApiClient.post('/redeems/save', { redeem: payload });
-      if (res.ok && res.data?.ok) {
+      if (res.ok && isOkResponse(res.data) && res.data.ok) {
         setMessage({ type: 'success', text: 'Redeem saved!' });
         setEditingRedeem(null);
         setNewRedeem({ name: '', cost: 0, type: 'redeem' });
         loadRedeems();
       } else {
-        setMessage({ type: 'error', text: res.data?.error || res.error || 'Failed to save' });
+        setMessage({ type: 'error', text: (isOkResponse(res.data) && res.data.error) || res.error || 'Failed to save' });
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message });
@@ -513,3 +509,8 @@ export const OwnerPage: React.FC = () => {
     </Layout>
   );
 };
+
+// Type guard for API responses with ok/error
+function isOkResponse(data: unknown): data is { ok?: boolean; error?: string } {
+  return typeof data === 'object' && data !== null && ('ok' in data || 'error' in data);
+}
