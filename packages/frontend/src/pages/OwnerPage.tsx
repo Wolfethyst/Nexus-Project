@@ -13,7 +13,6 @@ import {
   Input,
   Textarea,
   chakra,
-  Checkbox,
 } from '@chakra-ui/react';
 
 // StoreItem type for store and redeems
@@ -27,6 +26,27 @@ interface StoreItem {
   soundKey?: string;
   enabled?: boolean;
 }
+
+// Custom Checkbox component
+interface CustomCheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'checked'> {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label: string;
+  style?: React.CSSProperties;
+}
+
+const CustomCheckbox: React.FC<CustomCheckboxProps> = ({ checked, onChange, label, style, ...props }) => (
+  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', ...style }}>
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={e => onChange(e.target.checked)}
+      style={{ width: 18, height: 18 }}
+      {...props}
+    />
+    <span>{label}</span>
+  </label>
+);
 
 type Tab = 'overview' | 'store' | 'redeems' | 'tts' | 'tala' | 'chat' | 'users';
 
@@ -408,15 +428,18 @@ export const OwnerPage: React.FC = () => {
                       </label>
                     </Flex>
                   </Box>
-                  <Checkbox
-                    gridColumn="span 2"
-                    isChecked={editingRedeem?.enabled ?? newRedeem.enabled ?? true}
-                    onChange={e => editingRedeem
-                      ? setEditingRedeem({ ...editingRedeem, enabled: e.target.checked })
-                      : setNewRedeem({ ...newRedeem, enabled: e.target.checked })}
-                  >
-                    Enabled
-                  </Checkbox>
+                  <CustomCheckbox
+                    checked={editingRedeem?.enabled ?? newRedeem.enabled ?? true}
+                    onChange={checked => {
+                      if (editingRedeem) {
+                        setEditingRedeem({ ...editingRedeem, enabled: checked });
+                      } else {
+                        setNewRedeem({ ...newRedeem, enabled: checked });
+                      }
+                    }}
+                    label="Enabled"
+                    style={{ gridColumn: 'span 2' }}
+                  />
                   <Button
                     gridColumn="span 2"
                     onClick={saveRedeem}
@@ -444,13 +467,11 @@ export const OwnerPage: React.FC = () => {
               <Box bg="whiteAlpha.50" border="1px solid" borderColor="whiteAlpha.100" p={6} rounded="md">
                 <Heading as="h2" size="lg" mb={4}>Tala - Chat AI Settings</Heading>
                 <Flex direction="column" gap={6}>
-                  <Checkbox.Root checked={talaSettings.enabled} onCheckedChange={(e) => setTalaSettings({ ...talaSettings, enabled: !!e.checked })}>
-                    <Checkbox.HiddenInput />
-                    <Checkbox.Control>
-                      <Checkbox.Indicator />
-                    </Checkbox.Control>
-                    <Checkbox.Label>Enable Tala AI</Checkbox.Label>
-                  </Checkbox.Root>
+                  <CustomCheckbox
+                    checked={talaSettings.enabled}
+                    onChange={checked => setTalaSettings({ ...talaSettings, enabled: checked })}
+                    label="Enable Tala AI"
+                  />
 
                   <Box>
                     <Text mb={2} fontWeight="semibold">Personality</Text>
@@ -471,13 +492,11 @@ export const OwnerPage: React.FC = () => {
                     <Input type="number" min={0} max={100} value={talaSettings.responseRate} onChange={(e) => setTalaSettings({ ...talaSettings, responseRate: Number(e.target.value) })} />
                   </Box>
 
-                  <Checkbox.Root checked={talaSettings.learnFromChat} onCheckedChange={(e) => setTalaSettings({ ...talaSettings, learnFromChat: !!e.checked })}>
-                    <Checkbox.HiddenInput />
-                    <Checkbox.Control>
-                      <Checkbox.Indicator />
-                    </Checkbox.Control>
-                    <Checkbox.Label>Learn from chat (improve over time)</Checkbox.Label>
-                  </Checkbox.Root>
+                  <CustomCheckbox
+                    checked={talaSettings.learnFromChat}
+                    onChange={checked => setTalaSettings({ ...talaSettings, learnFromChat: checked })}
+                    label="Learn from chat (improve over time)"
+                  />
 
                   <Button onClick={saveTalaSettings} loading={saving} colorPalette="purple" alignSelf="flex-start">
                     Save Tala Settings
@@ -497,13 +516,11 @@ export const OwnerPage: React.FC = () => {
                     <Text mb={2} fontWeight="semibold">Slowmode (seconds)</Text>
                     <Input type="number" value={chatSettings.slowmodeSeconds} onChange={(e) => setChatSettings({ ...chatSettings, slowmodeSeconds: Number(e.target.value) })} />
                   </Box>
-                  <Checkbox.Root checked={chatSettings.emoteOnly} onCheckedChange={(e) => setChatSettings({ ...chatSettings, emoteOnly: !!e.checked })}>
-                    <Checkbox.HiddenInput />
-                    <Checkbox.Control>
-                      <Checkbox.Indicator />
-                    </Checkbox.Control>
-                    <Checkbox.Label>Emote Only Mode</Checkbox.Label>
-                  </Checkbox.Root>
+                  <CustomCheckbox
+                    checked={chatSettings.emoteOnly}
+                    onChange={checked => setChatSettings({ ...chatSettings, emoteOnly: checked })}
+                    label="Emote Only Mode"
+                  />
                   <Button onClick={saveChatSettings} loading={saving} colorPalette="purple" alignSelf="flex-start">
                     Save Chat Settings
                   </Button>
