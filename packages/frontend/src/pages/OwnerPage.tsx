@@ -17,19 +17,6 @@ import {
 } from '@chakra-ui/react';
 
 type Tab = 'overview' | 'store' | 'redeems' | 'tts' | 'tala' | 'chat' | 'users';
-  // TTS Settings
-  const [ttsCost, setTtsCost] = useState<number>(250);
-  const [ttsSaving, setTtsSaving] = useState(false);
-
-interface StoreItem {
-  id?: string;
-  name: string;
-  description?: string;
-  cost: number;
-  type: 'item' | 'redeem';
-  imageKey?: string;
-  soundKey?: string;
-}
 
 export const OwnerPage: React.FC = () => {
   console.log('OwnerPage rendered');
@@ -64,6 +51,9 @@ export const OwnerPage: React.FC = () => {
     slowmodeSeconds: 0,
     emoteOnly: false,
   });
+
+  const [ttsCost, setTtsCost] = useState<number>(250);
+  const [ttsSaving, setTtsSaving] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
