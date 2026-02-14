@@ -158,7 +158,7 @@ export const OwnerPage: React.FC = () => {
       setRedeems(res.data.redeems || []);
     } else {
       console.warn('Redeems not set, response:', res);
-      setMessage({ type: 'error', text: `Failed to load redeems: ${res.error || (res.data && res.data.error) || 'Unknown error'}` });
+      setMessage({ type: 'error', text: `Failed to load redeems: ${(res.data && res.data.error) || 'Unknown error'}` });
     }
   };
 
