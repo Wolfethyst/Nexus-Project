@@ -94,10 +94,10 @@ export const OwnerPage: React.FC = () => {
         '/tts/save',
         { cost: ttsCost }
       );
-      if (res.ok && res.data && 'ok' in res.data && res.data.ok) {
+      if (res.ok && typeof res.data === 'object' && res.data && (res.data as any).ok) {
         setMessage({ type: 'success', text: 'TTS cost updated!' });
       } else {
-        setMessage({ type: 'error', text: (res.data && 'error' in res.data && res.data.error) || 'Failed to update TTS cost' });
+        setMessage({ type: 'error', text: (res.data && typeof res.data === 'object' && 'error' in res.data ? (res.data as any).error : undefined) || 'Failed to update TTS cost' });
       }
     } catch (e: any) {
       setMessage({ type: 'error', text: e?.message || 'Failed to update TTS cost' });
@@ -288,7 +288,7 @@ export const OwnerPage: React.FC = () => {
                                 <Text mb={2} fontWeight="semibold">TTS Cost (points)</Text>
                                 <Input type="number" min={0} value={ttsCost} onChange={e => setTtsCost(Number(e.target.value))} />
                               </Box>
-                              <Button onClick={saveTtsCost} isLoading={ttsSaving} colorPalette="purple" alignSelf="flex-start">
+                              <Button onClick={saveTtsCost} loading={ttsSaving} colorPalette="purple" alignSelf="flex-start">
                                 Save TTS Cost
                               </Button>
                             </Flex>
