@@ -76,32 +76,35 @@ export const OwnerPage: React.FC = () => {
     loadRedeems();
     loadSoundFiles();
     loadTtsCost();
-    const loadTtsCost = async () => {
-      const res = await ApiClient.get<{ cost: number }>("/tts/cost");
-      if (res.ok && typeof res.data?.cost === 'number') {
-        setTtsCost(res.data.cost);
-      }
-    };
-
-    const saveTtsCost = async () => {
-      setTtsSaving(true);
-      try {
-        const res = await ApiClient.post<{ ok: boolean; cost?: number; error?: string }>(
-          '/tts/save',
-          { cost: ttsCost }
-        );
-        if (res.ok && res.data?.ok) {
-          setMessage({ type: 'success', text: 'TTS cost updated!' });
-        } else {
-          setMessage({ type: 'error', text: res.data?.error || 'Failed to update TTS cost' });
-        }
-      } catch (e: any) {
-        setMessage({ type: 'error', text: e?.message || 'Failed to update TTS cost' });
-      }
-      setTtsSaving(false);
-      setTimeout(() => setMessage(null), 2000);
-    };
   }, [isOwner]);
+
+  // TTS cost loader (fix block scope)
+  const loadTtsCost = async () => {
+    const res = await ApiClient.get<{ cost: number }>("/tts/cost");
+    if (res.ok && typeof res.data?.cost === 'number') {
+      setTtsCost(res.data.cost);
+    }
+  };
+
+  // TTS cost saver (fix block scope)
+  const saveTtsCost = async () => {
+    setTtsSaving(true);
+    try {
+      const res = await ApiClient.post<{ ok: boolean; cost?: number; error?: string }>(
+        '/tts/save',
+        { cost: ttsCost }
+      );
+      if (res.ok && res.data && 'ok' in res.data && res.data.ok) {
+        setMessage({ type: 'success', text: 'TTS cost updated!' });
+      } else {
+        setMessage({ type: 'error', text: (res.data && 'error' in res.data && res.data.error) || 'Failed to update TTS cost' });
+      }
+    } catch (e: any) {
+      setMessage({ type: 'error', text: e?.message || 'Failed to update TTS cost' });
+    }
+    setTtsSaving(false);
+    setTimeout(() => setMessage(null), 2000);
+  };
 
   const loadStats = async () => {
     console.log('Loading stats...');
@@ -285,7 +288,7 @@ export const OwnerPage: React.FC = () => {
                                 <Text mb={2} fontWeight="semibold">TTS Cost (points)</Text>
                                 <Input type="number" min={0} value={ttsCost} onChange={e => setTtsCost(Number(e.target.value))} />
                               </Box>
-                              <Button onClick={saveTtsCost} loading={ttsSaving} colorPalette="purple" alignSelf="flex-start">
+                              <Button onClick={saveTtsCost} isLoading={ttsSaving} colorPalette="purple" alignSelf="flex-start">
                                 Save TTS Cost
                               </Button>
                             </Flex>
