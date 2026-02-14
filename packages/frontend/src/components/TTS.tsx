@@ -13,7 +13,7 @@ export const TTS: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await ApiClient.get<{ cost: number }>("/redeems/tts-cost");
+        const res = await ApiClient.get<{ cost: number }>("/tts/cost");
         if (res.ok && typeof res.data?.cost === 'number') {
           setTtsCost(res.data.cost);
         }
@@ -26,7 +26,7 @@ export const TTS: React.FC = () => {
     setSending(true);
     try {
       const res = await ApiClient.post<{ ok: boolean; remainingPoints?: number; error?: string }>(
-        '/redeems/tts',
+        '/tts/send',
         { message: ttsText }
       );
       if (res.ok && res.data?.ok) {

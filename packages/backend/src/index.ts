@@ -10,6 +10,7 @@ import pointsRouter from './routes/points';
 import redeemsRouter from './routes/redeems';
 import { chat } from './routes/chat';
 import adminRouter from './routes/admin';
+import ttsRouter from './routes/tts';
 
 export type Env = {
   Bindings: {
@@ -148,6 +149,7 @@ app.route('/store', storeRouter);
 app.route('/points', pointsRouter);
 app.route('/redeems', redeemsRouter);
 app.route('/admin', adminRouter);
+app.route('/tts', ttsRouter);
 app.route('/chat', chat);
 
 // Leaderboard endpoint (public) - delegate to /points/leaderboard
