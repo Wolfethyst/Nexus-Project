@@ -20,7 +20,7 @@ export function useRedeems() {
     setLoading(true);
     setError(null);
     try {
-      const response = await ApiClient.get<{ ok: boolean; redeems: RedeemItem[] }>('/redeems/list');
+      const response = await ApiClient.get<{ redeems: RedeemItem[] }>('/store/redeems');
       setItems(response.data?.redeems || []);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch redeems');
