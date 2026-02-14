@@ -20,10 +20,10 @@ export function useRedeems() {
     setLoading(true);
     setError(null);
     try {
-      const response = await ApiClient.get<{ data: RedeemItem[] }>('/redeems/list');
-      setItems(response.data?.data || []);
+      const response = await ApiClient.get<{ ok: boolean; redeems: RedeemItem[] }>('/redeems/list');
+      setItems(response.data?.redeems || []);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch store items');
+      setError(err.message || 'Failed to fetch redeems');
     } finally {
       setLoading(false);
     }
@@ -35,8 +35,13 @@ export function useRedeems() {
 
   const purchase = useCallback(async (itemId: string) => {
     try {
-      const response = await ApiClient.post<{ pointsAfter: number; item: RedeemItem }>('/redeems/purchase', { itemId });
-      return { ok: response.ok, pointsAfter: response.data?.pointsAfter, item: response.data?.item };
+      const response = await ApiClient.post<{ ok: boolean; soundFile?: string; remainingPoints?: number; error?: string }>('/redeems/redeem', { redeemId: itemId });
+      return {
+        ok: response.data?.ok,
+        pointsAfter: response.data?.remainingPoints,
+        soundFile: response.data?.soundFile,
+        error: response.data?.error
+      };
     } catch (err: any) {
       return { ok: false, error: err.message };
     }

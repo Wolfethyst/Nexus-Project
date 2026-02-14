@@ -290,38 +290,14 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab, onTabChange }) =>
                   <StreamPlayer />
                 </Box>
               </Box>
-              <Box flex={1} minH={0}>
-                <Tabs.Root defaultValue="redeems" h="full" display="flex" flexDirection="column">
-                  <Tabs.List px={4} pt={2} borderBottom="1px solid" borderColor="whiteAlpha.100" gap={2}>
-                    <Tabs.Trigger
-                      value="redeems"
-                      fontFamily="Cinzel, serif"
-                      px={4} py={1.5} borderRadius="md"
-                      _hover={{ bg: 'whiteAlpha.100', color: 'white' }}
-                      _selected={{ color: 'white', bg: 'purple.500/20', boxShadow: '0 0 10px rgba(168, 85, 247, 0.3)' }}
-                      transition="all 0.2s"
-                    >
-                      Redeems
-                    </Tabs.Trigger>
-                    <Tabs.Trigger
-                      value="tts"
-                      fontFamily="Cinzel, serif"
-                      px={4} py={1.5} borderRadius="md"
-                      _hover={{ bg: 'whiteAlpha.100', color: 'white' }}
-                      _selected={{ color: 'white', bg: 'purple.500/20', boxShadow: '0 0 10px rgba(168, 85, 247, 0.3)' }}
-                      transition="all 0.2s"
-                    >
-                      TTS
-                    </Tabs.Trigger>
-                  </Tabs.List>
-                  <Tabs.Content value="redeems" flex={1} overflowY="auto" p={4}>
-                    <Redeems />
-                  </Tabs.Content>
-                  <Tabs.Content value="tts" flex={1} overflowY="auto" p={4}>
-                    <TTS />
-                  </Tabs.Content>
-                </Tabs.Root>
-              </Box>
+              <Flex flex={1} minH={0} gap={4} direction={{ base: 'column', md: 'row' }}>
+                <Box flex={{ base: 'none', md: '1 1 0%' }} minW={0} maxW={{ md: '33%' }} w="100%" minH={0}>
+                  <TTS />
+                </Box>
+                <Box flex={{ base: 'none', md: '2 1 0%' }} minW={0} maxW={{ md: '67%' }} w="100%" minH={0}>
+                  <Redeems />
+                </Box>
+              </Flex>
             </>
           ) : selectedVideo && selectedVideo.videoUrl ? (
             <Flex direction="column" h="full" minH={0} overflow="hidden" bg="var(--panel-bg)" borderRadius="2xl" boxShadow="xl" p={0} border="1px solid" borderColor="var(--panel-border)" backdropFilter="blur(16px)">

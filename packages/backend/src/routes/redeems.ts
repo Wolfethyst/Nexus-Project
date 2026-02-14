@@ -1,3 +1,9 @@
+// GET /redeems/tts-cost - Return the current TTS cost
+router.get('/tts-cost', async (c) => {
+  // Keep in sync with POST /redeems/tts
+  const TTS_COST = 250;
+  return c.json({ cost: TTS_COST });
+});
 import { Hono } from 'hono';
 import type { Env } from '../index.js';
 import { chargePointsForRedeem, isOwner } from '../lib.js';

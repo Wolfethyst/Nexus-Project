@@ -22,7 +22,7 @@ export function useTTS() {
     try {
       const response = await ApiClient.get<{ data: TTSItem[] }>('/tts/list');
       setItems(response.data?.data || []);
-    } catch (err: any) => {
+    } catch (err: any) {
       setError(err.message || 'Failed to fetch store items');
     } finally {
       setLoading(false);
@@ -37,9 +37,9 @@ export function useTTS() {
     try {
       const response = await ApiClient.post<{ pointsAfter: number; item: TTSItem }>('/tts/purchase', { itemId });
       return { ok: response.ok, pointsAfter: response.data?.pointsAfter, item: response.data?.item };
-    } catch (err: any) => {
-      return { ok: false, error: err.message };
-    }
+      } catch (err: any) {
+        return { ok: false, error: err.message };
+      }
   }, []);
 
   return { items, loading, error, fetchItems, purchase };

@@ -123,7 +123,7 @@ export const Redeems: React.FC = () => {
                             colorPalette="purple"
                             variant="subtle"
                             onClick={() => handlePurchase(item.id)}
-                            disabled={.purchasing}
+                            disabled={purchasing}
                             fontSize="xs"
                             fontFamily="Marcellus, serif"
                             >
