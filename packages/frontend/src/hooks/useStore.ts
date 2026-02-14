@@ -84,37 +84,3 @@ export function useInventory() {
 
   return { inventory, loading, error, fetchInventory, equip };
 }
-
-export function useRedeems() {
-  const [redeems, setRedeems] = useState<StoreItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchRedeems = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await ApiClient.get<{ redeems: StoreItem[] }>('/store/redeems');
-      setRedeems(response.data?.redeems || []);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch redeems');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const redeem = useCallback(async (id: string, input?: string) => {
-    try {
-      const response = await ApiClient.post<{ pointsAfter: number; redeem: any }>('/store/redeems/redeem', { id, input });
-      return { ok: response.ok, pointsAfter: response.data?.pointsAfter, redeem: response.data?.redeem };
-    } catch (err: any) {
-      return { ok: false, error: err.message };
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchRedeems();
-  }, [fetchRedeems]);
-
-  return { redeems, loading, error, fetchRedeems, redeem };
-}

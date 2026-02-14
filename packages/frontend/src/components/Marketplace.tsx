@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Flex, Text, Button, Image, Grid, GridItem, Textarea, VStack, Input } from '@chakra-ui/react';
+import { Box, Flex, Text, Button, Image, Grid, GridItem, Input } from '@chakra-ui/react';
 import { useStore } from '../hooks/useStore';
 import { useAuthStore } from '../store';
 import { ApiClient } from '../lib/api';
@@ -10,9 +10,6 @@ export const Marketplace: React.FC = () => {
   const [purchasing, setPurchasing] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   
-  // TTS State
-  const [ttsText, setTtsText] = useState('');
-  const [sendingTTS, setSendingTTS] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   const handlePurchase = async (itemId: string) => {
@@ -27,20 +24,6 @@ export const Marketplace: React.FC = () => {
       setTimeout(() => setMessage(null), 3000);
     }
     setPurchasing(false);
-  };
-
-  const handleTTS = async () => {
-    if (!session) return;
-    if (!ttsText.trim()) return;
-    
-    setSendingTTS(true);
-    // Mock TTS purchase for now - in reality this would hit an endpoint
-    setTimeout(() => {
-        setMessage({ type: 'success', text: 'TTS Message Sent!' });
-        setTtsText('');
-        setSendingTTS(false);
-        setTimeout(() => setMessage(null), 3000);
-    }, 1000);
   };
 
   const filteredItems = items.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -66,73 +49,7 @@ export const Marketplace: React.FC = () => {
           </Box>
         )}
         
-      <Flex h="full" direction={{ base: 'column', lg: 'row' }} gap={2}>
-        {/* LEFT: TTS Section */}
-        <Box 
-            w={{ base: 'full', lg: '450px' }} 
-            bg="var(--panel-bg)"
-            borderRadius="2xl" 
-            boxShadow="xl" 
-            border="1px solid" 
-            borderColor="var(--panel-border)" 
-            backdropFilter="blur(16px)"
-            display="flex"
-            flexDirection="column"
-            overflow="hidden"
-        >
-            {/* TTS Header */}
-            <Box bgGradient="to-r" gradientFrom="rgba(20,5,30,0.9)" gradientTo="rgba(40,0,60,0.6)" borderBottom="1px solid" borderColor="rgba(197,140,255,0.65)" px={6} h="52px" fontFamily="Cinzel, serif" fontSize="lg" fontWeight="bold" color="#e1a6ff" textShadow="0 0 10px rgba(213,123,255,0.3)" textTransform="uppercase" letterSpacing="1px" display="flex" alignItems="center" justifyContent="space-between" flexShrink={0}>
-                <span>TTS Message</span>
-            </Box>
-
-            <Box p={4} overflowY="auto" flex={1}>
-            <VStack align="stretch" gap={4}>
-                
-                <Box position="relative">
-                    <Textarea 
-                        placeholder="Type your message here..." 
-                        value={ttsText}
-                        onChange={(e) => setTtsText(e.target.value)}
-                        bg="blackAlpha.400"
-                        border="1px solid"
-                        borderColor="whiteAlpha.200"
-                        fontFamily="Marcellus, serif"
-                        _focus={{ borderColor: 'purple.400', boxShadow: '0 0 0 1px #a78bfa' }}
-                        rows={3}
-                        resize="none"
-                        maxLength={200}
-                        color="white"
-                        fontSize="sm"
-                        p={3}
-                    />
-                    <Text fontFamily="Marcellus, serif" position="absolute" bottom={2} right={2} fontSize="sm" color="gray.500">
-                        {ttsText.length}/200
-                    </Text>
-                </Box>
-                
-                <Button 
-                    colorPalette="purple" 
-                    onClick={handleTTS}
-                    loading={sendingTTS}
-                    disabled={!session || (!ttsText.trim() && !!session)}
-                    w="full"
-                    variant="solid"
-                    size="md"
-                    fontFamily="Marcellus, serif"
-                >
-                    {!session ? "Sign in to use TTS" : (
-                        <>
-                            Send TTS -&nbsp;
-                            <Image src={`${ApiClient.baseURL}/assets/crystal_icon`} alt="crystals" boxSize={3} mx={1} display="inline-block" verticalAlign="middle" objectFit="contain" />
-                            500
-                        </>
-                    )}
-                </Button>
-            </VStack>
-            </Box>
-        </Box>
-
-        {/* RIGHT: Redeems Grid */}
+      {/* Marketplace Grid */}
         <Box 
             flex={1} 
             display="flex" 
@@ -146,9 +63,9 @@ export const Marketplace: React.FC = () => {
             backdropFilter="blur(16px)"
             overflow="hidden"
         >
-            {/* Redeems Header */}
+            {/* Marketplace Header */}
             <Box bgGradient="to-r" gradientFrom="rgba(20,5,30,0.9)" gradientTo="rgba(40,0,60,0.6)" borderBottom="1px solid" borderColor="rgba(197,140,255,0.65)" px={6} h="52px" fontFamily="Cinzel, serif" fontSize="lg" fontWeight="bold" color="#e1a6ff" textShadow="0 0 10px rgba(213,123,255,0.3)" textTransform="uppercase" letterSpacing="1px" display="flex" alignItems="center" justifyContent="space-between" flexShrink={0}>
-                <span>Redeems</span>
+                <span>Marketplace</span>
                 <Input 
                     placeholder="Search..." 
                     value={searchTerm}
@@ -166,7 +83,7 @@ export const Marketplace: React.FC = () => {
             <Box flex={1} overflowY="auto" p={4}>
             {filteredItems.length === 0 ? (
                 <Flex align="center" justify="center" h="40">
-                    <Text color="gray.400" fontStyle="italic">{items.length === 0 ? "No redeems available" : "No matching redeems"}</Text>
+                    <Text color="gray.400" fontStyle="italic">{items.length === 0 ? "No items available" : "No matching items"}</Text>
                 </Flex>
             ) : (
                 <Grid templateColumns="repeat(auto-fill, minmax(160px, 1fr))" gap={4}>
@@ -210,7 +127,7 @@ export const Marketplace: React.FC = () => {
                             fontSize="xs"
                             fontFamily="Marcellus, serif"
                             >
-                            Redeem
+                            Buy
                             </Button>
                         </Flex>
                         </Flex>
@@ -220,7 +137,6 @@ export const Marketplace: React.FC = () => {
             )}
             </Box>
         </Box>
-      </Flex>
     </Box>
   );
 };
