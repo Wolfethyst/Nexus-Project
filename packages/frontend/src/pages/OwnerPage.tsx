@@ -25,6 +25,7 @@ interface StoreItem {
   type: 'item' | 'redeem';
   imageKey?: string;
   soundKey?: string;
+  enabled?: boolean;
 }
 
 type Tab = 'overview' | 'store' | 'redeems' | 'tts' | 'tala' | 'chat' | 'users';
